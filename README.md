@@ -8,7 +8,7 @@ The true summer is coming now.
 
 This web app helps friends to fight in Comike 86 ! ! !
 
-The true summer is coming now.
+###真夏は来て！
 
 8.15 金
 
