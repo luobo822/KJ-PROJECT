@@ -1,6 +1,7 @@
 The true summer is coming now.
 ==========
-***KJ-PROJECT***
+
+### KJ-PROJECT
 
 
 这个web app帮助少年们在コミックマーケット８６中协同作战！！！
@@ -16,7 +17,7 @@ The true summer is coming now.
 8.17 日
 
 
-changeLOG
+###changeLOG
 
 2014.7.9
 
