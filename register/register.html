@@ -13,12 +13,6 @@
 			<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
 			<link rel="stylesheet" type="text/css" href="http://test.eshicon.org/KJ-PROJECT/css/grumble.js-master/css/grumble.min.css">
 			
-
-      <style>
-				
-      </style>
-
- 
 	    <script>
 
 	     $(function(){
@@ -27,19 +21,18 @@
 						$(this).grumble(
 							{
 								angle: 90,
-								text: '长度不超过10，允许英文字母、数字、下划线',
+								text: '长度至少为3,允许英文字母、数字、下划线',
 								type: 'alt-', 
 								distance: 50,
 								hideAfter: 3000,
 							}
 						);
 				});
-
 				$("#user_password").focus(function(){						
 						$(this).grumble(
 							{
 								angle: 90,
-								text: '长度为6-16个字符，不能包含空格',
+								text: '长度至少为3,允许英文字母、数字、下划线,不能包含空格',
 								type: 'alt-', 
 								distance: 50,
 								hideAfter: 3000,
@@ -85,7 +78,7 @@
 					$me.grumble(
 						{
 							angle: 90,
-							text: '建议使用已对他人公开的昵称，便于他人认出你',
+							text: '建议使用已对他人公开的昵称,便于他人认出你',
 							type: 'alt-', 
 							distance: 10,
 							hideAfter:3000,
@@ -107,7 +100,7 @@
 						$(this).grumble(
 							{
 								angle: 90,
-								text: '你自定义的密保问题，用来找回密码',
+								text: '你自定义的密保问题,用来找回密码',
 								type: 'alt-', 
 								distance: 50,
 								hideAfter: 3000,
@@ -118,14 +111,22 @@
 						$(this).grumble(
 							{
 								angle: 90,
-								text: '解答你自己的密保问题，并牢记答案',
+								text: '解答你自己的密保问题,并牢记答案',
 								type: 'alt-', 
 								distance: 50,
 								hideAfter: 3000,
 							}
 						);
 				});
+			  $("#user_name").blur(function(){
+					if ($("#user_name").val() == "") {
+						$("#user_name").focus();
+				  }
+			  }); //$("#user_name").blur()结束
+
 			});
+      
+      
 	    </script>
 
 

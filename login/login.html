@@ -7,51 +7,39 @@
 		<title>KJ PROJECT for C86 &rsaquo; 登录</title>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
+    
 	</head>
 
 	<body class="login login-action-login wp-core-ui  locale-zh-cn">
-	<div id="login">
-		<h1><a href="" title="基于萌与爱">KJ PROJECT</a></h1>
-	
+		<div id="login">
+			<h1><a href="" title="基于萌与爱">KJ PROJECT</a></h1>
+		
+			<form name="loginform" id="loginform" action="" method="post">
+				<p>
+					<label for="username"><br />
+					<input type="text" name="log" id="username" class="input" value="" size="20" /></label>
+				</p>
+				<p>
+					<label for="password"><br />
+					<input type="password" name="pwd" id="password" class="input" value="" size="20" /></label>
+				</p>
+					
+				<br><br>
+					
+				<p class="submit">
+					<input type="button" id="submit_data" class="btn btn-block btn-lg btn-info" value="登录" />
+				</p>
+			</form>
 
-<form name="loginform" id="loginform" action="" method="post">
-	<p>
-		<label for="user_login"><br />
-		<input type="text" name="log" id="user_login" class="input" value="" size="20" /></label>
-	</p>
-	<p>
-		<label for="user_pass"><br />
-		<input type="password" name="pwd" id="user_pass" class="input" value="" size="20" /></label>
-	</p>
+			<p id="nav" align="center">
+				<a href="#">注册</a> <!-- 链接未定 -->
+			</p>
 
-		<br><br>
-		<p class="submit"><input type="submit" class="btn btn-block btn-lg btn-info" value="登录" /></p>
-	
-</form>
-
-<p id="nav" align="center">
-<a href="#">注册</a>
-
-<script>
-function wp_attempt_focus(){
-setTimeout( function(){ try{
-d = document.getElementById("user_login");
-d.focus();
-d.select();
-} catch(e){}
-}, 200);
-}
-
-wp_attempt_focus();
-if(typeof wpOnload=="function")wpOnload();
-</script>
-
-	
-	</div>
-
+		</div>
 	</body>
-	</html>
+</html>
