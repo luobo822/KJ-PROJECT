@@ -4,29 +4,72 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">   
 
-		<title>KJ PROJECT for C86 &rsaquo; 登录</title>
+		<title>KJ PROJECT C86 &rsaquo; 登录</title>
+
+    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    
+    <script>
+
+      $(function(){
+       
+        $("[data-toggle='tooltip']").tooltip(); //激活页面上所有的tooltip
+
+//用户名框是否为空的检测
+
+        $("#user_name").focus();//网页载入时强制focus到用户名框
+
+        $("#user_name").blur(function(){
+          if ($("#user_name").val() == "") {
+              $("#user_name").tooltip('show');
+              $("#user_name").attr("data-original-title","用户名不能为空");
+              $("#user_name").focus();
+          }else{
+              $("#user_name").tooltip('destroy');
+          }; //if ending
+        }); //$("#user_name").blur() ending
+
+//用户名框是否为空的检测结束
+
+//密码框是否为空的检测
+
+        $("#user_password").blur(function(){
+          if ($("#user_password").val() == "") {
+              $("#user_password").tooltip('show');
+              $("#user_password").attr("data-original-title","密码不能为空");
+              $("#user_password").focus();
+          }else{
+              $("#user_password").tooltip('destroy');
+          }; //if ending
+        }); //$("#user_password").blur() ending
+
+//密码框是否为空的检测结束
+
+      }); //$(function(){}) ending
+    </script>
     
 	</head>
 
 	<body class="login login-action-login wp-core-ui  locale-zh-cn">
 		<div id="login">
 			<h1><a href="" title="基于萌与爱">KJ PROJECT</a></h1>
-		
-			<form name="loginform" id="loginform" action="" method="post">
+  		<p class="message register">为协同作战登录</p>
+
+			<form name="loginform" id="loginform" action="" method="">
 				<p>
-					<label for="username"><br />
-					<input type="text" name="log" id="username" class="input" value="" size="20" /></label>
+					<label for="user_name"><br/>
+  					<input type="text" name="uzn" id="user_name" class="input" value="" size="20" data-toggle="tooltip" title="输入你的用户名" data-placement="top" />
+          </label>
 				</p>
+
 				<p>
-					<label for="password"><br />
-					<input type="password" name="pwd" id="password" class="input" value="" size="20" /></label>
+					<label for="user_password"><br/>
+  					<input type="password" name="pwd" id="user_password" class="input" value="" size="20" data-toggle="tooltip" data-original-title="输入你的密码" data-placement="top" />
+          </label>
 				</p>
 					
 				<br><br>
