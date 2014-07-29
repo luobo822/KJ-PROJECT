@@ -1,187 +1,187 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-	
-		<head>
-			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">   
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">   
 
-			<title>KJ PROJECT for C86 &rsaquo; 注册</title>
-			<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-			<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-      <script src="http://test.eshicon.org/KJ-PROJECT/css/grumble.js-master/js/jquery.grumble.min.js"></script>
-			<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
-			<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
-			<link rel="stylesheet" type="text/css" href="http://test.eshicon.org/KJ-PROJECT/css/grumble.js-master/css/grumble.min.css">
-			
-	    <script>
+		<title>KJ PROJECT C86 &rsaquo; 注册</title>
 
-	     $(function(){
-	       
-	      $("#user_name").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '长度至少为3,允许英文字母、数字、下划线',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#user_password").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '长度至少为3,允许英文字母、数字、下划线,不能包含空格',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#user_password_confirm").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '请再次输入密码',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#user_email").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '你的邮箱地址',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#user_qq").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '你的QQ号码',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#user_nickname").focus(function(e){
-				var $me = $(this), interval;
-					e.preventDefault();
-					$me.grumble(
-						{
-							angle: 90,
-							text: '建议使用已对他人公开的昵称,便于他人认出你',
-							type: 'alt-', 
-							distance: 10,
-							hideAfter:3000,
-							hideOnClick: true,
-							onShow: function(){
-								var angle = 90, dir = 1;
-								interval = setInterval(function(){
-									(angle > 100 ? (dir=-1, angle--) : ( angle < 90 ? (dir=1, angle++) : angle+=dir));
-									$me.grumble('adjust',{angle: angle});
-								},25);
-							},
-							onHide: function(){
-								clearInterval(interval);
-							}
-						}
-					);
-				});
-				$("#security_questions").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '你自定义的密保问题,用来找回密码',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-				$("#input_security_questions").focus(function(){						
-						$(this).grumble(
-							{
-								angle: 90,
-								text: '解答你自己的密保问题,并牢记答案',
-								type: 'alt-', 
-								distance: 50,
-								hideAfter: 3000,
-							}
-						);
-				});
-			  $("#user_name").blur(function(){
-					if ($("#user_name").val() == "") {
-						$("#user_name").focus();
-				  }
-			  }); //$("#user_name").blur()结束
+	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
-			});
-      
-      
-	    </script>
+		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
+		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+		
+    <script>
+
+     $(function(){
+       
+      $("[data-toggle='tooltip']").tooltip(); //激活页面上所有的tooltip
+      $("#user_name").focus();//网页载入时强制focus到用户名框
 
 
-	  </head>
+			$("#user_name").blur(function(){
+        if ($("#user_name").val() == "") {
+            // $("#user_name").tooltip('show');
+            // $("#user_name").attr("data-original-title","用户名不能为空");
+            // $("#user_name").focus();
+        }
+        else{
+	          $("#user_name").tooltip('destroy');
+        }; //if ending
+      }); //$("#user_name").blur() ending
+
+			$("#user_password").blur(function(){
+        if ($("#user_password").val() == "") {
+            $("#user_password").tooltip('show');
+            // $("#user_password").attr("data-original-title","密码不能为空");
+            // $("#user_password").focus();
+        }
+        else{
+	          $("#user_password").tooltip('destroy');
+        }; //if ending
+      }); //$("#user_password").blur() ending
+
+			$("#user_password_confirm").blur(function(){
+        if ($("#user_password_confirm").val() == "") {
+            $("#user_password_confirm").tooltip('show');
+            // $("#user_password_confirm").focus();
+        }else if ($("#user_password_confirm").val != $("#user_password").val()) 
+			        {
+		            $("#user_password_confirm").attr("data-original-title","和输入的密码不相同");
+		            $("#user_password_confirm").tooltip('show');
+		          }
+        else{
+	          $("#user_password_confirm").tooltip('destroy');
+        }; //if ending
+      }); //$("#user_password_confirm").blur() ending
+
+			// $("#user_email").blur(function(){
+   //      if ($("#user_email").val() == "") {
+   //          $("#user_email").tooltip('show');
+   //          $("#user_email").attr("data-original-title","用户名不能为空");
+   //          $("#user_email").focus();
+   //      }
+   //      else{
+	          
+   //      }; //if ending
+   //    }); //$("#user_email").blur() ending
+
+			// $("#user_qq").blur(function(){
+   //      if ($("#user_qq").val() == "") {
+   //          $("#user_qq").tooltip('show');
+   //          $("#user_qq").attr("data-original-title","用户名不能为空");
+   //          $("#user_qq").focus();
+   //      }
+   //      else{
+	  //         $("#user_qq").tooltip('destroy');
+   //      }; //if ending
+   //    }); //$("#user_qq").blur() ending
+
+      $("#user_nickname").blur(function(){
+        if ($("#user_nickname").val() == "") {
+            $("#user_nickname").tooltip('show');
+            $("#user_nickname").attr("data-original-title","昵称不能为空~别人通过昵称认出你");
+            // $("#user_nickname").focus();
+        }
+        else{
+	          $("#user_nickname").tooltip('destroy');
+        }; //if ending
+      }); //$("#user_nickname").blur() ending
+
+      $("#security_questions").blur(function(){
+        if ($("#security_questions").val() == "") {
+            $("#security_questions").tooltip('show');
+            $("#security_questions").attr("data-original-title","请输入你要回答的密保问题");
+            // $("#security_questions").focus();
+        }
+        else{
+	          $("#security_questions").tooltip('destroy');
+        }; //if ending
+      }); //$("#security_questions").blur() ending
+
+      $("#input_security_questions").blur(function(){
+        if ($("#input_security_questions").val() == "") {
+            $("#input_security_questions").tooltip('show');
+            $("#input_security_questions").attr("data-original-title","请务必解答你自己的密保问题");
+            // $("#input_security_questions").focus();
+        }
+        else{
+	          $("#input_security_questions").tooltip('destroy');
+        }; //if ending
+      }); //$("#input_security_questions").blur() ending
+
+
+
+		}); //$(function(){} ending
+    
+    
+    </script>
+
+
+  </head>
 
 	
 <body class="login login-action-login wp-core-ui  locale-zh-cn">
 
 <div id="login">
-		<h1><a href="" title="基于萌与爱">KJ PROJECT</a></h1>
+		<h1><a href="#" title="基于萌与爱">KJ PROJECT</a></h1>
 		<p class="message register">为协同作战注册</p>
 
 			<form name="registerform" id="registerform" action="" method="post">
 
 				<p>
 					<label for="user_name">用户名<br>
-					<input type="text" name="user_name" id="user_name" class="input" value="" size="20" /></label>
+						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="长度至少为3,允许英文字母、数字、下划线,不能包含空格" data-placement="top" />
+					</label>
 				</p>
 
 				<p>
 					<label for="user_password">密码<br>
-					<input type="text" name="user_password" id="user_password" class="input" value="" size="20" /></label>
+						<input type="password" name="user_password" id="user_password" class="input" size="20" data-toggle="tooltip" data-original-title="长度至少为3,允许英文字母、数字、下划线,不能包含空格" data-placement="top" />
+					</label>
 				</p>
 
 				<p>
 					<label for="user_password_confirm">确认密码<br>
-					<input type="text" name="user_password_confirm" id="user_password_confirm" class="input" value="" size="20" /></label>
+						<input type="text" name="user_password_confirm" id="user_password_confirm" class="input" size="20" data-toggle="tooltip" data-original-title="请再次输入密码" data-placement="top" />
+					</label>
 				</p>
 
 				<p>
 					<label for="user_email">电子邮件<br>
-					<input type="text" name="user_email" id="user_email" class="input" value="" size="25" /></label>
+					  <input type="text" name="user_email" id="user_email" class="input" size="25" data-toggle="tooltip" data-original-title="你的邮箱地址" data-placement="top"/>
+					</label>
 				</p>
 
 				<p>
 					<label for="user_qq">QQ号码<br>
-					<input type="text" name="user_qq" id="user_qq" class="input" value="" size="25"/></label>
+					  <input type="text" name="user_qq" id="user_qq" class="input" size="25" data-toggle="tooltip" data-original-title="你的QQ号码" data-placement="top"/>
+					</label>
 				</p>
 					
 				<p>
 					<label for="user_nickname">昵称<br>
-					<input type="text" name="user_nickname" id="user_nickname" class="input" value="" size="25" /></label>
+					  <input type="text" name="user_nickname" id="user_nickname" class="input" size="25" data-toggle="tooltip" data-original-title="建议使用已对他人公开的昵称,便于他人认出你" data-placement="top" />
+					</label>
 				</p>
 
 				<p>
 					<label for="security_questions">输入密保问题<br>
-					<input type="text" name="security_questions" id="security_questions" class="input" value="" size="25" /></label>
+					  <input type="text" name="security_questions" id="security_questions" class="input" size="25" data-toggle="tooltip" data-original-title="你自定义的密保问题,用来找回密码" data-placement="top" />
+					</label>
 				</p>
 					
 				<p>
 					<label for="input_security_questions">回答密保问题<br>
-					<input type="text" name="input_security_questions" id="input_security_questions" class="input" value="" size="25" />
+						<input type="text" name="input_security_questions" id="input_security_questions" class="input" size="25" data-toggle="tooltip" data-original-title="解答你自己的密保问题,并牢记答案" data-placement="top" />
+					</label>
+				</p>
+
 				<br><br>
 
-				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="register" /></p>
+				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="register" data-toggle="tooltip" data-original-title="开始战斗吧！！" data-placement="top" /></p>
 				
 				<br><br><hr>
 				
