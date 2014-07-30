@@ -21,22 +21,36 @@
       $("#user_name").focus();//网页载入时强制focus到用户名框
 
 
-			$("[data-toggle='tooltip']").tooltip(); //激活页面上所有的tooltip
-      $("#user_name").focus();//网页载入时强制focus到用户名框
-
+			var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]");
+      var blank = RegExp("\u0020");
 
 			$("#user_name").blur(function(){
         if ($("#user_name").val() == "") {
 	        	$("#user_name").focus();
             $("#user_name").tooltip('show');
         }
+			  else if (blank.exec($("#user_name").val())) {
+                $("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","用户名不可以含有空格");
+								$("#user_name").focus();
+						  } //else if ending
+			  else if (character.exec($("#user_name").val())) {
+                $("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","用户名不可以含有汉字或假名或棒子文");
+								$("#user_name").focus();
+						  } //else if ending
+        else if ($("#user_name").val().length < 3) {
+								$("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","用户名长度小于3，长度应大于等于3");
+								$("#user_name").focus();
+			        } //else if ending
         else{
 	          $("#user_name").tooltip('destroy');
         }; //if ending
       }); //$("#user_name").blur() ending
 
 			$("#user_password").focus(function(){
-        if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password").val() != "")) 
+        if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) 
 		        {
 	            $("#user_password").attr("data-original-title","密码不相同");
 	            $("#user_password").tooltip('show');
@@ -45,13 +59,28 @@
 			
 			$("#user_password").blur(function(){
         if ($("#user_password").val() == "") {
-            $("#user_password").tooltip('show');
-            $("#user_password").attr("data-original-title","密码不能为空");
-            $("#user_password").focus();
+		            $("#user_password").tooltip('show');
+		            $("#user_password").attr("data-original-title","密码不能为空");
+		            $("#user_password").focus();
         }
-        else{
+        else if ($("#user_password").val().length < 4) {
+								$("#user_password").attr("data-original-title","密码长度小于4，长度应大于等于4");
+								$("#user_password").tooltip('show');
+								$("#user_password").focus();
+			        }
+        else if (character.exec($("#user_name").val())) {
+                $("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","用户名不可以含有汉字");
+								$("#user_name").focus();
+						  }
+			  else if (blank.exec($("#user_name").val())) {
+                $("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","用户名不可以含有空格");
+								$("#user_name").focus();
+						  }
+	      else{
 	          $("#user_password").tooltip('destroy');
-        }; //if ending
+	      }; //if ending
       }); //$("#user_password").blur() ending
 
 			$("#user_password_confirm").blur(function(){
@@ -61,7 +90,6 @@
         }else if ($("#user_password_confirm").val() != $("#user_password").val()) 
 			        {
 		            $("#user_password").focus();
-		            // $("#user_password_confirm").tooltip('show');
 		            $("#user_password_confirm").attr("data-original-title","密码不相同");
 		          }
         else{
@@ -76,6 +104,11 @@
             $("#user_nickname").attr("data-original-title","昵称不能为空~别人通过昵称认出你");
             $("#user_nickname").focus();
         }
+			  else if (blank.test($("#user_name").val())) {
+                $("#user_name").tooltip('show');
+								$("#user_name").attr("data-original-title","昵称不可以含有空格");
+								$("#user_name").focus();
+						  }
         else{
 	          $("#user_nickname").tooltip('destroy');
         }; //if ending
@@ -125,13 +158,13 @@
 
 				<p>
 					<label for="user_name">用户名<br>
-						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格" data-placement="top" />
+						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
 					<label for="user_password">密码<br>
-						<input type="password" name="user_password" id="user_password" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格" data-placement="top" />
+						<input type="password" name="user_password" id="user_password" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为4,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
 					</label>
 				</p>
 
@@ -143,19 +176,19 @@
 
 				<p>
 					<label for="user_email">电子邮件<br>
-					  <input type="text" name="user_email" id="user_email" class="input" size="25" data-toggle="tooltip" data-original-title="你的邮箱地址" data-placement="top"/>
+					  <input type="text" name="user_email" id="user_email" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的邮箱地址" data-placement="top"/>
 					</label>
 				</p>
 
 				<p>
 					<label for="user_qq">QQ号码<br>
-					  <input type="text" name="user_qq" id="user_qq" class="input" size="25" data-toggle="tooltip" data-original-title="你的QQ号码" data-placement="top"/>
+					  <input type="text" name="user_qq" id="user_qq" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的QQ号码" data-placement="top"/>
 					</label>
 				</p>
 					
 				<p>
 					<label for="user_nickname">昵称<br>
-					  <input type="text" name="user_nickname" id="user_nickname" class="input" size="25" data-toggle="tooltip" data-original-title="必填,建议使用已对他人公开的昵称,便于他人认出你" data-placement="top" />
+					  <input type="text" name="user_nickname" id="user_nickname" class="input" size="25" data-toggle="tooltip" data-original-title="必填,建议使用已对他人公开的昵称,便于他人认出你，不能包含空格" data-placement="top" />
 					</label>
 				</p>
 
@@ -173,7 +206,7 @@
 
 				<br><br>
 
-				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="register" data-toggle="tooltip" data-original-title="开始战斗吧！！" data-placement="top" /></p>
+				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="register" data-toggle="tooltip" data-original-title="注册！然后开始战斗吧！！" data-placement="top" /></p>
 				
 				<br><br><hr>
 				
