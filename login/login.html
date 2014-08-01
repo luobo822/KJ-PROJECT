@@ -9,6 +9,7 @@
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script src="../jquery.md5.js" ></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -49,6 +50,18 @@
 
 //密码框是否为空的检测结束
 
+//定义login_submit按钮    
+        $("#login_submit").click(function(){
+          var user_name_md5 = $.md5($("#user_name").val());
+					var user_password_md5 = $.md5($("#user_password").val());
+          var user_sum = $.md5(user_password_md5 + user_name_md5);
+          var user_sum_md5 = $.md5(user_sum);
+
+          alert("用户名md5是" + user_name_md5);
+          alert("密码的md5是" + user_password_md5);          
+          alert("联合加密的结果是" + user_sum_md5);
+        }); 
+//定义login_submit按钮结束     
       }); //$(function(){}) ending
     </script>
     
@@ -75,7 +88,7 @@
 				<br><br>
 					
 				<p class="submit">
-					<input type="button" id="submit_data" class="btn btn-block btn-lg btn-info" value="登录" />
+					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" />
 				</p>
 			</form>
 
