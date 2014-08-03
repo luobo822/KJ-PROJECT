@@ -29,7 +29,6 @@
 //定义标记
 
       var is_username_checked = 0; //重名检测的结果
-      // var is_username_sent = 0; //对于这个用户名是否已发送过重名检测
       var is_connected = 0; //是否与服务器成功连接
 
 //定义正则表达式
@@ -66,17 +65,25 @@
         $("#connect_flag").val("已连接");
 
         socket.on("reg_check_username_client", function(check) {
-          $("#debug").val(check);
+          // $("#debug").val(check);
           is_username_checked = check;
 					if (check) {
 						$("#user_name").attr("data-original-title","用户名可以使用");
 						$("#user_name").tooltip("show");
 					};
+				}); 
 
-        }); 
+				socket.on("reg_submit_client", function(data){
+          if (data.id != "0") {
+					   console.log("id:" + data.id);
+					   localStorage.setItem("id",data.id);
+					   console.log("nickname:" + data.nickname);
+					   localStorage.setItem("nickname",data.nickname);
+          };
+				});
 
         socket.on("disconnect", function() {
-          alert("对不起,与服务器的连接异常断开.服务器正在调整中,请稍后刷新再试!");
+          alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
           is_connected = 0; //未连接
         });
 
@@ -112,7 +119,6 @@
         else{ //即服务器连接正常、用户名本地检测合法的情况下，才进行重名检测
 	          if (is_username_checked) { //一切正常则允许focus到下一输入框
 		           $("#user_name").tooltip("destroy");
-			         is_username_sent = 0;
 				       is_username_checked = 0;
 	          }else{
 	          	if (is_changed($("#user_name")) == 1) {
@@ -124,7 +130,6 @@
 	          };
         }; //if ending
       }); //$("#user_name").blur() ending
-
 
 			$("#user_password").focus(function(){
         if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) 
@@ -174,7 +179,6 @@
         }; //if ending
       }); //$("#user_password_confirm").blur() ending
 
-
       $("#user_nickname").blur(function(){
         if ($("#user_nickname").val() == "") {
             $("#user_nickname").tooltip("show");
@@ -191,30 +195,53 @@
         }; //if ending
       }); //$("#user_nickname").blur() ending
 
-      $("#security_questions").blur(function(){
-        if ($("#security_questions").val() == "") {
-            $("#security_questions").tooltip("show");
-            $("#security_questions").attr("data-original-title","请输入你要回答的密保问题");
-            $("#security_questions").focus();
+      $("#security_question").blur(function(){
+        if ($("#security_question").val() == "") {
+            $("#security_question").tooltip("show");
+            $("#security_question").attr("data-original-title","请输入你要回答的密保问题");
+            $("#security_question").focus();
         }
         else{
-	          $("#security_questions").tooltip("destroy");
+	          $("#security_question").tooltip("destroy");
         }; //if ending
-      }); //$("#security_questions").blur() ending
+      }); //$("#security_question").blur() ending
 
-      $("#input_security_questions").blur(function(){
-        if ($("#input_security_questions").val() == "") {
-            $("#input_security_questions").tooltip("show");
-            $("#input_security_questions").attr("data-original-title","请务必解答你自己的密保问题");
-            $("#input_security_questions").focus();
+      $("#input_security_question").blur(function(){
+        if ($("#input_security_question").val() == "") {
+            $("#input_security_question").tooltip("show");
+            $("#input_security_question").attr("data-original-title","请务必解答你自己的密保问题");
+            $("#input_security_question").focus();
         }
         else{
-	          $("#input_security_questions").tooltip("destroy");
+	          $("#input_security_question").tooltip("destroy");
+	          if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
+		           $("#register").attr("data-original-title","开始战斗吧!");
+							 $("#register").tooltip("show");
+	          };
         }; //if ending
-      }); //$("#input_security_questions").blur() ending
+      }); //$("#input_security_question").blur() ending
 
+//提交表单
+			$("#register").click(function(){
+				if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
 
-
+			      var clientdata = new Object();
+			      clientdata = {
+						    username:$("#user_name").val(),
+			          password:$.md5($("#user_password").val()),
+			          email:$("#user_email").val(),
+			          qq:$("#user_qq").val(),
+			          nickname:$("#user_nickname").val(),
+			          squestions:$("#security_question").val(),
+			          isquestions:$("#input_security_question").val(),
+			          id:$.md5($.md5($("#user_password").val())+$("#user_name").val())
+					  };
+		        socket.emit("reg_submit_server",clientdata); //传参:clientdata对象
+				}else{
+								$("#register").attr("data-original-title","必填项目不可以留空~");
+								$("#register").tooltip("show");
+				};
+			});
 
 		}); //$(function(){} ending
     
@@ -231,7 +258,7 @@
 		<h1><a href="#" title="基于萌与爱">KJ PROJECT</a></h1>
 		<p class="message register">为协同作战注册</p>
 
-			<form name="registerform" id="registerform" action="" method="post">
+			<form name="registerform" id="registerform">
 
 <!-- <p>debug</p> -->
 
@@ -276,14 +303,14 @@
 				</p>
 
 				<p>
-					<label for="security_questions">输入密保问题<br>
-					  <input type="text" name="security_questions" id="security_questions" class="input" size="25" data-toggle="tooltip" data-original-title="必填,你自定义的密保问题,用来找回密码" data-placement="top" />
+					<label for="security_question">输入密保问题<br>
+					  <input type="text" name="security_question" id="security_question" class="input" size="25" data-toggle="tooltip" data-original-title="必填,你自定义的密保问题,用来找回密码" data-placement="top" />
 					</label>
 				</p>
 					
 				<p>
-					<label for="input_security_questions">回答密保问题<br>
-						<input type="text" name="input_security_questions" id="input_security_questions" class="input" size="25" data-toggle="tooltip" data-original-title="必填,解答你自己的密保问题,并牢记答案" data-placement="top" />
+					<label for="input_security_question">回答密保问题<br>
+						<input type="text" name="input_security_question" id="input_security_question" class="input" size="25" data-toggle="tooltip" data-original-title="必填,解答你自己的密保问题,并牢记答案" data-placement="top" />
 					</label>
 				</p>
 
@@ -298,5 +325,6 @@
 				</p>
 				
 			</form>
+</div>
 </body>
 </html>
