@@ -8,6 +8,7 @@
 
 	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js" ></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
@@ -16,76 +17,152 @@
     <script>
 
      $(function(){
-       
-      $("[data-toggle='tooltip']").tooltip(); //激活页面上所有的tooltip
-      $("#user_name").focus();//网页载入时强制focus到用户名框
 
+//激活页面上所有的tooltip       
 
-			var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]");
-      var blank = RegExp("\u0020");
+      $("[data-toggle='tooltip']").tooltip(); 
+
+//网页载入时强制focus到用户名框      
+
+			$("#user_name").focus();
+
+//定义标记
+
+      var is_username_checked = 0; //重名检测的结果
+      // var is_username_sent = 0; //对于这个用户名是否已发送过重名检测
+      var is_connected = 0; //是否与服务器成功连接
+
+//定义正则表达式
+
+			var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]"); //中片平检测
+      var blank = RegExp("\u0020"); //空白检测
+
+//定义全局函数
+      
+      var temp_old = "";
+      var temp_new = "";
+
+      function is_changed(obj){ //判断对象的val()使是否改变,且在第一次调用的时候会返回0
+          if (temp_old == "") {
+	          temp_old = obj.val();
+          }else {
+            temp_new = obj.val();
+          };	
+          if (temp_new == temp_old) {
+          	return 0; //unchanged
+          }else {
+          	return 1; //changed
+          };
+      };
+
+//重名反馈机能与数据提交机能
+
+      var socket = io.connect("http://157.7.138.169:2333");
+
+      socket.on("connect", function () {
+        
+        is_connected = 1; //已连接
+
+        $("#connect_flag").val("已连接");
+
+        socket.on("reg_check_username_client", function(check) {
+          $("#debug").val(check);
+          is_username_checked = check;
+					if (check) {
+						$("#user_name").attr("data-original-title","用户名可以使用");
+						$("#user_name").tooltip("show");
+					};
+
+        }); 
+
+        socket.on("disconnect", function() {
+          alert("对不起,与服务器的连接异常断开.服务器正在调整中,请稍后刷新再试!");
+          is_connected = 0; //未连接
+        });
+
+      }); //socket.on("connect", function () {}) ending
+
+//定义提示框事件
 
 			$("#user_name").blur(function(){
         if ($("#user_name").val() == "") {
 	        	$("#user_name").focus();
-            $("#user_name").tooltip('show');
+            $("#user_name").tooltip("show");
         }
 			  else if (blank.exec($("#user_name").val())) {
-                $("#user_name").tooltip('show');
+                $("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","用户名不可以含有空格");
 								$("#user_name").focus();
-						  } //else if ending
+						  } 
 			  else if (character.exec($("#user_name").val())) {
-                $("#user_name").tooltip('show');
+                $("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","用户名不可以含有汉字或假名或棒子文");
 								$("#user_name").focus();
-						  } //else if ending
+						  } 
         else if ($("#user_name").val().length < 3) {
-								$("#user_name").tooltip('show');
+								$("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","用户名长度小于3，长度应大于等于3");
 								$("#user_name").focus();
-			        } //else if ending
-        else{
-	          $("#user_name").tooltip('destroy');
+			        } 
+				else if (!is_connected) {
+								$("#user_name").tooltip("show");
+								$("#user_name").attr("data-original-title","未与服务器连接,无法注册");
+								$("#user_name").focus();
+							}
+        else{ //即服务器连接正常、用户名本地检测合法的情况下，才进行重名检测
+	          if (is_username_checked) { //一切正常则允许focus到下一输入框
+		           $("#user_name").tooltip("destroy");
+			         is_username_sent = 0;
+				       is_username_checked = 0;
+	          }else{
+	          	if (is_changed($("#user_name")) == 1) {
+				          socket.emit("reg_check_username_server",$("#user_name").val()); //传参:用户名
+									$("#user_name").tooltip("show");
+									$("#user_name").attr("data-original-title","正在检测是否重名...");
+									$("#user_name").focus();
+	          	};
+	          };
         }; //if ending
       }); //$("#user_name").blur() ending
+
 
 			$("#user_password").focus(function(){
         if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) 
 		        {
 	            $("#user_password").attr("data-original-title","密码不相同");
-	            $("#user_password").tooltip('show');
+	            $("#user_password").tooltip("show");
 	          };
       });
 			
 			$("#user_password").blur(function(){
         if ($("#user_password").val() == "") {
-		            $("#user_password").tooltip('show');
+		            $("#user_password").tooltip("show");
 		            $("#user_password").attr("data-original-title","密码不能为空");
 		            $("#user_password").focus();
         }
         else if ($("#user_password").val().length < 4) {
 								$("#user_password").attr("data-original-title","密码长度小于4，长度应大于等于4");
-								$("#user_password").tooltip('show');
+								$("#user_password").tooltip("show");
 								$("#user_password").focus();
 			        }
         else if (character.exec($("#user_name").val())) {
-                $("#user_name").tooltip('show');
+                $("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","用户名不可以含有汉字");
 								$("#user_name").focus();
 						  }
 			  else if (blank.exec($("#user_name").val())) {
-                $("#user_name").tooltip('show');
+                $("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","用户名不可以含有空格");
 								$("#user_name").focus();
 						  }
 	      else{
-	          $("#user_password").tooltip('destroy');
+	          $("#user_password").tooltip("destroy");
 	      }; //if ending
       }); //$("#user_password").blur() ending
 
 			$("#user_password_confirm").blur(function(){
         if ($("#user_password_confirm").val() == "") {
-            $("#user_password_confirm").tooltip('show');
+            $("#user_password_confirm").tooltip("show");
             $("#user_password_confirm").focus();
         }else if ($("#user_password_confirm").val() != $("#user_password").val()) 
 			        {
@@ -93,46 +170,46 @@
 		            $("#user_password_confirm").attr("data-original-title","密码不相同");
 		          }
         else{
-	          $("#user_password_confirm").tooltip('destroy');
+	          $("#user_password_confirm").tooltip("destroy");
         }; //if ending
       }); //$("#user_password_confirm").blur() ending
 
 
       $("#user_nickname").blur(function(){
         if ($("#user_nickname").val() == "") {
-            $("#user_nickname").tooltip('show');
+            $("#user_nickname").tooltip("show");
             $("#user_nickname").attr("data-original-title","昵称不能为空~别人通过昵称认出你");
             $("#user_nickname").focus();
         }
 			  else if (blank.test($("#user_name").val())) {
-                $("#user_name").tooltip('show');
+                $("#user_name").tooltip("show");
 								$("#user_name").attr("data-original-title","昵称不可以含有空格");
 								$("#user_name").focus();
 						  }
         else{
-	          $("#user_nickname").tooltip('destroy');
+	          $("#user_nickname").tooltip("destroy");
         }; //if ending
       }); //$("#user_nickname").blur() ending
 
       $("#security_questions").blur(function(){
         if ($("#security_questions").val() == "") {
-            $("#security_questions").tooltip('show');
+            $("#security_questions").tooltip("show");
             $("#security_questions").attr("data-original-title","请输入你要回答的密保问题");
             $("#security_questions").focus();
         }
         else{
-	          $("#security_questions").tooltip('destroy');
+	          $("#security_questions").tooltip("destroy");
         }; //if ending
       }); //$("#security_questions").blur() ending
 
       $("#input_security_questions").blur(function(){
         if ($("#input_security_questions").val() == "") {
-            $("#input_security_questions").tooltip('show');
+            $("#input_security_questions").tooltip("show");
             $("#input_security_questions").attr("data-original-title","请务必解答你自己的密保问题");
             $("#input_security_questions").focus();
         }
         else{
-	          $("#input_security_questions").tooltip('destroy');
+	          $("#input_security_questions").tooltip("destroy");
         }; //if ending
       }); //$("#input_security_questions").blur() ending
 
@@ -156,6 +233,12 @@
 
 			<form name="registerform" id="registerform" action="" method="post">
 
+<!-- <p>debug</p> -->
+
+<!-- <input type="text" id="debug" value=""> -->
+<!-- <br> -->
+<!-- flag -->
+<!-- <input type="text" id="connect_flag" value=""> -->
 				<p>
 					<label for="user_name">用户名<br>
 						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
