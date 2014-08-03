@@ -8,8 +8,8 @@
     
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js" ></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-		<script src="../jquery.md5.js" ></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -17,9 +17,18 @@
     <script>
 
       $(function(){
-       
-        $("[data-toggle='tooltip']").tooltip(); //激活页面上所有的tooltip
-        $("#user_name").focus();//网页载入时强制focus到用户名框
+
+//激活页面上所有的tooltip       
+
+      $("[data-toggle='tooltip']").tooltip(); 
+
+//网页载入时强制focus到用户名框      
+
+			$("#user_name").focus();
+
+//定义标记
+
+      var is_connected = 0;
 
 //用户名框是否为空的检测
 
