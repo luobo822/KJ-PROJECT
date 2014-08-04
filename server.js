@@ -19,7 +19,8 @@ var server = http.createServer(function(req, res) {
       host: 'localhost',
       user: 'root',
       password: 'coco0929',
-      db: 'moe'
+      db: 'moe',
+      charset: 'utf8'
     });
 
     c.on('connect', function() {
@@ -53,7 +54,7 @@ socketio.listen(server).on("connection", function (socket) {
                 }else {
                   console.log('用户名重复了:'+uzn.username);
                 };
-                socket.emit("reg_check_username_client", is_checked); //这里加入数据库检测，重名发送0，未重名发送1
+                socket.emit("reg_check_username_client", is_checked); //重名向客户端发送0，未重名发送1
               };
            })
            .on('error', function(err) {
@@ -70,7 +71,25 @@ socketio.listen(server).on("connection", function (socket) {
 
     socket.on("reg_submit_server", function (data) {
         console.log("收到提交的新用户注册表单对象:\n",data);
+
+        c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ?',[data.id,data.username,data.password,data.email,data.qq,data.nickname,data.sq,data.isq])
+         .on('result', function(res) {
+           res.on('row', function(row) {
+            console.log('结果是:' + inspect(row));
+           })
+           .on('error', function(err) {
+             console.log('发生异常错误:' + inspect(err));
+           })
+           .on('end', function(info) {
+             console.log('添加完毕');
+           });
+         })
+         .on('end', function() {
+           console.log('所有结果输出完毕');
+         });
         console.log("返回:",data);
         socket.emit("reg_submit_client",data); //如果成功加入数据，返回对象.
+
+        
     });
 });

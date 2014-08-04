@@ -42,11 +42,23 @@ c.query('SELECT COUNT(username)=0 FROM user WHERE id = :id AND username = :usern
    console.log('所有结果输出完毕');
  });
 
-c.query('SELECT COUNT(username) FROM user WHERE id = ? AND username = ?',['233', '244'])
+var data = new Object();
+data = {
+  id:'2',
+  username:'3',
+  password:'4',
+  email:'5',
+  qq:'6',
+  nickname:'7',
+  sq:'8',
+  isq:'9'
+};
+
+
+c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ?',[data.id,data.username,data.password,data.email,data.qq,data.nickname,data.sq,data.isq])
  .on('result', function(res) {
    res.on('row', function(row) {
-     
-     
+     console.log('插入成功！');
    })
    .on('error', function(err) {
      console.log('Result error: ' + inspect(err));
