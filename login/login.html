@@ -14,6 +14,21 @@
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
     
+		<script>
+    "use strict"
+
+//登录检测与跳转
+
+        $(document).on("pagebeforecreate",function(event){
+          console.log("如果登录了，就直接跳转到登录界面");
+          if (localStorage.id != "0" {
+          	console.log("跳转到main");
+          }; 
+        }); 
+
+    </script>
+
+
     <script>
 
       $(function(){
