@@ -36,23 +36,8 @@
 			var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]"); //中片平检测
       var blank = RegExp("\u0020"); //空白检测
 
-//定义全局函数
-      
-      var temp_old = "";
-      var temp_new = "";
-
-      function is_changed(obj){ //判断对象的val()使是否改变,且在第一次调用的时候会返回0
-          if (temp_old == "") {
-	          temp_old = obj.val();
-          }else {
-            temp_new = obj.val();
-          };	
-          if (temp_new == temp_old) {
-          	return 0; //unchanged
-          }else {
-          	return 1; //changed
-          };
-      };
+//定义全局变量
+      var temp_name = ""; //用来存储已检查过的用户名
 
 //重名反馈机能与数据提交机能
 
@@ -64,11 +49,17 @@
 
         $("#connect_flag").val("已连接");
 
-        socket.on("reg_check_username_client", function(check) {
-          // $("#debug").val(check);
-          is_username_checked = check;
-					if (check) {
+        socket.on("reg_check_username_client", function(checked) {
+					console.log(checked);
+          is_username_checked = checked;
+					if (is_username_checked == 1) {
 						$("#user_name").attr("data-original-title","用户名可以使用");
+						$("#user_name").tooltip("show");
+	 				}else if (is_username_checked == -1) {
+            $("#user_name").attr("data-original-title","服务器发生异常,无法进行检测");
+						$("#user_name").tooltip("show");
+					}else if (is_username_checked == 0) {
+						$("#user_name").attr("data-original-title","用户名发生重名，请修改用户名");
 						$("#user_name").tooltip("show");
 					};
 				}); 
@@ -117,19 +108,22 @@
 								$("#user_name").focus();
 							}
         else{ //即服务器连接正常、用户名本地检测合法的情况下，才进行重名检测
-	          if (is_username_checked) { //一切正常则允许focus到下一输入框
-		           $("#user_name").tooltip("destroy");
-				       is_username_checked = 0;
-	          }else{
-	          	if (is_changed($("#user_name")) == 1) {
-				          socket.emit("reg_check_username_server",$("#user_name").val()); //传参:用户名
-									$("#user_name").tooltip("show");
-									$("#user_name").attr("data-original-title","正在检测是否重名...");
-									$("#user_name").focus();
-	          	};
-	          };
-        }; //if ending
+		          if ($("#user_name").val() != temp_name) { //如果这个时候用户名改变了，重新检测一次
+			          		  var temp_checkusername = new Object;
+		                  temp_checkusername = {"username":$("#user_name").val()};
+						          socket.emit("reg_check_username_server",temp_checkusername); //传参:{username:value}
+											$("#user_name").tooltip("show");
+											$("#user_name").attr("data-original-title","正在检测是否重名...");
+											temp_name = $("#user_name").val();
+											$("#user_name").focus();
+	          	}else if (is_username_checked = 1) { //一切正常则允许focus到下一输入框
+						           $("#user_name").tooltip("destroy");
+						           console.log("允许unfocus");
+						           is_username_checked = 0;
+						         };
+				         };
       }); //$("#user_name").blur() ending
+
 
 			$("#user_password").focus(function(){
         if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) 
