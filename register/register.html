@@ -13,6 +13,10 @@
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+		<style>
+
+		</style>
 		
     <script>
 
@@ -36,7 +40,8 @@
 			var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]"); //中片平检测
       var blank = RegExp("\u0020"); //空白检测
 
-//定义全局变量
+//定义临时变量
+
       var temp_name = ""; //用来存储已检查过的用户名
 
 //重名反馈机能与数据提交机能
@@ -47,8 +52,6 @@
         
         is_connected = 1; //已连接
 
-        $("#connect_flag").val("已连接");
-
         socket.on("reg_check_username_client", function(checked) {
 					console.log(checked);
           is_username_checked = checked;
@@ -56,7 +59,7 @@
 						$("#user_name").attr("data-original-title","用户名可以使用");
 						$("#user_name").tooltip("show");
 	 				}else if (is_username_checked == -1) {
-            $("#user_name").attr("data-original-title","服务器发生异常,无法进行检测");
+            $("#user_name").attr("data-original-title","服务器异变!检测结果出现错误");
 						$("#user_name").tooltip("show");
 					}else if (is_username_checked == 0) {
 						$("#user_name").attr("data-original-title","用户名发生重名,请修改用户名");
@@ -66,10 +69,14 @@
 
 				socket.on("reg_submit_client", function(data){
           if (data.id != "0") {
-					   console.log("id:" + data.id);
 					   localStorage.setItem("id",data.id);
-					   console.log("nickname:" + data.nickname);
 					   localStorage.setItem("nickname",data.nickname);
+					   alert("注册成功!\n你的昵称是:"+data.nickname+"\n你的识别id是:"+data.id);
+             // for (var i = 0; i < 100 ; i++) {
+             // 	setTimeout($("#progressbar").css("width",i),50);
+             // };
+          }else {
+          	alert("服务器异变!把这个bug告诉suica吧!");
           };
 				});
 
@@ -116,10 +123,14 @@
 											$("#user_name").attr("data-original-title","正在检测是否重名...");
 											temp_name = $("#user_name").val();
 											$("#user_name").focus();
-	          	}else if (is_username_checked = 1) { //一切正常则允许focus到下一输入框
+	          	}else if (is_username_checked == 1) { //一切正常则允许focus到下一输入框
 						           $("#user_name").tooltip("destroy");
 						           console.log("允许unfocus");
 						           is_username_checked = 0;
+						         }
+						         else {
+                           console.log("不允许unfocus");
+                           $("#user_name").focus();
 						         };
 				         };
       }); //$("#user_name").blur() ending
@@ -209,33 +220,40 @@
         else{
 	          $("#input_security_question").tooltip("destroy");
 	          if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
-		           $("#register").attr("data-original-title","开始战斗吧!");
-							 $("#register").tooltip("show");
+		           $("#go_to_agreement").attr("data-original-title","开始战斗吧!");
+							 $("#go_to_agreement").tooltip("show");
 	          };
         }; //if ending
       }); //$("#input_security_question").blur() ending
 
-//提交表单
-			$("#register").click(function(){
+//显示隐私协议modal
+			$("#go_to_agreement").click(function(){
 				if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
-
-			      var clientdata = new Object();
-			      clientdata = {
-			          id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
-						    username:$("#user_name").val(),
-			          password:$.md5($("#user_password").val()),
-			          email:$("#user_email").val(),
-			          qq:$("#user_qq").val(),
-			          nickname:$("#user_nickname").val(),
-			          sq:$("#security_question").val(),
-			          isq:$("#input_security_question").val()
-					  };
-		        socket.emit("reg_submit_server",clientdata); //传参:clientdata对象
+		        $("#agreement").modal("show");
 				}else{
-								$("#register").attr("data-original-title","必填项目不可以留空~");
-								$("#register").tooltip("show");
+								$("#go_to_agreement").attr("data-original-title","必填项目不可以留空~");
+								$("#go_to_agreement").tooltip("show");
 				};
 			});
+//注册
+     $("#register").click(function(){
+     	var clientdata = new Object();
+	      clientdata = {
+	          id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
+				    username:$("#user_name").val(),
+	          password:$.md5($("#user_password").val()),
+	          email:$("#user_email").val(),
+	          qq:$("#user_qq").val(),
+	          nickname:$("#user_nickname").val(),
+	          sq:$("#security_question").val(),
+	          isq:$("#input_security_question").val()
+			  };
+      $("#agreement").modal("hide");
+      
+      socket.emit("reg_submit_server",clientdata); //传参:clientdata对象
+      
+     });
+
 
 		}); //$(function(){} ending
     
@@ -254,12 +272,6 @@
 
 			<form name="registerform" id="registerform">
 
-<!-- <p>debug</p> -->
-
-<!-- <input type="text" id="debug" value=""> -->
-<!-- <br> -->
-<!-- flag -->
-<!-- <input type="text" id="connect_flag" value=""> -->
 				<p>
 					<label for="user_name">用户名<br>
 						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
@@ -310,15 +322,87 @@
 
 				<br><br>
 
-				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="register" data-toggle="tooltip" data-original-title="注册！然后开始战斗吧！！" data-placement="top" /></p>
+				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="go_to_agreement" data-toggle="tooltip" data-original-title="输入你的信息！然后开始战斗吧！！" data-placement="top" /></p>
 				
 				<br><br><hr>
 				
 				<p id="nav" align="center">
-					<a href="#">登录</a>
+					<a href="http://test.eshicon.org/login.html">登录</a>
+					<br><br>
+					<a href="https://github.com/suica/KJ-PROJECT/wiki/%E9%9A%90%E7%A7%81%E5%8D%8F%E8%AE%AE">隐私协议</a>
 				</p>
-				
 			</form>
 </div>
+
+				
+<div class="modal fade" id="agreement" tabindex="-1" role="dialog" 
+   aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <button type="button" class="close" 
+               data-dismiss="modal" aria-hidden="true">
+                  &times;
+            </button>
+            <h4 class="modal-title" id="myModalLabel">
+               隐私协议
+            </h4>
+         </div>
+         <div class="modal-body">
+<pre>一旦您同意本协议或使用本服务,您即同意本研究所按照以下条款来使用和披露您的个人信息.  
+
+(一) 无民事行为能力人的特别注意事项  
+在阅读本协议以注册成为KJ-PROJECT(域名：eshicon.com；运营商：Suica研究所)用户时,您若是不满10周岁的未成年人及不能辨认自己行为的精神病人,或是可怕的小学生、熊孩子,您则不能使用本服务,请您终止您的注册行为,千万不要向我们提供您的任何个人信息. 
+
+(二) 用户名和密码
+在您注册为KJ-PROJECT用户时,我们会要求您设置用户名和密码来识别您的身份,并设置密码保护问题,以便在您丢失密码时用以确认您的身份.
+您仅可通过您设置的密码来使用该账户,如果您泄漏了密码,您可能会丢失您的个人识别信息,并可能导致对您不利的法律后果.该账户和密码因任何原因受到潜在或现实危险时,您应该立即和本研究所取得联系,在本研究所采取行动前,本研究所对此不负任何责任.
+
+ (三) 注册信息  
+ 您注册该账户时应向本公司提供您的昵称、用户名、密码,您还可以选择来填写相关附加信息(包括但不限于电子邮箱地址、QQ号码).
+
+ (四) 本研究所对您的资料的披露   
+ (1)虽然本研究所采用行业标准惯例以保护您的个人资料,鉴于技术限制,本研究所不能确保您的全部私人通讯及其他个人资料不会通过本隐私规则中未列明的途径泄露出去.
+ (2)本研究所有义务根据有关法律要求向司法机关和政府部门提供您的个人资料. 
+ (3)在您未能按照与本研究所签订的服务协议、居间协议或者与本研究所其他用户签订的借款协议的约定履行自己应尽的义务时,本研究所有权根据自己的判断或者与该笔交易有关的其他用户的请求披露您的个人资料,并作出评论. 
+
+ (五)个人信息公开情况
+ (1)您的昵称会对其他应用用户公开.
+ (2)您的电子邮箱地址会对其他应用用户公开.
+ (3)您的QQ号码会对其他应用用户公开.
+ (4)您的密码会经过散列函数(md5)
+ (5)进行保存,这种加密是不可逆的,即便是本研究所的工作人员,也无法逆算出您的密码.
+ (6)您的密保问题会被明码保存,建议不要输入过于隐私的问题.
+ 
+ (五)您对其他用户的资料的使用  在本应用提供的交易活动中,您无权要求本研究所提供其他用户的个人资料,除非符合以下条件：     
+ (1)您已向法院起诉其他用户的在本研究所活动中的违约行为；   
+ (2)与您有关的其他用户(包括交易关系、基友关系)逾期未归还借款本息；
+ (3)本研究所被吊销营业执照、解散、清算、宣告破产或者其他有碍于您收回借款本息的情形.   
+ 
+ **在上述(2)情况下,本研究所的其他用户可以采取发布您个人信息的方式向您追索债权,但本研究所对此等用户的行为免责.    
+
+ (七)关于使用我们研究所：  
+ 您不得使用我们研究所资源或信息资源向其他用户传播有违法律,有违道德、敏感、推广等与本研究所业务不相关的垃圾信息.
+ 本研究所提供的应用完全开源(github仓库:https://github.com/suica/KJ-PROJECT),免费使用.
+
+ (八) 规则修改
+   本研究所可能不时按照您的意见和本研究所的需要修改本隐私规则,以准确地反映本研究所对您以及其他应用用户的隐私保护惯例.
+   本规则的所有修改,不经任何通知即生效.
+   本规则的生效版本指定权归Suica研究所所有.
+</pre>
+					<center>Suica研究所</center>
+					<center>Copyright © 2014 Suica's lab. All rights reserved. </center>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-default" 
+               data-dismiss="modal">关闭
+            </button>
+            <button id="register" type="button" class="btn btn-primary">
+               同意并注册
+            </button>
+         </div>
+      </div><!-- /.modal-content -->
+</div><!-- /.modal -->
+
 </body>
 </html>
