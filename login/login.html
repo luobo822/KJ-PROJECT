@@ -13,25 +13,19 @@
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    
-		<script>
-    "use strict"
-
-//登录检测与跳转
-
-        $(document).on("pagebeforecreate",function(event){
-          console.log("如果登录了，就直接跳转到登录界面");
-          if (localStorage.id != "0" {
-          	console.log("跳转到main");
-          }; 
-        }); 
-
-    </script>
 
 
     <script>
+    "use strict"
 
       $(function(){
+
+//检测是否登录/跳转
+
+        if (localStorage.id != "0") {
+          console.log("已登录");
+          // window.location.assign("http://test.eshicon.org/kj.html");
+        };        
 
 //激活页面上所有的tooltip       
 
@@ -44,6 +38,39 @@
 //定义标记
 
       var is_connected = 0;
+
+//登录机能
+
+      var socket = io.connect("http://157.7.138.169:2333");
+
+      socket.on("connect", function () {
+        
+        is_connected = 1; //已连接
+
+        socket.on("login_client", function(logindata){
+          console.log("输出logindata",logindata);
+          if (logindata.flag == 1) {
+            $("#login_submit").tooltip("destroy");
+             localStorage.setItem("id",logindata.id);
+             localStorage.setItem("username",logindata.username);
+             localStorage.setItem("nickname",logindata.nickname);
+             console.log("登录成功!");
+             //这里跳转到main页面
+          }else if (logindata.flag == 0) {
+            $("#login_submit").attr("data-original-title","密码或用户名错误");
+            $("#login_submit").tooltip("show");
+          }else if (logindata.flag == -1) {
+            $("#login_submit").attr("data-original-title","服务器异变!请向suica报告错误!");
+            $("#login_submit").tooltip("show");
+          };
+        });
+
+        socket.on("disconnect", function() {
+          alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
+          is_connected = 0; //未连接
+        });
+
+      }); //socket.on("connect", function () {}) ending
 
 //用户名框是否为空的检测
 
@@ -58,7 +85,6 @@
           }; //if ending
         }); //$("#user_name").blur() ending
 
-//用户名框是否为空的检测结束
 
 //密码框是否为空的检测
 
@@ -72,20 +98,24 @@
           }; //if ending
         }); //$("#user_password").blur() ending
 
-//密码框是否为空的检测结束
 
 //定义login_submit按钮    
-        $("#login_submit").click(function(){
-          var user_name_md5 = $.md5($("#user_name").val());
-					var user_password_md5 = $.md5($("#user_password").val());
-          var user_sum = $.md5(user_password_md5 + user_name_md5);
-          var user_sum_md5 = $.md5(user_sum);
 
-          alert("用户名md5是" + user_name_md5);
-          alert("密码的md5是" + user_password_md5);          
-          alert("联合加密的结果是" + user_sum_md5);
-        }); 
-//定义login_submit按钮结束     
+        $("#login_submit").click(function(){
+          console.log("is_connected:"+is_connected);
+          if (is_connected == 1) {
+          var clientdata = new Object();
+          clientdata = {
+            id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
+            username:$("#user_name").val()
+          };
+          socket.emit("login_server",clientdata);
+          }else {
+            $("#login_submit").attr("data-original-title","无法连接服务器,请稍后注册!");
+            $("#login_submit").tooltip("show");
+          };          
+        });
+
       }); //$(function(){}) ending
     </script>
     
@@ -112,12 +142,14 @@
 				<br><br>
 					
 				<p class="submit">
-					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" />
+					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" data-toggle="tooltip" title="登录!" data-placement="top"/>
 				</p>
 			</form>
 
 			<p id="nav" align="center">
-				<a href="#">注册</a> <!-- 链接未定 -->
+        <a href="htpp://test.eshicon.org/register.html">注册</a>
+        <br><br>
+      <a href="https://github.com/suica/KJ-PROJECT/wiki/%E9%9A%90%E7%A7%81%E5%8D%8F%E8%AE%AE">隐私协议</a>
 			</p>
 
 		</div>
