@@ -32,4 +32,4 @@ kitty.save(function (err) {
 });
 }
 
-exports.startServer =startServer;
+exports.startServer = startServer;

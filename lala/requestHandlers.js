@@ -34,7 +34,7 @@ function addItem(){
 
 exports.start = start;
 exports.upload = upload;
-exports.login =login;
-exports.usrchk =usrchk;
+exports.login = login;
+exports.usrchk = usrchk;
 exports.reg =reg;
-exports.addItem =addItem;
+exports.addItem = addItem;
