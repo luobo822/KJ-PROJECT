@@ -1,5 +1,5 @@
 function handleFiles(files) {
-	// Check for the various File API support.
+	//检测是否支持HTML5 文件 API
 	if (window.FileReader) {
 		// 支持文件上传
 		getAsText(files[0]);
@@ -39,20 +39,9 @@ function errorHandler(evt) {
 }
 
 function get_result(lines){
-	//清除先前的数据
-	// document.getElementById("output").innerHTML = "";
-	// var table = document.createElement("table");
 	for (var i = 0; i < lines.length; i++) {
-		// var row = table.insertRow(-1);
-		console.log(lines[i])
-		// for (var j = 0; j < lines[i].length; j++) {
-			// var firstNameCell = row.insertCell(-1);
-			// firstNameCell.appendChild(document.createTextNode(lines[i][j]));
-
-		// }
-	}
-	// document.getElementById("output").appendChild(table);
-
+		window.csv_result[i] = lines[i]; //数组捕捉大法
+	};
 }
 
 
