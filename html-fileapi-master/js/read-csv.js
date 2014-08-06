@@ -28,7 +28,7 @@ function processData(csv) {
     while (allTextLines.length) {
         lines.push(allTextLines.shift().split(','));
     }
-	console.log(lines);
+	// console.log(lines);
 	get_result(lines);
 }
 
@@ -40,8 +40,9 @@ function errorHandler(evt) {
 
 function get_result(lines){
 	for (var i = 0; i < lines.length; i++) {
-		window.csv_result[i] = lines[i]; //数组捕捉大法
+		window.csvdata[i] = lines[i]; //数组捕捉大法
 	};
+	console.log(window.csvdata);
 }
 
 
