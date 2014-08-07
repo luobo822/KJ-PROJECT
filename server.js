@@ -207,7 +207,7 @@ socketio.listen(server).on('connection', function (socket) {
                     //          });
                     // //check_exist结束
                 };
-                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],csvdata_nickname[1]+':1'+','+'finish:0'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
+                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{'+csvdata_nickname[1]+':1,'+'finish:0}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
             };
            })
            .on('error', function(err) {
@@ -223,21 +223,21 @@ socketio.listen(server).on('connection', function (socket) {
          });
     });
 
-///////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
     socket.on('main_mission_list_server', function (nickname) {
       console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
       c.query('SELECT i2,'+nickname+' FROM relation')
        .on('result', function(res) {
          res.on('row', function(row) {
-          console.log('main_mission_list_server:查询成功' + inspect(row));
-          if (row[nickname]) {
-            socket.emit('main_mission_list_client',row);
-          };
+          // var _itemid =  Number(row['i2']); 
+          // console.log('main_mission_list_server:查询成功' + inspect(row));
+          // console.log('main_mission_list_server:row'+inspect(row));
+          select_itemdata(row);
          })
          .on('error', function(err) {
            console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-           socket.emit('main_mission_list_client',-1);
+           // socket.emit('main_mission_list_client',-1);
          })
          .on('end', function(info) {
            console.log('main_mission_list_server:推送完毕');
@@ -249,32 +249,58 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
-    socket.on('main_mission_datapush_server',function (itemid,nickname) {
-       console.log('收到任务数据推送请求,请求的发送用户是:'+ nickname);
-       c.query('SELECT '+nickname+' FROM relation WHERE i2 =?',[itemid])
-       .on('result', function(res) {
-         res.on('row', function(row) {
-          console.log('main_mission_server:查询成功' + inspect(row));
-          // if (row[nickname]) {
-          //   socket.emit('main_mission_client',row);
-          // };
-         })
-         .on('error', function(err) {
-           console.log('main_mission_server:发生异常错误:' + inspect(err));
-           socket.emit('main_mission_client',-1);
-         })
-         .on('end', function(info) {
-           console.log('main_mission_server:推送完毕');
-         })
-       })
-       .on('end', function() {
-         console.log('main_mission_server:结果输出完毕');
-       });
+/////////////////////////////////////////////////////////////////////////
 
-    });
+    // socket.on('main_mission_datapush_server',function (itemid,nickname) {
+    //    console.log('收到任务数据推送请求,请求的发送用户是:'+ nickname);
+    //    c.query('SELECT '+nickname+' FROM relation WHERE i2 =?',[itemid])
+    //    .on('result', function(res) {
+    //      res.on('row', function(row) {
+    //       console.log('main_mission_server:查询成功' + inspect(row));
+    //       // if (row[nickname]) {
+    //       //   socket.emit('main_mission_client',row);
+    //       // };
+    //      })
+    //      .on('error', function(err) {
+    //        console.log('main_mission_server:发生异常错误:' + inspect(err));
+    //        socket.emit('main_mission_client',-1);
+    //      })
+    //      .on('end', function(info) {
+    //        console.log('main_mission_server:推送完毕');
+    //      })
+    //    })
+    //    .on('end', function() {
+    //      console.log('main_mission_server:结果输出完毕');
+    //    });
+
+    // });
+
+
+//////////////////////////////////////////////////////////////////////
 
 //异步函数太电波,我驾驭不了只好放弃...把代码堆到一起太恶心了...怎么办...我要模块化!
 //我要clean code!
+
+
+function select_itemdata (dataobject){
+
+  c.query('SELECT * FROM itemdata WHERE i2 = ?',[dataobject['i2']])
+             .on('result', function(res) {
+               res.on('row', function(row) {
+                console.log('得到记录'+dataobject['i2']);
+                socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+               })
+               .on('error', function(err) {
+                 console.log('发生异常错误:' + inspect(err));
+               })
+               .on('end', function(info) {
+                 console.log('完毕');
+               })
+             })
+             .on('end', function() {
+               console.log('结果输出完毕');
+             });
+}
 
 
 function insert_itemdata(csvdata){
@@ -392,115 +418,23 @@ c.query('SELECT COUNT('+columnname+')=0 FROM '+tablename+' '+condition)
 
 
 
+});
 
-
-
-
-
-
-
-
-//     c.query('SELECT COUNT('+nickname+')=0 FROM relation') 
-//          .on('result', function(res) { 
-//            res.on('row', function(row) {
-//             console.log('alter_relation:这个昵称已存在,直接UPDATE数量/代购用户');
-
-            
-
-//            })
-//            .on('error', function(err) {
-//               console.log('update_relation:出现意外错误')
-//               return -1;
-//            })
-//            .on('end', function(info) {
-//              console.log('alter_relation:查找重名完毕');
-//            });
-//          })
-//          .on('end', function() {
-//            console.log('alter_relation:所有结果输出完毕');
-//          });
-// };
-
-
-
-
-//加入用户字段
-// function alter_relation_add_nickname(nickname){
-// c.query('ALTER TABLE relation ADD '+nickname+' text')
-//  .on('result', function(res) {
-//    res.on('row', function(row) {
-//     console.log('alter_relation:加入新用户字段的结果是:' + inspect(row));
-//     alter_relation(nickname,itemid,buyobjectstring);
-//    })
-//    .on('error', function(err) {
-//      console.log('alter_relation:发生异常错误:' + inspect(err));
-//    })
-//    .on('end', function(info) {
-//      console.log('alter_relation:添加完毕');
-//    });
-//  })
-//  .on('end', function() {
-//    console.log('alter_relation:所有结果输出完毕');
-//  });
-
-// };
-
-
-// function update_relation(number){
-//     c.query('SELECT COUNT('+nickname+')=0 FROM relation') 
-//          .on('result', function(res) {
-//            res.on('row', function(row) {
-//             console.log('查到的结果是:' + inspect(row));
-//             return 1;
-//            })
-//            .on('error', function(err) {
-//              if (err['code'] == 1054) {
-//                 return 0;
-//              }else{
-//                 return -1;
-//              };
-//            })
-//            .on('end', function(info) {
-//              console.log('查找重名完毕');
-//            });
-//          })
-//          .on('end', function() {
-//            console.log('所有结果输出完毕');
-//          });
-
-// };
-        
 
 //SQL模板
 
 // c.query('')
-//          .on('result', function(res) {
-//            res.on('row2', function(row2) {
-//             console.log('成功');
-//            })
-//            .on('error', function(err) {
-//              console.log('发生异常错误:' + inspect(err));
-//            })
-//            .on('end', function(info) {
-//              console.log('完毕');
-//            })
-//          })
-//          .on('end', function() {
-//            console.log('结果输出完毕');
-//          });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-});
+     // .on('result', function(res) {
+     //   res.on('row2', function(row2) {
+     //    console.log('成功');
+     //   })
+     //   .on('error', function(err) {
+     //     console.log('发生异常错误:' + inspect(err));
+     //   })
+     //   .on('end', function(info) {
+     //     console.log('完毕');
+     //   })
+     // })
+     // .on('end', function() {
+     //   console.log('结果输出完毕');
+     // });
