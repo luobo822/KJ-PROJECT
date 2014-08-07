@@ -42,7 +42,7 @@ function get_result(lines){
 	for (var i = 0; i < lines.length; i++) {
 		window.csvdata[i] = lines[i]; //数组捕捉大法
 	};
-	// console.log(window.csvdata);
+	console.log(window.csvdata);
 }
 
 
