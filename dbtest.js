@@ -64,8 +64,8 @@ c.on('connect', function() {
 // UserName=@UserName
 //
 
-var test ="\"\"";
- c.query('INSERT INTO test SET baka2 =?,username = ?',[test,'""'])
+var test ="\"!@#!@#$%^#$%$%^\"";
+ c.query('INSERT INTO test SET baka2 ='+',username = ?',['"{"sha":\'"233"}"'])
  .on('result', function(res) {
    res.on('row', function(row) {
         for(x in row){

@@ -170,7 +170,7 @@ socketio.listen(server).on('connection', function (socket) {
     socket.on('main_csv_submit_server', function (csvdata_nickname) { //csvdata是一个数组,格式为[csvdata[],nickname]
         console.log('main_csv_submit_server:收到提交的csv数组:\n',csvdata_nickname);
         var is_success = -1;
-        var name_whobuy = '/\"'+csvdata_nickname[1]+'/\"';
+        // var name_whobuy = '/\"'+csvdata_nickname[1]+'/\"';
         c.query('SELECT COUNT(i2)=0 FROM itemdata WHERE i2 = ?',[csvdata_nickname[0][1]])
          .on('result', function(res) {
            res.on('row', function(row) { 
@@ -183,7 +183,7 @@ socketio.listen(server).on('connection', function (socket) {
                     console.log('main_csv_submit_server:item重复了:'+csvdata_nickname[0][1]);
                     socket.emit('main_csv_submit_client',0);
                 };
-                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{number:1,finish:0,whobuy:""""}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
+                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{number:1,finish:0,whobuy:\"'+csvdata_nickname[1]+'\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
             };
            })
            .on('error', function(err) {
@@ -199,7 +199,6 @@ socketio.listen(server).on('connection', function (socket) {
          });
     });
 
-////////////////////////////////////////////////////////////////////////////////////////
 
     socket.on('main_mission_list_server', function (nickname) {
       console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
@@ -225,31 +224,6 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
-/////////////////////////////////////////////////////////////////////////
-
-    // socket.on('main_mission_datapush_server',function (itemid,nickname) {
-    //    console.log('收到任务数据推送请求,请求的发送用户是:'+ nickname);
-    //    c.query('SELECT '+nickname+' FROM relation WHERE i2 =?',[itemid])
-    //    .on('result', function(res) {
-    //      res.on('row', function(row) {
-    //       console.log('main_mission_server:查询成功' + inspect(row));
-    //       // if (row[nickname]) {
-    //       //   socket.emit('main_mission_client',row);
-    //       // };
-    //      })
-    //      .on('error', function(err) {
-    //        console.log('main_mission_server:发生异常错误:' + inspect(err));
-    //        socket.emit('main_mission_client',-1);
-    //      })
-    //      .on('end', function(info) {
-    //        console.log('main_mission_server:推送完毕');
-    //      })
-    //    })
-    //    .on('end', function() {
-    //      console.log('main_mission_server:结果输出完毕');
-    //    });
-
-    // });
 
 
 //////////////////////////////////////////////////////////////////////
@@ -337,8 +311,8 @@ c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?',[itemid]) //检查关系
                   console.log('那么开始UPDATE');
                   console.log(nickname+','+buyobjectstring+','+itemid);
                   // UPDATE
-                  buyobjectstring = "'"+buyobjectstring+"'";
-                  c.query('UPDATE relation SET '+nickname+'='+buyobjectstring+' WHERE i2 = ?',[itemid])
+                  // buyobjectstring = "'"+buyobjectstring+"'";
+                  c.query('UPDATE relation SET '+nickname+'= ? WHERE i2 = ?',[buyobjectstring,itemid])
                            .on('result', function(res) {
                              res.on('row', function(row) {
                               console.log('update_relation:关系表UPDATE更新的结果是:' + inspect(row));
