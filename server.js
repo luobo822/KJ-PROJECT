@@ -170,6 +170,7 @@ socketio.listen(server).on('connection', function (socket) {
     socket.on('main_csv_submit_server', function (csvdata_nickname) { //csvdata是一个数组,格式为[csvdata[],nickname]
         console.log('main_csv_submit_server:收到提交的csv数组:\n',csvdata_nickname);
         var is_success = -1;
+        var name_whobuy = '/\"'+csvdata_nickname[1]+'/\"';
         c.query('SELECT COUNT(i2)=0 FROM itemdata WHERE i2 = ?',[csvdata_nickname[0][1]])
          .on('result', function(res) {
            res.on('row', function(row) { 
@@ -181,33 +182,8 @@ socketio.listen(server).on('connection', function (socket) {
                 }else{
                     console.log('main_csv_submit_server:item重复了:'+csvdata_nickname[0][1]);
                     socket.emit('main_csv_submit_client',0);
-                    //check_exist/update_relation
-                    // c.query('SELECT COUNT('+csvdata_nickname[1]+')=0 FROM relation WHERE i2 = ?',[csvdata_nickname[0][1]])
-                    //          .on('result', function(res) {
-                    //            res.on('row', function(row) {
-                    //             console.log('check_exist:' + inspect(row));
-                    //             console.log(temp);
-                    //             for (var q in row) {
-                    //               if (row[q] == 1) {
-                    //                 console.log('可以开始更新 relation');
-                    //               }else{
-                    //                 console.log('已有重复数据');
-                    //               };
-                    //             };
-                    //            })
-                    //            .on('error', function(err) {
-                    //              console.log('check_exist:发生异常错误:' + inspect(err));
-                    //            })
-                    //            .on('end', function(info) {
-                    //              console.log('check_exist完毕');
-                    //            });
-                    //          })
-                    //          .on('end', function() {
-                    //            console.log('check_exist所有结果输出完毕');
-                    //          });
-                    // //check_exist结束
                 };
-                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{'+csvdata_nickname[1]+':1,'+'finish:0}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
+                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{number:1,finish:0,whobuy:""""}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
             };
            })
            .on('error', function(err) {
@@ -340,7 +316,7 @@ c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?',[itemid]) //检查关系
                   console.log('开始INSERT');
                   console.log(nickname+','+buyobjectstring+','+itemid);
                   // INSERT
-                  c.query('INSERT INTO relation SET '+nickname+'= ?,'+'i2 = ?',[buyobjectstring,itemid])
+                  c.query('INSERT INTO relation SET '+nickname+'= ?,i2 = ?',[buyobjectstring,itemid])
                            .on('result', function(res) {
                              res.on('row', function(row) {
                               console.log('update_relation:关系表INSERT更新的结果是:' + inspect(row));

@@ -64,8 +64,8 @@ c.on('connect', function() {
 // UserName=@UserName
 //
 
-
- c.query('SELECT rowid FROM test')
+var test ="\"\"";
+ c.query('INSERT INTO test SET baka2 =?,username = ?',[test,'""'])
  .on('result', function(res) {
    res.on('row', function(row) {
         for(x in row){
