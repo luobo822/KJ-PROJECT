@@ -202,12 +202,11 @@ socketio.listen(server).on('connection', function (socket) {
 
     socket.on('main_mission_list_server', function (nickname) {
       console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
-      c.query('SELECT i2,'+nickname+' FROM relation')
+      // nickname = ':"'+nickname+'"';
+      c.query('SELECT * FROM relation WHERE '+nickname+' is not null')
        .on('result', function(res) {
          res.on('row', function(row) {
-          // var _itemid =  Number(row['i2']); 
-          // console.log('main_mission_list_server:查询成功' + inspect(row));
-          // console.log('main_mission_list_server:row'+inspect(row));
+          console.log('ceshi'+inspect(row));
           select_itemdata(row);
          })
          .on('error', function(err) {
@@ -224,32 +223,9 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
-    socket.on('main_mission_everycustom_server', function (itemid) {
-      c.query('SELECT * FROM relation WHERE i2 = ?',[itemid])
-       .on('result', function(res) {
-         res.on('row', function(row) {
-         console.log('main_mission_everycustom_server:'+inspect(row));
-         socket.emit('main_mission_everycustom_client',row);
-         })
-         .on('error', function(err) {
-           console.log('main_mission_everycustom_server:发生异常错误:' + inspect(err));
-           // socket.emit('main_mission_list_client',-1);
-         })
-         .on('end', function(info) {
-           console.log('main_mission_everycustom_server:推送完毕');
-         })
-       })
-       .on('end', function() {
-         console.log('main_mission_everycustom_server:结果输出完毕');
-       });
-    });
 
+/////////////////////////function_part////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////////////
-
-//异步函数太电波,我驾驭不了只好放弃...把代码堆到一起太恶心了...怎么办...我要模块化!
-//我要clean code!
 
 
 function select_itemdata (dataobject){
@@ -257,8 +233,8 @@ function select_itemdata (dataobject){
   c.query('SELECT * FROM itemdata WHERE i2 = ?',[dataobject['i2']])
              .on('result', function(res) {
                res.on('row', function(row) {
-                console.log('得到记录'+dataobject['i2']);
-                console.log('得到记录'+inspect(dataobject));
+                console.log('得到itemid记录'+dataobject['i2']);
+                console.log('得到所有用户记录'+inspect(dataobject));
                 socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
                })
                .on('error', function(err) {
@@ -273,25 +249,25 @@ function select_itemdata (dataobject){
              });
 };
 
-function select_custom (itemdata,custom){
-   c.query('SELECT * FROM relation WHERE i2 = ?',[custom['i2']])
-             .on('result', function(res) {
-               res.on('row', function(row) {
-                console.log('得到记录'+custom['i2']);
-                console.log('得到记录'+inspect(custom));
-                socket.emit('main_mission_list_client',row,custom); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
-               })
-               .on('error', function(err) {
-                 console.log('发生异常错误:' + inspect(err));
-               })
-               .on('end', function(info) {
-                 console.log('完毕');
-               })
-             })
-             .on('end', function() {
-               console.log('结果输出完毕');
-             });
-};
+// function select_custom (itemdata,custom){
+//    c.query('SELECT * FROM relation WHERE i2 = ?',[custom['i2']])
+//              .on('result', function(res) {
+//                res.on('row', function(row) {
+//                 console.log('得到记录'+custom['i2']);
+//                 console.log('得到记录'+inspect(custom));
+//                 socket.emit('main_mission_list_client',row,custom); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+//                })
+//                .on('error', function(err) {
+//                  console.log('发生异常错误:' + inspect(err));
+//                })
+//                .on('end', function(info) {
+//                  console.log('完毕');
+//                })
+//              })
+//              .on('end', function() {
+//                console.log('结果输出完毕');
+//              });
+// };
 
 
 
