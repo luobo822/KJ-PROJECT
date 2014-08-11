@@ -183,7 +183,7 @@ socketio.listen(server).on('connection', function (socket) {
                     console.log('main_csv_submit_server:item重复了:'+csvdata_nickname[0][1]);
                     socket.emit('main_csv_submit_client',0);
                 };
-                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{number:1,finish:0,whobuy:\"'+csvdata_nickname[1]+'\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
+                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{bought:0,target:1,finish:0,whobuy:\"'+csvdata_nickname[1]+'\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
             };
            })
            .on('error', function(err) {
@@ -224,6 +224,26 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
+    socket.on('main_mission_everycustom_server', function (itemid) {
+      c.query('SELECT * FROM relation WHERE i2 = ?',[itemid])
+       .on('result', function(res) {
+         res.on('row', function(row) {
+         console.log('main_mission_everycustom_server:'+inspect(row));
+         socket.emit('main_mission_everycustom_client',row);
+         })
+         .on('error', function(err) {
+           console.log('main_mission_everycustom_server:发生异常错误:' + inspect(err));
+           // socket.emit('main_mission_list_client',-1);
+         })
+         .on('end', function(info) {
+           console.log('main_mission_everycustom_server:推送完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_mission_everycustom_server:结果输出完毕');
+       });
+    });
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -238,7 +258,8 @@ function select_itemdata (dataobject){
              .on('result', function(res) {
                res.on('row', function(row) {
                 console.log('得到记录'+dataobject['i2']);
-                socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+                console.log('得到记录'+inspect(dataobject));
+                socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
                })
                .on('error', function(err) {
                  console.log('发生异常错误:' + inspect(err));
@@ -250,7 +271,30 @@ function select_itemdata (dataobject){
              .on('end', function() {
                console.log('结果输出完毕');
              });
-}
+};
+
+function select_custom (itemdata,custom){
+   c.query('SELECT * FROM relation WHERE i2 = ?',[custom['i2']])
+             .on('result', function(res) {
+               res.on('row', function(row) {
+                console.log('得到记录'+custom['i2']);
+                console.log('得到记录'+inspect(custom));
+                socket.emit('main_mission_list_client',row,custom); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+               })
+               .on('error', function(err) {
+                 console.log('发生异常错误:' + inspect(err));
+               })
+               .on('end', function(info) {
+                 console.log('完毕');
+               })
+             })
+             .on('end', function() {
+               console.log('结果输出完毕');
+             });
+};
+
+
+
 
 
 function insert_itemdata(csvdata){
@@ -277,7 +321,7 @@ c.query('INSERT INTO itemdata SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?
 };
 
 
-function update_relation(nickname,itemid,buyobjectstring){ //nickname昵称对应宝物的所有者,itemid宝物唯一识别码,buyobjectstring是字符串形式的对象{usertoby:buynumber}
+function update_relation(nickname,itemid,buyobjectstring){ //nickname昵称对应宝物的所有者,itemid宝物唯一识别码,buyobjectstring是字符串形式的对象
 
 c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?',[itemid]) //检查关系表,在没有同样itemid的时候输出1
          .on('result', function(res) {
