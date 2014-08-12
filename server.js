@@ -183,7 +183,7 @@ socketio.listen(server).on('connection', function (socket) {
                     console.log('main_csv_submit_server:item重复了:'+csvdata_nickname[0][1]);
                     socket.emit('main_csv_submit_client',0);
                 };
-                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{bought:0,target:1,finish:0,whobuy:\"'+csvdata_nickname[1]+'\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
+                update_relation(csvdata_nickname[1],csvdata_nickname[0][1],'{\"bought\":0,\"target\":1,\"finish\":0,\"whobuy\":\"'+csvdata_nickname[1]+'\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
             };
            })
            .on('error', function(err) {
@@ -206,12 +206,10 @@ socketio.listen(server).on('connection', function (socket) {
       c.query('SELECT * FROM relation WHERE '+nickname+' is not null')
        .on('result', function(res) {
          res.on('row', function(row) {
-          console.log('ceshi'+inspect(row));
           select_itemdata(row);
          })
          .on('error', function(err) {
            console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-           // socket.emit('main_mission_list_client',-1);
          })
          .on('end', function(info) {
            console.log('main_mission_list_server:推送完毕');
@@ -223,8 +221,44 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
+    socket.on('main_edit_data_sever',function(editdata,editprice,nickname,itemid){
+       console.log('main_edit_data_sever:收到关系表编辑请求,请求的发送用户是'+nickname);
+      c.query('UPDATE relation SET '+nickname+'= ? WHERE i2 = ?',[editdata,itemid])
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          console.log('main_edit_data_sever:关系表编辑的结果是'+inspect(row));
+          c.query('UPDATE itemdata SET i27 = ? WHERE i2 = ?',[editprice,itemid])
+                 .on('result', function(res) {
+                   res.on('row', function(row) {
+                    console.log('编辑价格完毕'+editprice);
+                    socket.emit('main_edit_data_client',1);
+                   })
+                   .on('error', function(err) {
+                     console.log('main_edit_data_sever:编辑价格时发生异常错误:' + inspect(err));
+                     socket.emit('main_edit_data_client',-1);
+                   })
+                   .on('end', function(info) {
+                     console.log('main_edit_data_sever:价格编辑完毕');
+                   })
+                 })
+                 .on('end', function() {
+                   console.log('main_edit_data_sever:价格编辑结果输出完毕');
+                 });
+         })
+         .on('error', function(err) {
+           console.log('main_edit_data_sever:关系表编辑过程中发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('main_edit_data_sever:关系表编辑结果输出完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_edit_data_sever:关系表和价格编辑结果输出完毕');
+       });
+    });
 
-/////////////////////////function_part////////////////////////////////////
+
+/////////////////////////function_part//////////////////////////
 
 
 
