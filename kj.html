@@ -296,41 +296,51 @@
                   };
                 });
 
+//输出结算结果        
                 socket.on("main_calc_client", function(iteminfo,otherinfo){
                   var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
                   var names = new Array();
-                  for (var x in otherinfo) {
-                    if (x != "i2" && x != "rowid" && other[x]) { //有意义的用户名
-                       names.push(x);
-                       pureobj[x]
-                       console.log("这次进了names数组的是"+x);
+                  var pureobj_everyinfo = new Object();
 
+                  for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
+                    if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
+                       pureobj_everyinfo[x] = eval('('+otherinfo[x]+')');
+                        if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) { 
+                          if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) { 
+                          console.log("用户"+x+"让自机买的已完成的委托"+iteminfo['i2']);
+                          //进income,确认价格和对方的入手数量
+                          }else if (pureobj_myinfo['whobuy'] == x && pureobj_everyinfo[x]['whobuy'] == x) {
+                          console.log("自机让用户"+x+"买的已完成的委托"+iteminfo['i2']);
+                          //进outcome,确认价格和自己的入手数量
+                          };
+                        };                        
                     };
                   };
 
-                  if (pureobj_myinfo['finish'] == 1) {
-                    if () {
+                  if (pureobj_myinfo['whobuy'] == localStorage.nickname) {
+                     console.log("自机购入的物品,与其他人无关:"+iteminfo['i2']);
+                     //进spend,确认价格和自己的目标数量
+                  };
 
-                    };
+                  // if (pureobj_myinfo['finish'] == 1) {
 
-                    $("#calc_result_spend").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
-                      +iteminfo['i14'] //标题自动变大
-                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
-                      +'<p>作者:'+iteminfo['i13']+'</p>'
-                      +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
-                      +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
-                      +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
-                      +'<p>价格(円):'+iteminfo['i27']+'</p>'
-                      +'</a></li>');
+                  //   $("#calc_result_spend").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
+                  //     +iteminfo['i14'] //标题自动变大
+                  //     +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                  //     +'<p>作者:'+iteminfo['i13']+'</p>'
+                  //     +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                  //     +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                  //     +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
+                  //     +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                  //     +'</a></li>');
 
-                      $("#finished").listview("refresh");
-                      $("#finished_count").text(Number($("#finished_count").text())+1);
-                      window.op_details[otherinfo['i2']] = iteminfo;
-                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
-//输出结算结果        
+                  //     $("#finished").listview("refresh");
+                  //     $("#finished_count").text(Number($("#finished_count").text())+1);
+                  //     window.op_details[otherinfo['i2']] = iteminfo;
+                  //     window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
                       
-                      console.log(window.op_details.now_iscalc);
-                  };
+                  //     console.log(window.op_details.now_iscalc);
+                  // };
                       
 
                 });
