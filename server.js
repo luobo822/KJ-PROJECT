@@ -221,39 +221,41 @@ socketio.listen(server).on('connection', function (socket) {
       
     }); //socket.on('main_mission_list_server') ending 
 
-    socket.on('main_edit_data_sever',function(editdata,editprice,nickname,itemid){
-       console.log('main_edit_data_sever:收到关系表编辑请求,请求的发送用户是'+nickname);
+    socket.on('main_edit_data_server', function (editdata,editprice,nickname,itemid){
+     console.log('main_edit_data_server:收到关系表编辑请求,请求的发送用户是'+nickname);
       c.query('UPDATE relation SET '+nickname+'= ? WHERE i2 = ?',[editdata,itemid])
        .on('result', function(res) {
          res.on('row', function(row) {
-          console.log('main_edit_data_sever:关系表编辑的结果是'+inspect(row));
-          c.query('UPDATE itemdata SET i27 = ? WHERE i2 = ?',[editprice,itemid])
-                 .on('result', function(res) {
-                   res.on('row', function(row) {
-                    console.log('编辑价格完毕'+editprice);
-                    socket.emit('main_edit_data_client',1);
-                   })
-                   .on('error', function(err) {
-                     console.log('main_edit_data_sever:编辑价格时发生异常错误:' + inspect(err));
-                     socket.emit('main_edit_data_client',-1);
-                   })
-                   .on('end', function(info) {
-                     console.log('main_edit_data_sever:价格编辑完毕');
-                   })
-                 })
-                 .on('end', function() {
-                   console.log('main_edit_data_sever:价格编辑结果输出完毕');
-                 });
+          console.log('main_edit_data_server:关系表编辑的结果是'+inspect(row));
+          
          })
          .on('error', function(err) {
-           console.log('main_edit_data_sever:关系表编辑过程中发生异常错误:' + inspect(err));
+           console.log('main_edit_data_server:关系表编辑过程中发生异常错误:' + inspect(err));
          })
          .on('end', function(info) {
-           console.log('main_edit_data_sever:关系表编辑结果输出完毕');
+           console.log('main_edit_data_server:关系表编辑结果输出完毕');
          })
        })
        .on('end', function() {
-         console.log('main_edit_data_sever:关系表和价格编辑结果输出完毕');
+         console.log('main_edit_data_server:关系表和价格编辑结果输出完毕');
+       });
+       console.log('main_edit_data_server:收到价格编辑请求,请求的发送用户是'+nickname);
+      c.query('UPDATE itemdata SET i27 = ? WHERE i2 = ?',[editprice,itemid])
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          console.log('编辑价格完毕'+editprice);
+          // socket.emit('main_edit_data_client',1);
+         })
+         .on('error', function(err) {
+           console.log('main_edit_data_server:编辑价格时发生异常错误:' + inspect(err));
+           // socket.emit('main_edit_data_client',-1);
+         })
+         .on('end', function(info) {
+           console.log('main_edit_data_server:价格编辑完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_edit_data_server:价格编辑结果输出完毕');
        });
     });
 
@@ -422,7 +424,7 @@ c.query('SELECT COUNT('+columnname+')=0 FROM '+tablename+' '+condition)
 
 
 
-});
+}); //socket.listen ending
 
 
 //SQL模板
