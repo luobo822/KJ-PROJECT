@@ -1,1 +1,880 @@
-<!DOCTYPE html><html lang="zh-CN">  <head>    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />    <meta name="viewport" content="width=device-width, initial-scale=1.0">     <title></title>    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>    <!-- // <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script> -->    <script src="./html-fileapi-master/js/read-csv.js"></script>    <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" /><style>  ​.ui-page .ui-content .ui-listview .ui-li-desc .ui-li-static .ui-body-inherit li{    white-space:normal;    word-wrap:break-all;}​</style>    <script>    "use strict"      $(function(){//未登录跳转          if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined){            console.log("已登录");          }else{            console.log("跳转到登录界面");            // window.location.assign("http://test.eshicon.org/login.html");          };//定义标记          var is_connected = 0; //是否连接消息服务器          var identification = ""; //用户识别码          var same = 0;          var error = 0;          window.csvdata;          window.csvdata = new Array();          //读取pervious页面的#hash                    function get_anchor(){  //后退的场合              switch (location.hash)            {              case "#tools":                return "#mission";                break;              case "#message":                return "#message";                break;              case "#additem_self":                return "#additem_self"; //不翻页                break;              case "#additem_other":                return "#additem_other";  //不翻页                break;              case "#input_csv":                return "#input_csv"; //不翻页                break;              case "#filter_setting":                return "#tools";                break;              case "#about":                return "#tools";                break;              case "":                return "#mission";                break;              default:      //未在此定义的页面都不翻页                return location.hash;                break;              }; //switch ending          };//手势前进 && 后退            document.addEventListener("touchstart", handleTouchEvent, false);            document.addEventListener("touchend", handleTouchEvent, false);            document.addEventListener("touchmove", handleTouchEvent, false);            var pre = new Array();            var end = new Array();             var delta = new Array();//对于这三个数组,[0]->x,[1]->y            var is_turning = 0;            $("#shift_to_message").on("swipeleft",function(){ //特别为#mission的导航栏添加滑动翻页功能              $.mobile.changePage("#message",{                  transition: "slide",                  reverse: false,                  changeHash: true                });            });            $("#shift_to_mission").on("swiperight",function(){ //特别为#mission的导航栏添加滑动翻页功能              $.mobile.changePage("#mission",{                  transition: "slide",                  reverse: true,                  changeHash: true                });            });            function turnpage(){              if (delta[0]>10 && Math.abs(delta[1]<10)) {                is_turning = 1;                                $.mobile.changePage(get_anchor(),{                  transition: "slide",                  reverse: true,                  changeHash: true                });                              };                          };//function turnpage() ending                          function handleTouchEvent(event) {                if (event.touches.length == 1) {                    switch (event.type) {                        case "touchstart":                            is_turning = 0;                            pre[0] = event.touches[0].clientX;                            pre[1] = event.touches[0].clientY;                            break;                        case "touchend":                            break;                        case "touchmove":                            // event.preventDefault(); //阻止滚动                            end[0] = event.changedTouches[0].clientX;                            end[1] = event.changedTouches[0].clientY;                            if (is_turning == 0) {     //若页面非正在跳转,则计算delta,翻页                              delta[0]= -(pre[0]-end[0]);                              delta[1] = pre[1]-end[1];                              turnpage();                                                }; //if ending                            break;                    }; //switch ening                }; //if ending            }; //handleTouchEvent() ending//读取商品详情/编辑关系,绑定至window作为全局对象              window.op_details = new Object();              window.op_details = {                  "otherinfo":new Object(),                 "custom":new Array(),                 "now_itemid":"",                 "read":function(itemid){                  $("#details_otherinfo").empty();                  $("#details_itemdata").empty();                  window.op_details.custom = [];                  window.op_details.now_itemid = itemid;                  window.op_details.now_itemdata = window.op_details[itemid];                                    $("#details_itemdata").append($("<li></li>").text("详细信息"));                  for (var x in window.op_details[itemid]) {                    $("#details_itemdata").append($("<li></li>").text(x+":"+window.op_details.now_itemdata[x]));//这一步的结果是一个类似itemdata的对象                  };                  $("#details_otherinfo").append($("<li></li>").text("同样购买这件宝物的"));                  for (var x in window.op_details.otherinfo[itemid]) {                    if (x != "rowid" && x != "i2" && x != localStorage.nickname) {                      if (window.op_details.otherinfo[itemid][x]) {                        $("#details_otherinfo").append($("<li></li>").text(x+":"+window.op_details.otherinfo[itemid][x]));                        var pureobj_custominfo = eval('('+window.op_details.otherinfo[itemid][x]+')');                        if (pureobj_custominfo['whobuy'] == localStorage.nickname) {                          window.op_details.custom.push(x);                        };                      };                      $("#edit_whobuy").append($("<option value=\'"+x+"\''></option>").text(x));                    };                  };                  $("#edit_whobuy").append($("<option value=\'"+localStorage.nickname+"\' selected></option>").text(localStorage.nickname+"(你自己)"));                  $("#details").page();                  $("#details_itemdata").listview("refresh");                                    $("#details_otherinfo").listview("refresh");                  $.mobile.changePage("#details");                },                "edit":function(){                  var pureobj_myinfo = eval('('+window.op_details.otherinfo[window.op_details.now_itemid][localStorage.nickname]+')');                  $("#edit_price").val(window.op_details.now_itemdata['i27']);                  $("#edit_target").val(pureobj_myinfo['target']);                  $("#edit_bought").val(pureobj_myinfo['bought']);                  $("#edit_finish").val(pureobj_myinfo['finish']);                  $("#edit_custom").empty();                  if (window.op_details.custom != "") {                    $("#edit_custom").append($("<li></li>").text("委托人有:"+window.op_details.custom));                    $("#edit").page();                    $("#edit_custom").listview("refresh");                  };                  $.mobile.changePage("#edit");                }              };                //信息机能              var socket = io.connect("http://157.7.138.169:2333");              socket.on("connect", function () {                                is_connected = 1;                $("#recived_message").append($("<li><center>连接成功<center></li>"));                                $("#message").page(); //review的时候查一下这个page()是啥用的                $("#recived_message").listview("refresh");                                 $("#connect_flag").empty().append("消息(已连接)");                                  socket.on("main_message_client", function(message) {                  $("#recived_message").append($("<li></li>").text(message));                  $("#unread_message_count").text(Number($("#unread_message_count").text())+1);                }); //socket.on("main_message", function(message) ending                                socket.on("main_csv_submit_client", function(result) {                  if (result == -1) {                    $("#upload_result").apped("<li><center>服务器异变!上传失败!出现未知错误!请联系suica</center></li>");                    error++;                  }else if (result == 0) {                    $("#upload_result").append("<li><center>上传成功,且数据库已有此宝物的数据</center></li>");                    same++;                  }else {                    $("#upload_result").append("<li><center>编号为"+result+"的item上传成功</center></li>");                  };                  $("#upload_result").listview("refresh");                });//任务推送                socket.on("main_mission_list_client", function(iteminfo,otherinfo){                  var pureobj_otherinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型                  // console.log(otherinfo[localStorage.nickname]);                  if (pureobj_otherinfo['finish'] == 0) {                     $("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'                      +iteminfo['i14'] //标题自动变大                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'                      +'<p>作者:'+iteminfo['i13']+'</p>'                      +'<p>摊位:'+iteminfo['i7']+'-'+iteminfo['i8']+'</p>'                      +'<p>备注:'+iteminfo['i17']+'</p>'                      +'<p>指定购买人:'+pureobj_otherinfo['whobuy']+'</p>'                      +'<p>目标数量:'+pureobj_otherinfo['target']+'</p>'                      +'<p>已入手数量:'+pureobj_otherinfo['bought']+'</p>'                      +'<p>价格(円):'+iteminfo['i27']+'</p>'                      +'</a></li>');                      $("#unfinished").listview("refresh");                      $("#unfinished_count").text(Number($("#unfinished_count").text())+1);                      window.op_details[otherinfo['i2']] = iteminfo;                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;                  }else {                    $("#finished").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'                      +iteminfo['i14'] //标题自动变大                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'                      +'<p>作者:'+iteminfo['i13']+'</p>'                      +'<p>摊位:'+iteminfo['i7']+'-'+iteminfo['i8']+'</p>'                      +'<p>备注:'+iteminfo['i17']+'</p>'                      +'<p>指定购买人:'+pureobj_otherinfo['whobuy']+'</p>'                      +'<p>目标数量:'+pureobj_otherinfo['target']+'</p>'                      +'<p>已入手数量:'+pureobj_otherinfo['bought']+'</p>'                      +'<p>价格(円):'+iteminfo['i27']+'</p>'                      +'</a></li>');                      $("#finished").listview("refresh");                      $("#finished_count").text(Number($("#finished_count").text())+1);                      window.op_details[otherinfo['i2']] = iteminfo;                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;//otherinfo数据格式如下//admin: "{bought:0,target:1,finish:0,whobuy:"admin"}"// i2: "103597"// rowid: "416"// test: "{bought:0,target:1,finish:0,whobuy:"test"}"// testkasmdkamkdm: null                  };                });//掉线                socket.on("disconnect", function() {                  $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");                  console.log("与服务器的连接已关闭.刷新页面以重新连接.");                  $("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器                }); //socket.on("disconnect", function() ending              }); //socket.on("connect") ending//消息发送机能              $("#sent_message").keypress(function(event) {                if(event.which == 13) {                  event.preventDefault();                  socket.emit("main_message_server",localStorage.nickname+":"+$("#sent_message").val());                  $("#recived_message").append($("<li style=\"white-space:normal;\"></li>").text(localStorage.nickname+":"+$("#sent_message").val()));                  $("#recived_message").listview("refresh");                  $("#sent_message").val("");                }; //if ending              }); //$("#sent_message").keypress(function(event) ending              $("#button_message_send").click(function(){                socket.emit("main_message_server",localStorage.nickname+":"+$("#sent_message").val());                $("#recived_message").append($("<li style=\"white-space:normal;\"></li>").text(localStorage.nickname+":"+$("#sent_message").val()));                $("#recived_message").listview("refresh");                $("#sent_message").val("");              }); //$("#button_message_send").click(function() ending            // }); //$("#link_start").click() ending//清除消息            $("#button_message_clear").click(function(){              $("#recived_message").empty();              $("#recived_message").append($("<li><center><h1>对话消息</h1></center></li>"));                            if (is_connected) {                $("#recived_message").append($('<li><center>连接成功<center></li>'));              };              //因为点击这个按钮的时候,用户必定在meeage页面,所以也可以不用page()              // $("#message").page();              $("#recived_message").listview("refresh");            }); //$("#button_message_clear").click() ending//重置表单            $("#reset_in_addtiem_self").click(function(){               var is_reset=confirm("你确定要重置这个表单？");                if (is_reset==true){                  form_additem_self.reset();                };            });            $("#reset_in_addtiem_other").click(function(){               var is_reset=confirm("你确定要重置这个表单？");                if (is_reset==true){                  form_additem_other.reset();                };            });//CSV上传            $("#upload_csv").click(function(){              // console.log($("#unfinished_count").text());              if (window.csvdata != "") {                $("#upload_result").empty();                console.log("上传开始");                for (var pointer = 0; pointer < window.csvdata.length; pointer++) {                  socket.emit("main_csv_submit_server",[window.csvdata[pointer],localStorage.nickname]);                };              }else{                alert("请选择文件");              };            });//刷新与数据获取                 $("#refresh_data").click(function(){              $("#unfinished").empty();              $("#finished").empty(); //载入新数据之前清空旧数据              $("#unfinished_count").text(0);              $("#finished_count").text(0);              socket.emit("main_mission_list_server",localStorage.nickname);            });//ROLL            $("#edit_roll").click(function(){              if (op_details.custom.length != 0) {                socket.emit("main_message_server",localStorage.nickname+"发起了\n"+"商品编号\n"+window.op_details.now_itemid+"的ROLL点");                socket.emit("main_message_server","入手数量"+$("#edit_bought").val());                $("#recived_message").append($("<li style=\"white-space:break-word;\"></li>").text(localStorage.nickname+"发起了\n"+"商品编号\n"+window.op_details.now_itemid+"的ROLL点"));                $("#recived_message").append($("<li style=\"white-space:break-word;\"></li>").text("入手数量"+$("#edit_bought").val()));                    while (window.op_details.custom.length != 0){                    console.log("参与ROLL点的用户有:"+window.op_details.custom);                    console.log("开始!ROLL!");                    var temp_custom = window.op_details.custom.shift();                      if (typeof(temp_custom) !=  undefined) {                        var i =0;                        var roll = Math.ceil(Math.sin(Math.random())*100);                        socket.emit("main_message_server","商品编号"+window.op_details.now_itemid+"的\n第"+(i+1)+"次:"+temp_custom+"的ROLL的点数是"+roll);                        $("#recived_message").append($("<li style=\"white-space:break-word;\"></li>").text("商品编号"+window.op_details.now_itemid+"的\n第"+(i+1)+"次:"+temp_custom+"的ROLL的点数是"+roll));                        i++;                      };                    };                socket.emit("main_message_server",localStorage.nickname+"发起的\n"+"商品编号 "+window.op_details.now_itemid+"的ROLL点结束了\n请根据ROLL点结果自行修改数据");                $("#recived_message").append($("<li></li>").text(localStorage.nickname+"发起的\n"+"商品编号"+window.op_details.now_itemid+"的ROLL点结束了\n请根据ROLL点结果自行修改数据"));                alert("此商品ROLL点结束,结果已广播给所有人");                $("#message").page();                $("#recived_message").listview("refresh");              }else{                alert("你没有受到任何委托,所以不能发起ROLL点");              };            });//上传edit后的数据            $("#edit_save").click(function(){              if ($("#edit_whobuy").val() &&　$("#edit_target").val()　&& $("#edit_bought").val() && $("#edit_finish").val() && $("#edit_price").val()){                var edit_data_upload = new Object();                edit_data_upload = {                  "bought":Number($("#edit_bought").val()),                  "target":Number($("#edit_target").val()),                  "finish":Number($("#edit_finish").val()),                  "whobuy":$("#edit_whobuy").val()                };                edit_data_upload = JSON.stringify(edit_data_upload);                console.log("对象字符串化为"+edit_data_upload);                var edit_price_upload = Number($("#edit_price").val());                socket.emit("main_edit_data_server",edit_data_upload,edit_price_upload,localStorage.nickname,window.op_details.now_itemid);                   console.log("已上传完毕:"+edit_data_upload+","+edit_price_upload+","+localStorage.nickname+","+window.op_details.now_itemid);              }else{                alert("请完成所有表单");              };            });//最终结算      }); //$(function) ending                    </script>    </head><body><div data-role="page" id="mission">  <div data-role="header" data-position="fixed" >    <h1>任务</h1>      <div data-role="button" class="ui-btn-right">        <a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>      </div>          <div data-role="button" class="ui-btn-left">        <!-- <a id="" href="#" data-role="button" data-icon="refresh">刷新</a> -->        <input type="button" id="refresh_data" data-icon="refresh" value="刷新">      </div>  </div>  <div data-role="content">    <div data-role="collapsible" data-collapsed="false">      <h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>        <ul id="unfinished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>    </div>    <div data-role="collapsible">      <h4>已完成的任务<span id="finished_count" class="ui-li-count">0</span></h4>        <ul id="finished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在已完成的任务中搜索..."></ul>      </div>    </div>  <div data-role="footer" data-position="fixed">    <div data-role="navbar" id="shift_to_message">      <ul>        <li><a href="#" data-icon="info" class="ui-state-persist">任务</a></li>        <li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade" >消息</a></li>      </ul>    </div>  </div></div><div data-role="page" id="message">  <div data-role="header">    <h1 id="connect_flag">消息</h1>     <div data-role="button" class="ui-btn-left">      <input type="button" id="button_message_clear" value="清空消息" data-role="button" data-icon="alert">    </div>  </div>        <div data-role="content">        <br>    <ul id="recived_message" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索消息记录..." class="messages">      <li class="messages">        <center>          <h1>对话消息</h1>        </center>      </li>    </ul>    <br>    <label for="outgingChatMessage">输入:</label>    <input type="text" id="sent_message">    <input type="button" id="button_message_send" value="发送消息">    <br>      </div>  <div data-role="footer" data-position="fixed">    <div data-role="navbar" id="shift_to_mission">      <ul>        <li><a href="#mission" data-icon="info" data-transition="fade">任务</a></li>        <li><a href="#" data-icon="star" class="ui-state-persist">消息</a></li>      </ul>    </div>  </div></div><div data-role="page" id="tools">	<div data-role="header">	   <h1>工具</h1>	    <a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>      <a href="#login" data-role="button" data-icon="minus">退出当前帐号</a>	</div>	<div data-role="content">      <a href="#filter_setting" data-role="button" data-rel="dialog">过滤设置</a>      <a href="#" data-role="button">战完结算</a>      <a href="#about" data-role="button" data-transition="slide">关于</a>      <br><hr><br>      <!-- <a href="#additem_self" data-role="button" data-transition="slide">为自己登录宝物</a> -->      <!-- <a href="#additem_other" data-role="button" data-transition="slide">为他人登录宝物</a> -->      <a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>      	</div></div><div data-role="page" id="additem_self">  <div data-role="header">    <h1>为自己登录宝物</h1>     <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>    <div data-role="button" class="ui-btn-right">      <input type="button" id="reset_in_addtiem_self" value="重置" data-role="button" data-icon="alert">    </div>  </div>        <div data-role="content">    <form method="get" action="" id="form_additem_self">        <fieldset data-role="fieldcontain">          <label for="days_in_additem_self">宝物何日参展:</label>            <select name="days_in_additem_self" id="days_in_additem_self" data-native-menu="false">             <option value="1">第一天 X曜日</option>             <option value="2">第二天 X曜日</option>             <option value="3">第三天 X曜日</option>            </select>        </fieldset>        <div data-role="fieldcontain">          <label for="name">宝物:</label>          <input type="text" name="text" id="item_self_name" value="" placeholder="宝物的名字">        </div>        <div data-role="fieldcontain">          <label for="name">价格:</label>          <input type="text" name="text" id="item_self_price" value="" placeholder="円/份">        </div>        <div data-role="fieldcontain">          <label for="name">摊位:</label>          <input type="text" name="text" id="item_self_palce" value="" placeholder="宝物的摊位号">        </div>        <div data-role="fieldcontain">          <label for="name">作者:</label>          <input type="text" name="text" id="item_self_author" value="" placeholder="作者的名字">        </div>        <div data-role="fieldcontain">          <label for="name">宝物URL:</label>          <input type="text" name="text" id="item_self_url" value="" placeholder="宝物的URL">        </div>        <div data-role="fieldcontain">          <label for="item_self_copy_number">份数:</label>          <input type="range" name="item_self_copy_number" id="item_self_copy_number" value="1" min="1" max="15">        </div>    </form>  </div>  <div data-role="footer">    <div data-role="navbar">      <ul>        <li><a href="#tools" data-icon="arrow-l" class="ui-btn">提交并返回</a></li>      </ul>    </div>  </div></div> <div data-role="page" id="filter_setting">  <div data-role="header">    <h1>过滤设置</h1>   </div>        <div data-role="content">    <div data-role="controlgroup"> <!-- checked属性 -->       <label for="pull_data">仅从本地读取任务详情</label>       <input type="checkbox" name="pull_data" id="pull_data" />       <label for="pull_other_data">取得别人的任务信息</label>       <input type="checkbox" name="pull_other_data" id="pull_other_data" />    </div>  </div></div></div><div data-role="page" id="additem_other">  <div data-role="header">    <h1>为他人登录宝物</h1>    <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>    <div data-role="button" class="ui-btn-right">      <input type="button" id="reset_in_additem_other" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">    </div>  </div>        <div data-role="content">    <form method="get" action="" id="form_additem_other">        <fieldset data-role="fieldcontain">          <label for="days_in_additem_other">宝物何日参展:</label>            <select name="days_in_additem_other" id="days_in_additem_other" data-native-menu="false">             <option value="1">第一天 X曜日</option>             <option value="2">第二天 X曜日</option>             <option value="3">第三天 X曜日</option>            </select>        </fieldset>        <div data-role="fieldcontain">          <label for="name">宝物名:</label>          <input type="text" name="text" id="item_other_name" value="" placeholder="宝物的名字">        </div>        <div data-role="fieldcontain">          <label for="name">价格:</label>          <input type="text" name="text" id="item_other_price" value="" placeholder="円/份">        </div>        <div data-role="fieldcontain">          <label for="name">摊位:</label>          <input type="text" name="text" id="item_other_place" value="" placeholder="宝物的摊位号">        </div>                <div data-role="fieldcontain">          <label for="name">作者:</label>          <input type="text" name="text" id="item_other_author" value="" placeholder="作者的名字">        </div>        <div data-role="fieldcontain">          <label for="name">宝物URL:</label>          <input type="text" name="text" id="item_other_url" value="" placeholder="宝物的URL">        </div>        <!-- <form method="post" action=""> -->          <fieldset data-role="fieldcontain">          <label for="user">代购此宝物的用户:</label>            <select name="user" id="user" data-native-menu="false">             <option value="mon">lala</option>             <option value="tue">suica</option>             <option value="wed">baka</option>             <option value="thu">9</option>             <!-- 这里作为动态页面进行更新 -->            </select>          </fieldset>        <!-- </form> -->        <!-- <form method="post" action="#"> -->            <div data-role="fieldcontain">              <label for="points">份数:</label>              <input type="range" name="points" id="item_other_copy_num" value="1" min="1" max="30">            </div>        <!-- </form> -->  </div>  <div data-role="footer">    <div data-role="navbar">      <ul>        <li><a href="#tools" data-icon="arrow-l" class="ui-btn">提交并返回</a></li>      </ul>    </div>  </div></div><div data-role="page" id="input_csv">  <div data-role="header">    <h1>导入CSV</h1>    <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>    <div data-role="button" class="ui-btn-right">      <input type="button" id="upload_csv" value="上传" data-icon="arrow-u">    </div>  </div>        <div data-role="content">      <form id="form_upload_csv">        <label for="csvFileInput">           <strong>CSV File:</strong>        </label>        <input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">      </form>      <center>～上传之前请删除color和header等无用字段,删除末尾空行.以记事本打开，另存为UTF-8编码上传，否则乱码～</center>      <center>～建议使用chrome for windows～</center><br>      <ul id="upload_result" data-role="listview" data-inset="true"></ul>  </div></div><div data-role="page" id="details">  <div data-role="header">    <h1>宝物详情</h1>     <a href="#mission" data-role="button" data-icon="back" data-transition="fade">返回</a>  </div>        <div data-role="content">    <ul id="details_itemdata" data-role="listview" data-inset="true"></ul>    <ul id="details_otherinfo" data-role="listview" data-inset="true"></ul>  </div>  <div data-role="footer" data-position="fixed">    <div data-role="navbar">      <ul>        <li><a onclick="window.op_details.edit()" id="turn_to_edit" data-icon="info" class="ui-btn">编辑</a></li>      </ul>    </div>  </div></div><div data-role="page" id="edit">  <div data-role="header">    <h1>编辑</h1>     <a href="#details" data-role="button" data-icon="back">返回</a>    <div data-role="button" class="ui-btn-right">      <input type="button" id="edit_save" value="保存" data-role="button" data-icon="alert" class="ui-btn-right">    </div>  </div>        <div data-role="content">    <ul data-role="listview" data-inset="true" ><li data-role="listview" data-inset="true"><div id="wrap" style="overflow:scroll;work-break;break-all;">正常文字的换行(亚洲文字和非亚洲文字)元素拥有默认的white-space:normal,当定义</div></li>    </ul>    <div data-role="fieldcontain">          <label for="edit_price">价格(单位:円)</label>          <input type="text" name="edit_price" id="edit_price" value="" placeholder="目前价格尚未输入,注意不要恶意修改价格">    </div>    <div data-role="fieldcontain">         <label for="edit_whobuy">购入人/代购人:</label>         <select name="edit_whobuy" id="edit_whobuy" data-native-menu="false"></select>    </div>    <div data-role="fieldcontain">          <label for="edit_target">自身目标数:</label>          <input type="text" name="edit_target" id="edit_target" value="">    </div>    <div data-role="fieldcontain">          <label for="edit_bought">共计入手数:</label>          <input type="text" name="edit_bought" id="edit_bought" value="">    </div>    <div data-role="fieldcontain">          <label for="edit_finish">完成情况:</label>          <input type="text" name="edit_finish" id="edit_finish" value="">    </div>    <input type="button" id="edit_roll" value="ROLL">    <ul id="edit_custom" data-role="listview" data-inset="true" ></ul>  </form>    </div></div><div data-role="page" id="clac_setting">  <div data-role="header">    <h1>结算</h1>   <a href="#tools" data-role="button" data-icon="back">返回</a>  </div>        <div data-role="content">    <div data-role="fieldcontain">     <label for="calc_when">结算哪天的?</label>       <select name="calc_when" id="calc_when" data-native-menu="false">         <option value="金">8.15 (金)</option>         <option value="土">8.16 (土)</option>         <option value="日">8.17 (日)</option>         <option value="233">全部天数</option>       </select>    </div>    <input type="button" id="calc_start" value="开始结算!">  </div>  </div><div data-role="page" id="calc_result">  <div data-role="header">    <h1>结算结果</h1>   </div>        <div data-role="content">    <ul  </div>  </div><div data-role="page" id="about">  <div data-role="header">   <h1>关于</h1>    <div data-role="button" class="ui-btn-left">      <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>    </div>    </div>  <div data-role="content">   <center> ver 0.62</center>   <br><hr><br><br><br>   <center>code by</center>   <center> suica && lala</center>  </div></div></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+    <title></title>
+
+    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
+    <!-- // <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script> -->
+    <script src="./html-fileapi-master/js/read-csv.js"></script>
+
+    <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+
+    <style>
+      ​.scroll{ //待解决的问题
+        overflow:auto;
+      }
+    </style>
+
+    <script>
+
+    "use strict"
+
+      $(function(){
+
+//未登录跳转
+          if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined){
+            console.log("已登录");
+          }else{
+            console.log("跳转到登录界面");
+            // window.location.assign("http://test.eshicon.org/login.html");
+          };
+
+//定义标记
+          var is_connected = 0; //是否连接消息服务器
+          var identification = ""; //用户识别码
+          var same = 0;
+          var error = 0;
+          window.csvdata;
+          window.csvdata = new Array();
+
+          
+//读取pervious页面的#hash
+          
+          function get_anchor(){  //后退的场合
+
+              switch (location.hash)
+            {
+              case "#tools":
+                return "#mission";
+                break;
+
+              case "#message":
+                return "#message";
+                break;
+
+              case "#additem_self":
+                return "#additem_self"; //不翻页
+                break;
+
+              case "#additem_other":
+                return "#additem_other";  //不翻页
+                break;
+
+              case "#input_csv":
+                return "#input_csv"; //不翻页
+                break;
+
+              case "#filter_setting":
+                return "#tools";
+                break;
+
+              case "#about":
+                return "#tools";
+                break;
+
+              case "":
+                return "#mission";
+                break;
+
+              default:      //未在此定义的页面都不翻页
+                return location.hash;
+                break;  
+            }; //switch ending
+
+          };
+
+//手势前进 && 后退
+
+            document.addEventListener("touchstart", handleTouchEvent, false);
+            document.addEventListener("touchend", handleTouchEvent, false);
+            document.addEventListener("touchmove", handleTouchEvent, false);
+
+            var pre = new Array();
+            var end = new Array(); 
+            var delta = new Array();//对于这三个数组,[0]->x,[1]->y
+            var is_turning = 0;
+
+
+            $("#shift_to_message").on("swipeleft",function(){ //特别为#mission的导航栏添加滑动翻页功能
+              $.mobile.changePage("#message",{
+                  transition: "slide",
+                  reverse: false,
+                  changeHash: true
+                });
+            });
+
+            $("#shift_to_mission").on("swiperight",function(){ //特别为#mission的导航栏添加滑动翻页功能
+              $.mobile.changePage("#mission",{
+                  transition: "slide",
+                  reverse: true,
+                  changeHash: true
+                });
+            });
+
+            function turnpage(){
+
+              if (delta[0]>10 && Math.abs(delta[1]<10)) {
+                is_turning = 1;
+                
+                $.mobile.changePage(get_anchor(),{
+                  transition: "slide",
+                  reverse: true,
+                  changeHash: true
+                });
+                
+              };
+              
+            };//function turnpage() ending
+              
+            function handleTouchEvent(event) {
+
+                if (event.touches.length == 1) {
+
+                    switch (event.type) {
+                        case "touchstart":
+                            is_turning = 0;
+                            pre[0] = event.touches[0].clientX;
+                            pre[1] = event.touches[0].clientY;
+                            break;
+                        case "touchend":
+                            break;
+                        case "touchmove":
+                            // event.preventDefault(); //阻止滚动
+                            end[0] = event.changedTouches[0].clientX;
+                            end[1] = event.changedTouches[0].clientY;
+                            if (is_turning == 0) {     //若页面非正在跳转,则计算delta,翻页
+                              delta[0]= -(pre[0]-end[0]);
+                              delta[1] = pre[1]-end[1];
+                              turnpage();                    
+                            }; //if ending
+                            break;
+                    }; //switch ening
+                }; //if ending
+            }; //handleTouchEvent() ending
+
+//读取商品详情/编辑关系,绑定至window作为全局对象
+
+              window.op_details = new Object();
+              window.op_details = { 
+
+                 "otherinfo":new Object(),
+
+                 "custom":new Array(),
+
+                 "now_itemid":"",
+
+                 "now_iscalc":0,
+
+                 "read":function(itemid){
+
+                  $("#details_otherinfo").empty();
+                  $("#details_itemdata").empty();
+                  window.op_details.custom = [];
+
+                  window.op_details.now_itemid = itemid;
+                  window.op_details.now_itemdata = window.op_details[itemid];
+                  
+                  $("#details_itemdata").append($("<li></li>").text("详细信息"));
+                  for (var x in window.op_details[itemid]) {
+                    $("#details_itemdata").append($("<li></li>").text(x+":"+window.op_details.now_itemdata[x]));//这一步的结果是一个类似itemdata的对象
+                  };
+                  $("#details_otherinfo").append($("<li></li>").text("同样购买这件宝物的"));
+                  for (var x in window.op_details.otherinfo[itemid]) {
+                    if (x != "rowid" && x != "i2" && x != localStorage.nickname) {
+                      if (window.op_details.otherinfo[itemid][x]) {
+                        $("#details_otherinfo").append($("<li></li>").text(x+":"+window.op_details.otherinfo[itemid][x]));
+                        var pureobj_custominfo = eval('('+window.op_details.otherinfo[itemid][x]+')');
+                        if (pureobj_custominfo['whobuy'] == localStorage.nickname) {
+                          window.op_details.custom.push(x);
+                        };
+                      };
+                      $("#edit_whobuy").append($("<option value=\'"+x+"\''></option>").text(x));
+                    };
+                  };
+                  $("#edit_whobuy").append($("<option value=\'"+localStorage.nickname+"\' selected></option>").text(localStorage.nickname+"(你自己)"));
+
+                  $("#details").page();
+                  $("#details_itemdata").listview("refresh");                  
+                  $("#details_otherinfo").listview("refresh");
+
+                  $.mobile.changePage("#details");
+                },
+                "edit":function(){
+                  var pureobj_myinfo = eval('('+window.op_details.otherinfo[window.op_details.now_itemid][localStorage.nickname]+')');
+                  $("#edit_price").val(window.op_details.now_itemdata['i27']);
+                  $("#edit_target").val(pureobj_myinfo['target']);
+                  $("#edit_bought").val(pureobj_myinfo['bought']);
+                  $("#edit_finish").val(pureobj_myinfo['finish']);
+
+                  $("#edit_custom").empty();
+                  if (window.op_details.custom != "") {
+                    $("#edit_custom").append($("<li></li>").text("委托人有:"+window.op_details.custom));
+                    $("#edit").page();
+                    $("#edit_custom").listview("refresh");
+                  };
+
+                  $.mobile.changePage("#edit");
+                }
+
+              };
+                
+
+//信息机能
+
+              var socket = io.connect("http://157.7.138.169:2333");
+
+              socket.on("connect", function () {
+                
+                is_connected = 1;
+
+                $("#recived_message").append($("<li><center>连接成功<center></li>"));
+                
+                $("#message").page(); //review的时候查一下这个page()是啥用的
+                $("#recived_message").listview("refresh"); 
+                
+                $("#connect_flag").empty().append("消息(已连接)");
+                  
+                socket.on("main_message_client", function(message) {
+                  $("#recived_message").append($("<li></li>").text(message));
+                  $("#unread_message_count").text(Number($("#unread_message_count").text())+1);
+                }); //socket.on("main_message", function(message) ending
+                
+                socket.on("main_csv_submit_client", function(result) {
+                  if (result == -1) {
+                    $("#upload_result").apped("<li><center>服务器异变!上传失败!出现未知错误!请联系suica</center></li>");
+                    error++;
+                  }else if (result == 0) {
+                    $("#upload_result").append("<li><center>上传成功,且数据库已有此宝物的数据</center></li>");
+                    same++;
+                  }else {
+                    $("#upload_result").append("<li><center>编号为"+result+"的item上传成功</center></li>");
+                  };
+                  $("#upload_result").listview("refresh");
+                });
+//任务推送
+                socket.on("main_mission_list_client", function(iteminfo,otherinfo){
+                  var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
+                  if (pureobj_myinfo['finish'] == 0) {
+                     $("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
+                      +iteminfo['i14'] //标题自动变大
+                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                      +'<p>作者:'+iteminfo['i13']+'</p>'
+                      +'<p>摊位:'+iteminfo['i7']+'-'+iteminfo['i8']+'</p>'
+                      +'<p>备注:'+iteminfo['i17']+'</p>'
+                      +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                      +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                      +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
+                      +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                      +'</a></li>');
+
+                      $("#unfinished").listview("refresh");
+                      $("#unfinished_count").text(Number($("#unfinished_count").text())+1);
+                      window.op_details[otherinfo['i2']] = iteminfo;
+                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
+                  }else {
+                    $("#finished").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
+                      +iteminfo['i14'] //标题自动变大
+                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                      +'<p>作者:'+iteminfo['i13']+'</p>'
+                      +'<p>摊位:'+iteminfo['i7']+'-'+iteminfo['i8']+'</p>'
+                      +'<p>备注:'+iteminfo['i17']+'</p>'
+                      +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                      +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                      +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
+                      +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                      +'</a></li>');
+
+                      $("#finished").listview("refresh");
+                      $("#finished_count").text(Number($("#finished_count").text())+1);
+                      window.op_details[otherinfo['i2']] = iteminfo;
+                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
+                  };
+                });
+
+                socket.on("main_calc_client", function(iteminfo,otherinfo){
+                  var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
+                  var names = new Array();
+                  for (var x in otherinfo) {
+                    if (x != "i2" && x != "rowid" && other[x]) { //有意义的用户名
+                       names.push(x);
+                       pureobj[x]
+                       console.log("这次进了names数组的是"+x);
+
+                    };
+                  };
+
+                  if (pureobj_myinfo['finish'] == 1) {
+                    if () {
+
+                    };
+
+                    $("#calc_result_spend").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
+                      +iteminfo['i14'] //标题自动变大
+                      +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                      +'<p>作者:'+iteminfo['i13']+'</p>'
+                      +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                      +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                      +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
+                      +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                      +'</a></li>');
+
+                      $("#finished").listview("refresh");
+                      $("#finished_count").text(Number($("#finished_count").text())+1);
+                      window.op_details[otherinfo['i2']] = iteminfo;
+                      window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
+//输出结算结果        
+                      
+                      console.log(window.op_details.now_iscalc);
+                  };
+                      
+
+                });
+
+//掉线
+                socket.on("disconnect", function() {
+                  $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
+                  console.log("与服务器的连接已关闭.刷新页面以重新连接.");
+                  $("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器
+                }); //socket.on("disconnect", function() ending
+
+              }); //socket.on("connect") ending
+
+
+//消息发送机能
+
+              $("#sent_message").keypress(function(event) {
+                if(event.which == 13) {
+                  event.preventDefault();
+                  socket.emit("main_message_server",localStorage.nickname+":"+$("#sent_message").val());
+                  $("#recived_message").append($("<li style=\"white-space:normal;\"></li>").text(localStorage.nickname+":"+$("#sent_message").val()));
+                  $("#recived_message").listview("refresh");
+                  $("#sent_message").val("");
+                }; //if ending
+              }); //$("#sent_message").keypress(function(event) ending
+
+              $("#button_message_send").click(function(){
+                socket.emit("main_message_server",localStorage.nickname+":"+$("#sent_message").val());
+                $("#recived_message").append($("<li style=\"white-space:normal;\"></li>").text(localStorage.nickname+":"+$("#sent_message").val()));
+                $("#recived_message").listview("refresh");
+                $("#sent_message").val("");
+              }); //$("#button_message_send").click(function() ending
+
+            // }); //$("#link_start").click() ending
+
+//清除消息
+
+            $("#button_message_clear").click(function(){
+              $("#recived_message").empty();
+              $("#recived_message").append($("<li><center><h1>对话消息</h1></center></li>"));
+              
+              if (is_connected) {
+                $("#recived_message").append($('<li><center>连接成功<center></li>'));
+              };
+              //因为点击这个按钮的时候,用户必定在meeage页面,所以也可以不用page()
+              // $("#message").page();
+              $("#recived_message").listview("refresh");
+
+            }); //$("#button_message_clear").click() ending
+
+//重置表单
+
+            $("#reset_in_addtiem_self").click(function(){
+               var is_reset=confirm("你确定要重置这个表单？");
+                if (is_reset==true){
+                  form_additem_self.reset();
+                };
+            });
+
+            $("#reset_in_addtiem_other").click(function(){
+               var is_reset=confirm("你确定要重置这个表单？");
+                if (is_reset==true){
+                  form_additem_other.reset();
+                };
+            });
+
+
+//CSV上传
+            $("#upload_csv").click(function(){
+              // console.log($("#unfinished_count").text());
+              if (window.csvdata != "") {
+                $("#upload_result").empty();
+                console.log("上传开始");
+                for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
+                  socket.emit("main_csv_submit_server",[window.csvdata[pointer],localStorage.nickname]);
+                };
+              }else{
+                alert("请选择文件");
+              };
+            });
+
+//刷新与数据获取     
+
+            $("#refresh_data").click(function(){
+              $("#unfinished").empty();
+              $("#finished").empty(); //载入新数据之前清空旧数据
+              $("#unfinished_count").text(0);
+              $("#finished_count").text(0);
+              socket.emit("main_mission_list_server",localStorage.nickname);
+            });
+
+//ROLL
+            $("#edit_roll").click(function(){
+              if (op_details.custom.length != 0) {
+                socket.emit("main_message_server",localStorage.nickname+"发起了\n"+"商品编号\n"+window.op_details.now_itemid+"的ROLL点");
+                socket.emit("main_message_server","入手数量"+$("#edit_bought").val());
+                $("#recived_message").append($("<li></li>").text(localStorage.nickname+"发起了\n"+"商品编号\n"+window.op_details.now_itemid+"的ROLL点"));
+                $("#recived_message").append($("<li style=\"white-space:break-word;\"></li>").text("入手数量"+$("#edit_bought").val()));
+                    while (window.op_details.custom.length != 0){
+                    console.log("参与ROLL点的用户有:"+window.op_details.custom);
+                    console.log("开始!ROLL!");
+                    var temp_custom = window.op_details.custom.shift();
+                      if (typeof(temp_custom) !=  undefined) {
+                        var i =0;
+                        var roll = Math.ceil(Math.sin(Math.random())*100);
+                        socket.emit("main_message_server","商品编号"+window.op_details.now_itemid+"的\n第"+(i+1)+"次:"+temp_custom+"的ROLL的点数是"+roll);
+                        $("#recived_message").append($("<li style=\"white-space:break-word;\"></li>").text("商品编号"+window.op_details.now_itemid+"的\n第"+(i+1)+"次:"+temp_custom+"的ROLL的点数是"+roll));
+                        i++;
+                      };
+                    };
+                socket.emit("main_message_server",localStorage.nickname+"发起的\n"+"商品编号 "+window.op_details.now_itemid+"的ROLL点结束了\n请根据ROLL点结果自行修改数据");
+                $("#recived_message").append($("<li></li>").text(localStorage.nickname+"发起的\n"+"商品编号"+window.op_details.now_itemid+"的ROLL点结束了\n请根据ROLL点结果自行修改数据"));
+                alert("此商品ROLL点结束,结果已广播给所有人");
+                $("#message").page();
+                $("#recived_message").listview("refresh");
+              }else{
+                alert("你没有受到任何委托,所以不能发起ROLL点");
+              };
+            });
+
+//上传edit后的数据
+            $("#edit_save").click(function(){
+              if ($("#edit_whobuy").val() &&　$("#edit_target").val()　&& $("#edit_bought").val() && $("#edit_finish").val() && $("#edit_price").val()){
+                var edit_data_upload = new Object();
+                edit_data_upload = {
+                  "bought":Number($("#edit_bought").val()),
+                  "target":Number($("#edit_target").val()),
+                  "finish":Number($("#edit_finish").val()),
+                  "whobuy":$("#edit_whobuy").val()
+                };
+                edit_data_upload = JSON.stringify(edit_data_upload);
+                console.log("对象字符串化为"+edit_data_upload);
+                var edit_price_upload = Number($("#edit_price").val());
+                socket.emit("main_edit_data_server",edit_data_upload,edit_price_upload,localStorage.nickname,window.op_details.now_itemid);   
+                console.log("已上传完毕:"+edit_data_upload+","+edit_price_upload+","+localStorage.nickname+","+window.op_details.now_itemid);
+              }else{
+                alert("请完成所有表单");
+              };
+            });
+
+//最终结算
+            $("#calc_start").click(function(){
+              window.op_details.temp_day = $("#calc_when").val(); //暂时把结算的时间扔进去
+              window.op_details.now_iscalc = 1; //开始结算flag立起
+              // $("#refresh_data").trigger("click");
+              socket.emit("main_calc_server",localStorage.nickname);
+            });
+
+      }); //$(function) ending
+              
+      </script>
+
+    </head>
+
+<body>
+
+<div data-role="page" id="mission">
+  <div data-role="header" data-position="fixed" >
+    <h1>任务</h1>
+      <div data-role="button" class="ui-btn-right">
+        <a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
+      </div>
+    
+      <div data-role="button" class="ui-btn-left">
+        <!-- <a id="" href="#" data-role="button" data-icon="refresh">刷新</a> -->
+        <input type="button" id="refresh_data" data-icon="refresh" value="刷新">
+      </div>
+  </div>
+
+  <div data-role="content">
+
+    <div data-role="collapsible" data-collapsed="false">
+      <h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>
+        <ul id="unfinished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>
+    </div>
+
+    <div data-role="collapsible">
+      <h4>已完成的任务<span id="finished_count" class="ui-li-count">0</span></h4>
+        <ul id="finished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在已完成的任务中搜索..."></ul>
+      </div>
+
+    </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="navbar" id="shift_to_message">
+      <ul>
+        <li><a href="#" data-icon="info" class="ui-state-persist">任务</a></li>
+        <li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade" >消息</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div data-role="page" id="message">
+  <div data-role="header">
+    <h1 id="connect_flag">消息</h1> 
+    <div data-role="button" class="ui-btn-left">
+      <input type="button" id="button_message_clear" value="清空消息" data-role="button" data-icon="alert">
+    </div>
+  </div>
+      
+  <div data-role="content">
+    
+    <br>
+    <ul id="recived_message" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索消息记录...">
+      <li>
+        <center>
+          <h1>对话消息</h1>
+        </center>
+      </li>
+    </ul>
+    <br>
+    <label for="outgingChatMessage">输入:</label>
+    <input type="text" id="sent_message">
+    <input type="button" id="button_message_send" value="发送消息">
+    <br>
+    
+
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="navbar" id="shift_to_mission">
+      <ul>
+        <li><a href="#mission" data-icon="info" data-transition="fade">任务</a></li>
+        <li><a href="#" data-icon="star" class="ui-state-persist">消息</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div data-role="page" id="tools">
+	<div data-role="header">
+	   <h1>工具</h1>
+	    <a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+      <a href="#login" data-role="button" data-icon="minus">退出当前帐号</a>
+	</div>
+
+	<div data-role="content">
+      <!-- <a href="#filter_setting" data-role="button" data-rel="dialog">过滤设置</a> -->
+      <a href="#calc_setting" data-role="button">结算</a>
+      <a href="#about" data-role="button" data-transition="slide">关于</a>
+      <br><hr><br>
+      <!-- <a href="#additem_self" data-role="button" data-transition="slide">为自己登录宝物</a> -->
+      <!-- <a href="#additem_other" data-role="button" data-transition="slide">为他人登录宝物</a> -->
+      <a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>      
+	</div>
+</div>
+
+<div data-role="page" id="additem_self">
+  <div data-role="header">
+    <h1>为自己登录宝物</h1> 
+    <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="reset_in_addtiem_self" value="重置" data-role="button" data-icon="alert">
+    </div>
+  </div>
+      
+  <div data-role="content">
+    <form method="get" action="" id="form_additem_self">
+
+        <fieldset data-role="fieldcontain">
+          <label for="days_in_additem_self">宝物何日参展:</label>
+            <select name="days_in_additem_self" id="days_in_additem_self" data-native-menu="false">
+             <option value="1">第一天 X曜日</option>
+             <option value="2">第二天 X曜日</option>
+             <option value="3">第三天 X曜日</option>
+            </select>
+        </fieldset>
+
+        <div data-role="fieldcontain">
+          <label for="name">宝物:</label>
+          <input type="text" name="text" id="item_self_name" value="" placeholder="宝物的名字">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">价格:</label>
+          <input type="text" name="text" id="item_self_price" value="" placeholder="円/份">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">摊位:</label>
+          <input type="text" name="text" id="item_self_palce" value="" placeholder="宝物的摊位号">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">作者:</label>
+          <input type="text" name="text" id="item_self_author" value="" placeholder="作者的名字">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">宝物URL:</label>
+          <input type="text" name="text" id="item_self_url" value="" placeholder="宝物的URL">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="item_self_copy_number">份数:</label>
+          <input type="range" name="item_self_copy_number" id="item_self_copy_number" value="1" min="1" max="15">
+        </div>
+    </form>
+  </div>
+
+  <div data-role="footer">
+    <div data-role="navbar">
+      <ul>
+        <li><a href="#tools" data-icon="arrow-l" class="ui-btn">提交并返回</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+ 
+<!-- <div data-role="page" id="filter_setting">
+  <div data-role="header">
+    <h1>过滤设置</h1> 
+  </div>
+      
+  <div data-role="content">
+
+    <div data-role="controlgroup">
+       <label for="pull_data">仅从本地读取任务详情</label>
+       <input type="checkbox" name="pull_data" id="pull_data" />
+       <label for="pull_other_data">取得别人的任务信息</label>
+       <input type="checkbox" name="pull_other_data" id="pull_other_data" />
+    </div>
+
+  </div>
+
+</div> -->
+
+<div data-role="page" id="additem_other">
+  <div data-role="header">
+    <h1>为他人登录宝物</h1>
+    <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="reset_in_additem_other" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
+    </div>
+  </div>
+      
+  <div data-role="content">
+    <form method="get" action="" id="form_additem_other">
+
+        <fieldset data-role="fieldcontain">
+          <label for="days_in_additem_other">宝物何日参展:</label>
+            <select name="days_in_additem_other" id="days_in_additem_other" data-native-menu="false">
+             <option value="1">第一天 X曜日</option>
+             <option value="2">第二天 X曜日</option>
+             <option value="3">第三天 X曜日</option>
+            </select>
+        </fieldset>
+
+        <div data-role="fieldcontain">
+          <label for="name">宝物名:</label>
+          <input type="text" name="text" id="item_other_name" value="" placeholder="宝物的名字">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">价格:</label>
+          <input type="text" name="text" id="item_other_price" value="" placeholder="円/份">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">摊位:</label>
+          <input type="text" name="text" id="item_other_place" value="" placeholder="宝物的摊位号">
+        </div>
+        
+        <div data-role="fieldcontain">
+          <label for="name">作者:</label>
+          <input type="text" name="text" id="item_other_author" value="" placeholder="作者的名字">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="name">宝物URL:</label>
+          <input type="text" name="text" id="item_other_url" value="" placeholder="宝物的URL">
+        </div>
+
+        <!-- <form method="post" action=""> -->
+          <fieldset data-role="fieldcontain">
+          <label for="user">代购此宝物的用户:</label>
+            <select name="user" id="user" data-native-menu="false">
+             <option value="mon">lala</option>
+             <option value="tue">suica</option>
+             <option value="wed">baka</option>
+             <option value="thu">9</option>
+             <!-- 这里作为动态页面进行更新 -->
+            </select>
+          </fieldset>
+        <!-- </form> -->
+        <!-- <form method="post" action="#"> -->
+            <div data-role="fieldcontain">
+              <label for="points">份数:</label>
+              <input type="range" name="points" id="item_other_copy_num" value="1" min="1" max="30">
+            </div>
+        <!-- </form> -->
+  </div>
+
+  <div data-role="footer">
+    <div data-role="navbar">
+      <ul>
+        <li><a href="#tools" data-icon="arrow-l" class="ui-btn">提交并返回</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div data-role="page" id="input_csv">
+  <div data-role="header">
+    <h1>导入CSV</h1>
+    <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="upload_csv" value="上传" data-icon="arrow-u">
+    </div>
+  </div>
+      
+  <div data-role="content">
+
+      <form id="form_upload_csv">
+        <label for="csvFileInput"> 
+          <strong>CSV File:</strong>
+        </label>
+        <input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
+      </form>
+      <center>～上传之前请删除color和header等无用字段,删除末尾空行.以记事本打开，另存为UTF-8编码上传，否则乱码～</center>
+      <center>～建议使用chrome for windows～</center><br>
+      <ul id="upload_result" data-role="listview" data-inset="true"></ul>
+  </div>
+
+</div>
+
+<div data-role="page" id="details">
+  <div data-role="header">
+    <h1>宝物详情</h1> 
+    <a href="#mission" data-role="button" data-icon="back" data-transition="fade">返回</a>
+  </div>
+      
+  <div data-role="content">
+    <ul id="details_itemdata" data-role="listview" data-inset="true"></ul>
+    <ul id="details_otherinfo" data-role="listview" data-inset="true"></ul>
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="navbar">
+      <ul>
+        <li><a onclick="window.op_details.edit()" id="turn_to_edit" data-icon="info" class="ui-btn">编辑</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<div data-role="page" id="edit">
+  <div data-role="header">
+    <h1>编辑</h1> 
+    <a href="#details" data-role="button" data-icon="back">返回</a>
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="edit_save" value="保存" data-role="button" data-icon="alert" class="ui-btn-right">
+    </div>
+  </div>
+      
+  <div data-role="content">
+
+    <div data-role="fieldcontain">
+          <label for="edit_price">价格(单位:円)</label>
+          <input type="text" name="edit_price" id="edit_price" value="" placeholder="目前价格尚未输入,注意不要恶意修改价格">
+    </div>
+    <div data-role="fieldcontain">
+         <label for="edit_whobuy">购入人/代购人:</label>
+         <select name="edit_whobuy" id="edit_whobuy" data-native-menu="false"></select>
+    </div>
+    <div data-role="fieldcontain">
+          <label for="edit_target">自身目标数:</label>
+          <input type="text" name="edit_target" id="edit_target" value="">
+    </div>
+    <div data-role="fieldcontain">
+          <label for="edit_bought">共计入手数:</label>
+          <input type="text" name="edit_bought" id="edit_bought" value="">
+    </div>
+    <div data-role="fieldcontain">
+          <label for="edit_finish">完成情况:</label>
+          <input type="text" name="edit_finish" id="edit_finish" value="">
+    </div>
+    <input type="button" id="edit_roll" value="ROLL">
+    <ul id="edit_custom" data-role="listview" data-inset="true" ></ul>
+  </form>  
+  </div>
+
+</div>
+
+<div data-role="page" id="calc_setting">
+  <div data-role="header">
+    <h1>结算设置</h1>
+   <a href="#tools" data-role="button" data-icon="back">返回</a>
+  </div>
+      
+  <div data-role="content">
+
+    <div data-role="fieldcontain">
+     <label for="calc_when"><center>结算哪天的?</center></label>
+     <br>
+       <select name="calc_when" id="calc_when" data-native-menu="false">
+         <option value="金">8.15 (金)</option>
+         <option value="土">8.16 (土)</option>
+         <option value="日">8.17 (日)</option>
+         <option value="233">全部三天</option>
+       </select>
+    </div>
+
+    <input type="button" id="calc_start" value="开始结算!">
+
+  </div>
+
+  
+</div>
+
+<div data-role="page" id="calc_result">
+  <div data-role="header">
+    <h1>结算结果</h1> 
+  </div>
+      
+  <div data-role="content">
+    <ul id="calc_result_spend" data-role="listview"><li><div class="scroll">支出情况-直接购买</div></li></ul>
+    <ul id="calc_result_outcome" data-role="listview"><li><div class="scroll"></div>支出情况-付给其他用户</li></ul>
+    <ul id="calc_result_income" data-role="listview"><li><div class="scroll"></div>收入-从其他用户获取</li></ul>
+
+  </div>
+
+  
+</div>
+
+
+
+<div data-role="page" id="about">
+  <div data-role="header">
+   <h1>关于</h1>
+    <div data-role="button" class="ui-btn-left">
+      <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+    </div>  
+  </div>
+
+  <div data-role="content">
+   <center> ver 0.62</center>
+   <br><hr><br><br><br>
+   <center>code by</center>
+   <center> suica && lala</center>
+  </div>
+</div>
+
+</body>
+</html>

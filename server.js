@@ -258,6 +258,29 @@ socketio.listen(server).on('connection', function (socket) {
          console.log('main_edit_data_server:价格编辑结果输出完毕');
        });
     });
+    
+    socket.on('main_calc_server', function(nickname,day){
+       
+      console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
+
+      c.query('SELECT * FROM relation WHERE '+nickname+' is not null')
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          select_itemdata_for_calc(row);
+         })
+         .on('error', function(err) {
+           console.log('main_mission_list_server:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('main_mission_list_server:推送完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_mission_list_server:结果输出完毕');
+       });
+      
+    }); //socket.on('main_calc_server') ending 
+
 
 
 /////////////////////////function_part//////////////////////////
@@ -267,47 +290,42 @@ socketio.listen(server).on('connection', function (socket) {
 function select_itemdata (dataobject){
 
   c.query('SELECT * FROM itemdata WHERE i2 = ?',[dataobject['i2']])
-             .on('result', function(res) {
-               res.on('row', function(row) {
-                console.log('得到itemid记录'+dataobject['i2']);
-                console.log('得到所有用户记录'+inspect(dataobject));
-                socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
-               })
-               .on('error', function(err) {
-                 console.log('发生异常错误:' + inspect(err));
-               })
-               .on('end', function(info) {
-                 console.log('完毕');
-               })
-             })
-             .on('end', function() {
-               console.log('结果输出完毕');
-             });
+     .on('result', function(res) {
+       res.on('row', function(row) {
+        console.log('得到itemid记录'+dataobject['i2']);
+        console.log('得到所有用户记录'+inspect(dataobject));
+        socket.emit('main_mission_list_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+       })
+       .on('error', function(err) {
+         console.log('发生异常错误:' + inspect(err));
+       })
+       .on('end', function(info) {
+         console.log('完毕');
+       })
+     })
+     .on('end', function() {
+       console.log('结果输出完毕');
+     });
 };
 
-// function select_custom (itemdata,custom){
-//    c.query('SELECT * FROM relation WHERE i2 = ?',[custom['i2']])
-//              .on('result', function(res) {
-//                res.on('row', function(row) {
-//                 console.log('得到记录'+custom['i2']);
-//                 console.log('得到记录'+inspect(custom));
-//                 socket.emit('main_mission_list_client',row,custom); //row是itemdata里的一列值组成的对象,例如dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
-//                })
-//                .on('error', function(err) {
-//                  console.log('发生异常错误:' + inspect(err));
-//                })
-//                .on('end', function(info) {
-//                  console.log('完毕');
-//                })
-//              })
-//              .on('end', function() {
-//                console.log('结果输出完毕');
-//              });
-// };
+function select_itemdata_for_calc (dataobject){
 
-
-
-
+  c.query('SELECT * FROM itemdata WHERE i2 = ?',[dataobject['i2']])
+     .on('result', function(res) {
+       res.on('row', function(row) {
+        socket.emit('main_calc_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+       })
+       .on('error', function(err) {
+         console.log('发生异常错误:' + inspect(err));
+       })
+       .on('end', function(info) {
+         console.log('完毕');
+       })
+     })
+     .on('end', function() {
+       console.log('结果输出完毕');
+     });
+};
 
 function insert_itemdata(csvdata){
 c.query('INSERT INTO itemdata SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,'+
