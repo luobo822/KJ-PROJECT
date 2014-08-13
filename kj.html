@@ -168,8 +168,6 @@
 
                  "now_itemid":"",
 
-                 "now_iscalc":0,
-
                  "read":function(itemid){
 
                   $("#details_otherinfo").empty();
@@ -222,6 +220,16 @@
                 }
 
               };
+
+//结算时的数据存储,绑定为全局对象
+              window.calc_data;
+              window.calc_data = {
+                "is_calc_now":0,
+                "spend_count":0,
+                "income_count":0,
+                "outcome_count":0
+              };
+
                 
 
 //信息机能
@@ -299,50 +307,95 @@
 //输出结算结果        
                 socket.on("main_calc_client", function(iteminfo,otherinfo){
                   var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
-                  var names = new Array();
+                  // var names = new Array();
                   var pureobj_everyinfo = new Object();
 
                   for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
                     if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
                        pureobj_everyinfo[x] = eval('('+otherinfo[x]+')');
                         if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) { 
+                          $("#calc_result_details").page(); //防止找不到refresh方法
                           if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) { 
-                          console.log("用户"+x+"让自机买的已完成的委托"+iteminfo['i2']);
-                          //进income,确认价格和对方的入手数量
+                            console.log("用户"+x+"给自机的已完成的委托"+iteminfo['i2']);
+                            //进income,确认价格和对方的入手数量
+                            $("#calc_result_income").append('<li><div class="scroll">'
+                              +'「'+iteminfo['i14']+'」'
+                              +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                              +'<p>作者:'+iteminfo['i13']+'</p>'
+                              +'<p>指定购买人:自机</p>'
+                              +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                              +'<p>有效结算数量(对方入手数量):'+pureobj_everyinfo[x]['bought']+'</p>'
+                              +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                            +'</div></li>');
+
+                            $("#calc_result_income_simple").append('<li><div class="scroll">应从'
+                              +x
+                              +'拿到'
+                              +Number(iteminfo['i27'])*Number(pureobj_everyinfo[x]['bought'])
+                              +'円,'
+                              +'ID:'+iteminfo['i2']
+                              +','
+                              +'「'+iteminfo['i14']+'」'
+                              +'单价'+iteminfo['i27']+'円,'                      
+                              +'共'+pureobj_myinfo['bought']+'份'
+                              +'</div></li>');
+                              $("#calc_result_income").listview("refresh");
+                              $("#calc_result_income_simple").listview("refresh");
+
                           }else if (pureobj_myinfo['whobuy'] == x && pureobj_everyinfo[x]['whobuy'] == x) {
-                          console.log("自机让用户"+x+"买的已完成的委托"+iteminfo['i2']);
-                          //进outcome,确认价格和自己的入手数量
+                            // 扔进outcome,确认价格和自己的入手数量
+                            console.log("自机让用户"+x+"买的已完成的委托"+iteminfo['i2']);
+                            $("#calc_result_outcome").append('<li><div class="scroll">'
+                              +'「'+iteminfo['i14']+'」'
+                              +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                              +'<p>作者:'+iteminfo['i13']+'</p>'
+                              +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                              +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                              +'<p>有效结算数量(自身入手数量):'+pureobj_myinfo['bought']+'</p>'
+                              +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                            +'</div></li>');
+
+                            $("#calc_result_outcome_simple").append('<li><div class="scroll">应付给'
+                              +x
+                              +Number(iteminfo['i27'])*Number(pureobj_myinfo['bought'])
+                              +'円,'
+                              +'ID:'+iteminfo['i2']
+                              +','
+                              +'「'+iteminfo['i14']+'」'
+                              +'单价'+iteminfo['i27']+'円,'                      
+                              +'共'+pureobj_myinfo['bought']+'份'
+                            +'</div></li>');
+                            $("#calc_result_outcome").listview("refresh");
+                            $("#calc_result_outcome_simple").listview("refresh");
                           };
                         };                        
                     };
                   };
 
                   if (pureobj_myinfo['whobuy'] == localStorage.nickname) {
-                     console.log("自机购入的物品,与其他人无关:"+iteminfo['i2']);
-                     //进spend,确认价格和自己的目标数量
+                    console.log("自机消费"+iteminfo['i2']);
+                      $("#calc_result_spend").append('<li><div class="scroll">'
+                        +'「'+iteminfo['i14']+'」'
+                        +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
+                        +'<p>作者:'+iteminfo['i13']+'</p>'
+                        +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
+                        +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
+                        +'<p>有效结算数量(自身入手数量):'+pureobj_myinfo['bought']+'</p>'
+                        +'<p>价格(円):'+iteminfo['i27']+'</p>'
+                      +'</div></li>');
+
+                      $("#calc_result_spend_simple").append('<li><div class="scroll">消费'
+                        +Number(iteminfo['i27'])*Number(pureobj_myinfo['bought'])
+                        +'円,'
+                        +'ID:'+iteminfo['i2']
+                        +','
+                        +'「'+iteminfo['i14']+'」'
+                        +'单价'+iteminfo['i27']+'円,'                      
+                        +'共'+pureobj_myinfo['bought']+'份'
+                      +'</div></li>');
+                      $("#calc_result_spend").listview("refresh");
+                      $("#calc_result_spend_simple").listview("refresh");
                   };
-
-                  // if (pureobj_myinfo['finish'] == 1) {
-
-                  //   $("#calc_result_spend").append('<li><a herf="#details" onclick="window.op_details.read('+iteminfo['i2']+')" id=\"'+otherinfo['i2']+'\">'
-                  //     +iteminfo['i14'] //标题自动变大
-                  //     +'<p>'+iteminfo['i11']+' ID:'+iteminfo['i2']+'</p>'
-                  //     +'<p>作者:'+iteminfo['i13']+'</p>'
-                  //     +'<p>指定购买人:'+pureobj_myinfo['whobuy']+'</p>'
-                  //     +'<p>目标数量:'+pureobj_myinfo['target']+'</p>'
-                  //     +'<p>已入手数量:'+pureobj_myinfo['bought']+'</p>'
-                  //     +'<p>价格(円):'+iteminfo['i27']+'</p>'
-                  //     +'</a></li>');
-
-                  //     $("#finished").listview("refresh");
-                  //     $("#finished_count").text(Number($("#finished_count").text())+1);
-                  //     window.op_details[otherinfo['i2']] = iteminfo;
-                  //     window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
-                      
-                  //     console.log(window.op_details.now_iscalc);
-                  // };
-                      
-
                 });
 
 //掉线
@@ -484,9 +537,10 @@
 //最终结算
             $("#calc_start").click(function(){
               window.op_details.temp_day = $("#calc_when").val(); //暂时把结算的时间扔进去
-              window.op_details.now_iscalc = 1; //开始结算flag立起
+              window.calc_data.is_calc = 1; //开始结算flag立起
               // $("#refresh_data").trigger("click");
               socket.emit("main_calc_server",localStorage.nickname);
+              $.mobile.changePage("#calc_result");
             });
 
       }); //$(function) ending
@@ -514,7 +568,7 @@
 
     <div data-role="collapsible" data-collapsed="false">
       <h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>
-        <ul id="unfinished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>
+        <ul id="unfinished" data-role="listview" data-inset="true"  data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>
     </div>
 
     <div data-role="collapsible">
@@ -856,18 +910,31 @@
 <div data-role="page" id="calc_result">
   <div data-role="header">
     <h1>结算结果</h1> 
+    <a href="#tools" data-role="button" data-icon="back">返回</a>
+    <a href="#calc_result_details" data-role="button" data-icon="star">代购关系详情</a>
   </div>
       
   <div data-role="content">
-    <ul id="calc_result_spend" data-role="listview"><li><div class="scroll">支出情况-直接购买</div></li></ul>
-    <ul id="calc_result_outcome" data-role="listview"><li><div class="scroll"></div>支出情况-付给其他用户</li></ul>
-    <ul id="calc_result_income" data-role="listview"><li><div class="scroll"></div>收入-从其他用户获取</li></ul>
 
-  </div>
-
-  
+    <ul id="calc_result_spend_simple" data-inset="true" data-role="listview"><li><div class="scroll">自身消费的简明清单</div></li></ul>
+    <ul id="calc_result_outcome_simple" data-inset="true" data-role="listview"><li><div class="scroll"></div>简明付款指南</li></ul>
+    <ul id="calc_result_income_simple" data-inset="true" data-role="listview"><li><div class="scroll"></div>简明收款指南</li></ul>
+  </div>  
 </div>
 
+<div data-role="page" id="calc_result_details">
+  <div data-role="header">
+    <h1>代购关系详情</h1> 
+    <a href="#calc_result" data-role="button" data-icon="back">返回</a>
+  </div>
+      
+  <div data-role="content">
+    <ul id="calc_result_spend" data-inset="true" data-role="listview"><li><div class="scroll">自身购买的宝物</div></li></ul>
+    <ul id="calc_result_outcome" data-inset="true" data-role="listview"><li><div class="scroll"></div>支出情况-由其他用户代购的宝物</li></ul>
+    <ul id="calc_result_income" data-inset="true" data-role="listview"><li><div class="scroll"></div>收入情况-由自己代购的宝物</li></ul>    
+  </div>
+
+</div>
 
 
 <div data-role="page" id="about">
