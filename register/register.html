@@ -28,7 +28,8 @@
 
 //定义标记
 
-      var is_username_checked = 0; //重名检测的结果
+      var is_username_checked = 0; //重用户名检测的结果
+      var is_nickname_checked = 0; //重昵称检测的结果
       var is_connected = 0; //是否与服务器成功连接
 
 //定义正则表达式
@@ -38,7 +39,7 @@
 
 //定义临时变量
 
-      var temp_name = ""; //用来存储已检查过的用户名
+      var temp_name = ""; //用来存储已检查过的用户名/昵称
 
 //重名反馈机能与数据提交机能
 
@@ -60,6 +61,21 @@
 					}else if (is_username_checked == 0) {
 						$("#user_name").attr("data-original-title","用户名发生重名,请修改用户名");
 						$("#user_name").tooltip("show");
+					};
+				}); 
+
+				socket.on("reg_check_nickname_client", function(checked) {
+					console.log(checked);
+          is_nickname_checked = checked;
+					if (is_nickname_checked == 1) {
+						$("#user_nickname").attr("data-original-title","昵称可以使用");
+						$("#user_nickname").tooltip("show");
+	 				}else if (is_nickname_checked == -1) {
+            $("#user_nickname").attr("data-original-title","服务器异变!检测结果出现错误");
+						$("#user_nickname").tooltip("show");
+					}else if (is_nickname_checked == 0) {
+						$("#user_nickname").attr("data-original-title","昵称发生重名,请修改昵称");
+						$("#user_nickname").tooltip("show");
 					};
 				}); 
 
@@ -130,6 +146,7 @@
       }); //$("#user_name").blur() ending
 
 
+
 			$("#user_password").focus(function(){
         if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) 
 		        {
@@ -180,18 +197,41 @@
 
       $("#user_nickname").blur(function(){
         if ($("#user_nickname").val() == "") {
+	        	$("#user_nickname").focus();
             $("#user_nickname").tooltip("show");
-            $("#user_nickname").attr("data-original-title","昵称不能为空~别人通过昵称认出你");
-            $("#user_nickname").focus();
         }
-			  else if (blank.test($("#user_name").val())) {
-                $("#user_name").tooltip("show");
-								$("#user_name").attr("data-original-title","昵称不可以含有空格");
-								$("#user_name").focus();
-						  }
-        else{
-	          $("#user_nickname").tooltip("destroy");
-        }; //if ending
+			  else if (blank.exec($("#user_nickname").val())) {
+                $("#user_nickname").tooltip("show");
+								$("#user_nickname").attr("data-original-title","用户名不可以含有空格");
+								$("#user_nickname").focus();
+						  } 
+        else if ($("#user_nickname").val().length < 3) {
+								$("#user_nickname").tooltip("show");
+								$("#user_nickname").attr("data-original-title","用户名长度小于3,长度应大于等于3");
+								$("#user_nickname").focus();
+			        } 
+				else if (!is_connected) {
+								$("#user_nickname").tooltip("show");
+								$("#user_nickname").attr("data-original-title","未与服务器连接,无法注册");
+								$("#user_nickname").focus();
+							}
+        else{ //即服务器连接正常、昵称本地检测合法的情况下,才进行重名检测
+		          if ($("#user_nickname").val() != temp_name) { //如果这个时候用户名改变了,重新检测一次
+						          socket.emit("reg_check_nickname_server",$("#user_nickname").val()); //传参:{username:value}
+											$("#user_nickname").tooltip("show");
+											$("#user_nickname").attr("data-original-title","正在检测是否重昵称...");
+											temp_name = $("#user_nickname").val();
+											$("#user_nickname").focus();
+	          	}else if (is_nickname_checked == 1) { //一切正常则允许focus到下一输入框
+						           $("#user_nickname").tooltip("destroy");
+						           console.log("允许unfocus");
+						           is_nickname_checked = 0;
+						         }
+						         else {
+                           console.log("不允许unfocus");
+                           $("#user_nickname").focus();
+						         };
+				         };
       }); //$("#user_nickname").blur() ending
 
       $("#security_question").blur(function(){
@@ -237,7 +277,7 @@
 				    username:$("#user_name").val(),
 	          password:$.md5($("#user_password").val()),
 	          email:$("#user_email").val(),
-	          QQ号码:$("#user_qq").val(),
+	          qq:$("#user_qq").val(),
 	          nickname:$("#user_nickname").val(),
 	          sq:$("#security_question").val(),
 	          isq:$("#input_security_question").val()
