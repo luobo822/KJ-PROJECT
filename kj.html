@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title></title>
 
@@ -12,10 +12,13 @@
     <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
 
     <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+    <link rel="shortcut icon" type="iamge/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
 
     <style>
       div.scroll{
-      overflow:auto; 
+      overflow:auto;  /*这个的作用是让溢出的<li><div></div></li>能够滑动,不至于在手机上看不全消息*/
     }
     </style>
 
@@ -24,15 +27,13 @@
     "use strict"
 
       $(function(){
-
 //未登录跳转
           if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined){
             console.log("已登录");
           }else{
             console.log("跳转到登录界面");
-            window.location.assign("http://test.eshicon.org/login.html");
+            // window.location.assign("http://test.eshicon.org/login.html");
           };
-
 //定义标记
           var is_connected = 0; //是否连接消息服务器
           var identification = ""; //用户识别码
@@ -41,9 +42,8 @@
           window.csvdata;
           window.csvdata = new Array();
 
-          
 //读取pervious页面的#hash
-          
+
           function get_anchor(){  //后退的场合
 
               switch (location.hash)
@@ -82,7 +82,7 @@
 
               default:      //未在此定义的页面都不翻页
                 return location.hash;
-                break;  
+                break;
             }; //switch ending
 
           };
@@ -94,7 +94,7 @@
             document.addEventListener("touchmove", handleTouchEvent, false);
 
             var pre = new Array();
-            var end = new Array(); 
+            var end = new Array();
             var delta = new Array();//对于这三个数组,[0]->x,[1]->y
             var is_turning = 0;
 
@@ -119,17 +119,17 @@
 
               if (delta[0]>10 && Math.abs(delta[1]<10)) {
                 is_turning = 1;
-                
+
                 $.mobile.changePage(get_anchor(),{
                   transition: "slide",
                   reverse: true,
                   changeHash: true
                 });
-                
+
               };
-              
+
             };//function turnpage() ending
-              
+
             function handleTouchEvent(event) {
 
                 if (event.touches.length == 1) {
@@ -149,7 +149,7 @@
                             if (is_turning == 0) {     //若页面非正在跳转,则计算delta,翻页
                               delta[0]= -(pre[0]-end[0]);
                               delta[1] = pre[1]-end[1];
-                              turnpage();                    
+                              turnpage();
                             }; //if ending
                             break;
                     }; //switch ening
@@ -159,7 +159,7 @@
 //读取商品详情/编辑关系,绑定至window作为全局对象
 
               window.op_details = new Object();
-              window.op_details = { 
+              window.op_details = {
 
                  "otherinfo":new Object(),
 
@@ -175,7 +175,7 @@
 
                   window.op_details.now_itemid = itemid;
                   window.op_details.now_itemdata = window.op_details[itemid];
-                  
+
                   $("#details_itemdata").append($("<li></li>").text("详细信息"));
                   for (var x in window.op_details[itemid]) {
                     $("#details_itemdata").append("<li><div class=\"scroll\">"+x+":"+window.op_details.now_itemdata[x]+"</div></li>");//这一步的结果是一个类似itemdata的对象
@@ -196,7 +196,7 @@
                   $("#edit_whobuy").append($("<option value=\'"+localStorage.nickname+"\' selected></option>").text(localStorage.nickname+"(你自己)"));
 
                   $("#details").page();
-                  $("#details_itemdata").listview("refresh");                  
+                  $("#details_itemdata").listview("refresh");
                   $("#details_otherinfo").listview("refresh");
 
                   $.mobile.changePage("#details");
@@ -223,34 +223,34 @@
 //结算时的数据存储,绑定为全局对象
               window.calc_data;
               window.calc_data = {
-                "is_calc_now":0,
                 "spend_count":0,
                 "income_count":0,
-                "outcome_count":0
+                "outcome_count":0,
+                // "date":true  //为了效率注释掉这个变量;它用来存储用户选择的结算日期
               };
 
-                
+
 
 //信息机能
 
               var socket = io.connect("http://157.7.138.169:2333");
 
               socket.on("connect", function () {
-                
+
                 is_connected = 1;
 
                 $("#recived_message").append("<li><center>连接成功<center></li>");
-                
+
                 $("#message").page(); //review的时候查一下这个page()是啥用的
-                $("#recived_message").listview("refresh"); 
-                
+                $("#recived_message").listview("refresh");
+
                 $("#connect_flag").empty().append("消息(已连接)");
-                  
+
                 socket.on("main_message_client", function(message) {
                   $("#recived_message").append("<li><div class=\"scroll\">"+message+"</div></li>");
                   $("#unread_message_count").text(Number($("#unread_message_count").text())+1);
                 }); //socket.on("main_message", function(message) ending
-                
+
                 socket.on("main_csv_submit_client", function(result) {
                   if (result == -1) {
                     $("#upload_result").apped("<li><center>服务器异变!上传失败!出现未知错误!请联系suica</center></li>");
@@ -303,18 +303,20 @@
                   };
                 });
 
-//输出结算结果        
+//输出结算结果
                 socket.on("main_calc_client", function(iteminfo,otherinfo){
                   var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
                   // var names = new Array();
                   var pureobj_everyinfo = new Object();
+                  if (window.calc_data.date == iteminfo['i6'] || window.calc_data.date) {
+
 
                   for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
                     if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
                        pureobj_everyinfo[x] = eval('('+otherinfo[x]+')');
-                        if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) { 
+                        if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) {
                           $("#calc_result_details").page(); //防止找不到refresh方法
-                          if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) { 
+                          if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) {
                             console.log("用户"+x+"给自机的已完成的委托"+iteminfo['i2']);
                             //进income,确认价格和对方的入手数量
                             $("#calc_result_income").append('<li><div class="scroll">'
@@ -335,12 +337,12 @@
                               +'ID:'+iteminfo['i2']
                               +','
                               +'「'+iteminfo['i14']+'」'
-                              +'单价'+iteminfo['i27']+'円,'                      
+                              +'单价'+iteminfo['i27']+'円,'
                               +'共'+pureobj_myinfo['bought']+'份'
                               +'</div></li>');
                               $("#calc_result_income").listview("refresh");
                               $("#calc_result_income_simple").listview("refresh");
-
+                              window.calc_data.income_count +=  Number(iteminfo['i27'])*Number(pureobj_everyinfo[x]['bought']);
                           }else if (pureobj_myinfo['whobuy'] == x && pureobj_everyinfo[x]['whobuy'] == x) {
                             // 扔进outcome,确认价格和自己的入手数量
                             console.log("自机让用户"+x+"买的已完成的委托"+iteminfo['i2']);
@@ -361,13 +363,15 @@
                               +'ID:'+iteminfo['i2']
                               +','
                               +'「'+iteminfo['i14']+'」'
-                              +'单价'+iteminfo['i27']+'円,'                      
+                              +'单价'+iteminfo['i27']+'円,'
                               +'共'+pureobj_myinfo['bought']+'份'
                             +'</div></li>');
                             $("#calc_result_outcome").listview("refresh");
                             $("#calc_result_outcome_simple").listview("refresh");
+                            window.calc_data.outcome_count += Number(iteminfo['i27'])*Number(pureobj_myinfo['bought']);
+
                           };
-                        };                        
+                        };
                     };
                   };
 
@@ -389,13 +393,16 @@
                         +'ID:'+iteminfo['i2']
                         +','
                         +'「'+iteminfo['i14']+'」'
-                        +'单价'+iteminfo['i27']+'円,'                      
+                        +'单价'+iteminfo['i27']+'円,'
                         +'共'+pureobj_myinfo['bought']+'份'
                       +'</div></li>');
                       $("#calc_result_spend").listview("refresh");
                       $("#calc_result_spend_simple").listview("refresh");
+                      window.calc_data.spend_count += Number(iteminfo['i27'])*Number(pureobj_myinfo['bought']);
                   };
-                });
+                }; // if 判断日期 ending
+
+              });
 
 //掉线
                 socket.on("disconnect", function() {
@@ -433,7 +440,7 @@
             $("#button_message_clear").click(function(){
               $("#recived_message").empty();
               $("#recived_message").append("<li><center><h1>对话消息</h1></center></li>");
-              
+
               if (is_connected) {
                 $("#recived_message").append("<li><center>连接成功<center></li>");
               };
@@ -459,7 +466,6 @@
                 };
             });
 
-
 //CSV上传
             $("#upload_csv").click(function(){
               // console.log($("#unfinished_count").text());
@@ -474,7 +480,7 @@
               };
             });
 
-//刷新与数据获取     
+//刷新与数据获取
 
             $("#refresh_data").click(function(){
               $("#unfinished").empty();
@@ -526,7 +532,7 @@
                 edit_data_upload = JSON.stringify(edit_data_upload);
                 console.log("对象字符串化为"+edit_data_upload);
                 var edit_price_upload = Number($("#edit_price").val());
-                socket.emit("main_edit_data_server",edit_data_upload,edit_price_upload,localStorage.nickname,window.op_details.now_itemid);   
+                socket.emit("main_edit_data_server",edit_data_upload,edit_price_upload,localStorage.nickname,window.op_details.now_itemid);
                 console.log("已上传完毕:"+edit_data_upload+","+edit_price_upload+","+localStorage.nickname+","+window.op_details.now_itemid);
               }else{
                 alert("请完成所有表单");
@@ -535,15 +541,20 @@
 
 //最终结算
             $("#calc_start").click(function(){
-              window.op_details.temp_day = $("#calc_when").val(); //暂时把结算的时间扔进去
-              window.calc_data.is_calc = 1; //开始结算flag立起
-              // $("#refresh_data").trigger("click");
+              window.calc_data.spend_count =  0;
+              window.calc_data.income_count = 0;
+              window.calc_data.outcome_count = 0; // 初始化三个count变量
+              if ($("#calc_when") != "233") {
+                window.calc_data.date = $("#calc_when").val(); //暂时把结算的时间扔进去
+              }else{
+                window.calc_data.date = true; // 选"三天"的时候,x||true为true,所以可以筛出所有天数的物品
+              };
               socket.emit("main_calc_server",localStorage.nickname);
               $.mobile.changePage("#calc_result");
             });
 
       }); //$(function) ending
-              
+
       </script>
 
     </head>
@@ -556,14 +567,13 @@
       <div data-role="button" class="ui-btn-right">
         <a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
       </div>
-    
       <div data-role="button" class="ui-btn-left">
         <input type="button" id="refresh_data" data-icon="refresh" value="刷新">
       </div>
   </div>
 
   <div data-role="content">
-  
+
     <div data-role="collapsible" data-collapsed="false">
       <h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>
         <ul id="unfinished" data-role="listview" data-inset="true"  data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>
@@ -588,14 +598,14 @@
 
 <div data-role="page" id="message">
   <div data-role="header">
-    <h1 id="connect_flag">消息</h1> 
+    <h1 id="connect_flag">消息</h1>
     <div data-role="button" class="ui-btn-left">
       <input type="button" id="button_message_clear" value="清空消息" data-role="button" data-icon="alert">
     </div>
   </div>
-      
+
   <div data-role="content">
-    
+
     <br>
     <ul id="recived_message" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索消息记录...">
       <li>
@@ -609,7 +619,7 @@
     <input type="text" id="sent_message">
     <input type="button" id="button_message_send" value="发送消息">
     <br>
-    
+
 
   </div>
 
@@ -634,10 +644,10 @@
       <a href="#calc_setting" data-role="button">结算</a>
       <a href="#about" data-role="button" data-transition="slide">关于</a>
       <br><hr><br>
-      <a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>      
+      <a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
 	</div>
 </div>
- 
+
 <div data-role="page" id="input_csv">
   <div data-role="header">
     <h1>导入CSV</h1>
@@ -646,11 +656,11 @@
       <input type="button" id="upload_csv" value="上传" data-icon="arrow-u">
     </div>
   </div>
-      
+
   <div data-role="content">
 
       <form id="form_upload_csv">
-        <label for="csvFileInput"> 
+        <label for="csvFileInput">
           <strong>CSV File:</strong>
         </label>
         <input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
@@ -664,10 +674,10 @@
 
 <div data-role="page" id="details">
   <div data-role="header">
-    <h1>宝物详情</h1> 
+    <h1>宝物详情</h1>
     <a href="#mission" data-role="button" data-icon="back" data-transition="fade">返回</a>
   </div>
-      
+
   <div data-role="content">
     <ul id="details_itemdata" data-role="listview" data-inset="true"></ul>
     <ul id="details_otherinfo" data-role="listview" data-inset="true"></ul>
@@ -685,13 +695,13 @@
 
 <div data-role="page" id="edit">
   <div data-role="header">
-    <h1>编辑</h1> 
+    <h1>编辑</h1>
     <a href="#details" data-role="button" data-icon="back">返回</a>
     <div data-role="button" class="ui-btn-right">
       <input type="button" id="edit_save" value="保存" data-role="button" data-icon="alert" class="ui-btn-right">
     </div>
   </div>
-      
+
   <div data-role="content">
 
     <div data-role="fieldcontain">
@@ -716,7 +726,7 @@
     </div>
     <input type="button" id="edit_roll" value="ROLL">
     <ul id="edit_custom" data-role="listview" data-inset="true" ></ul>
-  </form>  
+  </form>
   </div>
 
 </div>
@@ -726,7 +736,7 @@
     <h1>结算设置</h1>
    <a href="#tools" data-role="button" data-icon="back">返回</a>
   </div>
-      
+
   <div data-role="content">
 
     <div data-role="fieldcontain">
@@ -744,34 +754,34 @@
 
   </div>
 
-  
+
 </div>
 
 <div data-role="page" id="calc_result">
   <div data-role="header">
-    <h1>结算结果</h1> 
+    <h1>结算结果</h1>
     <a href="#tools" data-role="button" data-icon="back">返回</a>
     <a href="#calc_result_details" data-role="button" data-icon="star">代购关系详情</a>
   </div>
-      
+
   <div data-role="content">
 
     <ul id="calc_result_spend_simple" data-inset="true" data-role="listview"><li><div class="scroll">自身消费的简明清单</div></li></ul>
     <ul id="calc_result_outcome_simple" data-inset="true" data-role="listview"><li><div class="scroll">简明付款指南</div></li></ul>
     <ul id="calc_result_income_simple" data-inset="true" data-role="listview"><li><div class="scroll">简明收款指南</div></li></ul>
-  </div>  
+  </div>
 </div>
 
 <div data-role="page" id="calc_result_details">
   <div data-role="header">
-    <h1>代购关系详情</h1> 
+    <h1>代购关系详情</h1>
     <a href="#calc_result" data-role="button" data-icon="back">返回</a>
   </div>
-      
+
   <div data-role="content">
     <ul id="calc_result_spend" data-inset="true" data-role="listview"><li><div class="scroll">自身购买的宝物</div></li></ul>
     <ul id="calc_result_outcome" data-inset="true" data-role="listview"><li><div class="scroll">支出情况-由其他用户代购的宝物</div></li></ul>
-    <ul id="calc_result_income" data-inset="true" data-role="listview"><li><div class="scroll">收入情况-由自己代购的宝物</div></li></ul>    
+    <ul id="calc_result_income" data-inset="true" data-role="listview"><li><div class="scroll">收入情况-由自己代购的宝物</div></li></ul>
   </div>
 
 </div>
@@ -782,12 +792,12 @@
    <h1>关于</h1>
     <div data-role="button" class="ui-btn-left">
       <a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
-    </div>  
+    </div>
   </div>
 
   <div data-role="content">
-   <center> ver 0.999967432 beta</center>
-   <center>「无限接近正式版」</center>
+   <center> ver 1.0</center>
+   <center>「正式版」</center>
    <br><hr><br><br><br>
    <center>code by suica</center>
    <br>
@@ -796,7 +806,9 @@
    <center>Katsuragi Mikoto 的帮助</center>
    <center>Testarossa 的意见</center>
    <center>和其他所有给我帮助的各位!</center>
-
+   <br><br><br><br><br>
+   <center>已知的不足:结算界面还没有显示总价</center>
+   <center>预计修正时间:2014.8.14上午8:15分</center>
   </div>
 </div>
 
