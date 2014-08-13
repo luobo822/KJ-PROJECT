@@ -40,34 +40,62 @@ socketio.listen(server).on('connection', function (socket) {
 //reg
 
     socket.on('reg_check_username_server', function (uzndata) {
-        console.log('收到需检查的用户名:',uzndata);
+        console.log('reg_check_username_server:收到需检查的用户名:',uzndata);
         var is_checked = -1;
         c.query('SELECT COUNT(username)=0 FROM user WHERE username = :username',uzndata) //检查数据库,在没有重名的时候输出1
          .on('result', function(res) {
            res.on('row', function(row) {
-            console.log('查到的结果是:' + inspect(row));
+            console.log('reg_check_username_server:查到的结果是:' + inspect(row));
              for (x in row){
                 is_checked = row[x];
                 if (row[x] == 1) {
-                  console.log('用户名没有重复'+uzndata.username);
+                  console.log('reg_check_username_server:用户名没有重复'+uzndata.username);
                 }else {
-                  console.log('用户名重复了:'+uzndata.username);
+                  console.log('reg_check_username_server:用户名重复了:'+uzndata.username);
                 };
                 socket.emit('reg_check_username_client', is_checked); //重名向客户端发送0,未重名发送1
               };
            })
            .on('error', function(err) {
-             console.log('查找重名发生异常错误:' + inspect(err));
+             console.log('reg_check_username_server:查找重名发生异常错误:' + inspect(err));
            })
            .on('end', function(info) {
-             console.log('查找重名完毕');
+             console.log('reg_check_username_server:查找重名完毕');
            });
          })
          .on('end', function() {
-           console.log('所有结果输出完毕');
+           console.log('reg_check_username_server:所有结果输出完毕');
          });
     });
     
+    socket.on('reg_check_nickname_server', function (nickname) {
+        console.log('reg_check_nickname_server:收到需检查的昵称:',nickname);
+        var is_checked = -1;
+        c.query('SELECT COUNT(nickname)=0 FROM user WHERE nickname = ?',[nickname]) //检查数据库,在没有重名的时候输出1
+         .on('result', function(res) {
+           res.on('row', function(row) {
+            console.log('reg_check_nickname_server:查到的结果是:' + inspect(row));
+             for (x in row){
+                is_checked = row[x];
+                if (row[x] == 1) {
+                  console.log('reg_check_nickname_server:昵称没有重复'+nickname);
+                }else {
+                  console.log('reg_check_nickname_server:昵称重复了:'+nickname);
+                };
+                socket.emit('reg_check_nickname_client',is_checked); //重名向客户端发送0,未重名发送1
+              };
+           })
+           .on('error', function(err) {
+             console.log('reg_check_nickname_server:查找重名发生异常错误:' + inspect(err));
+           })
+           .on('end', function(info) {
+             console.log('reg_check_nickname_server:查找重名完毕');
+           });
+         })
+         .on('end', function() {
+           console.log('reg_check_nickname_server:所有结果输出完毕');
+         });
+    });
 
 
     socket.on('reg_submit_server', function (regdata) {
@@ -75,11 +103,7 @@ socketio.listen(server).on('connection', function (socket) {
         c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq])
          .on('result', function(res) {
            res.on('row', function(row) {
-            console.log('注册的结果是:' + inspect(row));
-            //alter_add_nicakname
-            
-             
-            //alter_add_nickname 结束           
+            console.log('注册的结果是:' + inspect(row));    
            })
            .on('error', function(err) {
              console.log('发生异常错误:' + inspect(err));
@@ -260,12 +284,13 @@ socketio.listen(server).on('connection', function (socket) {
     });
     
     socket.on('main_calc_server', function(nickname,day){
-       
+
       console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
 
       c.query('SELECT * FROM relation WHERE '+nickname+' is not null')
        .on('result', function(res) {
          res.on('row', function(row) {
+          console.log('main_calc_server:'+inspect(row));
           select_itemdata_for_calc(row);
          })
          .on('error', function(err) {
