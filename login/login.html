@@ -2,16 +2,16 @@
 <html lang="zh-CN">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">   
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<title>KJ PROJECT C86 &rsaquo; 登录</title>
-    
+
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js" ></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
-		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css"> 
+		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css">
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
 
@@ -25,13 +25,13 @@
         if (localStorage.id != "0") {
           console.log("已登录");
           // window.location.assign("http://test.eshicon.org/kj.html");
-        };        
+        };
 
-//激活页面上所有的tooltip       
+//激活页面上所有的tooltip
 
-      $("[data-toggle='tooltip']").tooltip(); 
+      $("[data-toggle='tooltip']").tooltip();
 
-//网页载入时强制focus到用户名框      
+//网页载入时强制focus到用户名框
 
 			$("#user_name").focus();
 
@@ -44,7 +44,7 @@
       var socket = io.connect("http://157.7.138.169:2333");
 
       socket.on("connect", function () {
-        
+
         is_connected = 1; //已连接
 
         socket.on("login_client", function(logindata){
@@ -55,6 +55,7 @@
              localStorage.setItem("username",logindata.username);
              localStorage.setItem("nickname",logindata.nickname);
              console.log("登录成功!");
+             window.location.assign("http://test.eshicon.org/kj.html");
              //这里跳转到main页面
           }else if (logindata.flag == 0) {
             $("#login_submit").attr("data-original-title","密码或用户名错误");
@@ -99,7 +100,7 @@
         }); //$("#user_password").blur() ending
 
 
-//定义login_submit按钮    
+//定义login_submit按钮
 
         $("#login_submit").click(function(){
           console.log("is_connected:"+is_connected);
@@ -113,12 +114,12 @@
           }else {
             $("#login_submit").attr("data-original-title","无法连接服务器,请稍后注册!");
             $("#login_submit").tooltip("show");
-          };          
+          };
         });
 
       }); //$(function(){}) ending
     </script>
-    
+
 	</head>
 
 	<body class="login login-action-login wp-core-ui  locale-zh-cn">
@@ -138,9 +139,9 @@
   					<input type="password" name="pwd" id="user_password" class="input" value="" size="20" data-toggle="tooltip" data-original-title="输入你的密码" data-placement="top" />
           </label>
 				</p>
-					
+
 				<br><br>
-					
+
 				<p class="submit">
 					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" data-toggle="tooltip" title="登录!" data-placement="top"/>
 				</p>
