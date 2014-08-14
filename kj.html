@@ -171,6 +171,7 @@
 
                   $("#details_otherinfo").empty();
                   $("#details_itemdata").empty();
+                  $("#edit_whobuy").empty();
                   window.op_details.custom = [];
 
                   window.op_details.now_itemid = itemid;
@@ -539,11 +540,27 @@
               };
             });
 
+
 //最终结算
             $("#calc_start").click(function(){
               window.calc_data.spend_count =  0;
               window.calc_data.income_count = 0;
               window.calc_data.outcome_count = 0; // 初始化三个count变量
+
+              $("#calc_result_income_count").text("0円");
+              $("#calc_result_spend_count").text("0円");
+              $("#calc_result_outcome_count").text("0円");
+
+
+              $("#calc_result_spend").empty().append("<li><div class=\"scroll\""+"自身购买的宝物"+"</div></li>");
+              $("#calc_result_spend_simple").empty().append("<li><div class=\"scroll\""+"自身消费的简明清单"+"</div></li>");
+
+             $("#calc_result_income").empty().append("<li><div class=\"scroll\""+"收入情况-由自己代购的宝物"+"</div></li>");
+              $("#calc_result_income_simple").empty().append("<li><div class=\"scroll\""+"简明收款指南"+"</div></li>");
+
+             $("#calc_result_outcome").empty().append("<li><div class=\"scroll\""+"支出情况-由其他用户代购的宝物"+"</div></li>");
+              $("#calc_result_outcome_simple").empty().append("<li><div class=\"scroll\""+"简明付款指南"+"</div></li>");
+
               if ($("#calc_when") != "233") {
                 window.calc_data.date = $("#calc_when").val(); //暂时把结算的时间扔进去
               }else{
@@ -637,7 +654,8 @@
 	<div data-role="header">
 	   <h1>工具</h1>
 	    <a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
-      <a href="#login" data-role="button" data-icon="minus">退出当前帐号</a>
+      <a href="test.eshicon.org/login.html" onclick="localStorage.clear()" data-role="button" data-icon="minus">退出当前帐号</a>
+
 	</div>
 
 	<div data-role="content">
@@ -665,7 +683,7 @@
         </label>
         <input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
       </form>
-      <center>～上传之前请删除color和header等无用字段,删除末尾空行.以记事本打开，另存为UTF-8编码上传，否则乱码～</center>
+      <center>～上传之前请删除所有的color字段,删除末尾空行.以记事本打开,另存为UTF-8编码上传，否则乱码～</center>
       <center>～建议使用chrome for windows～</center><br>
       <ul id="upload_result" data-role="listview" data-inset="true"></ul>
   </div>
@@ -780,8 +798,15 @@
 
   <div data-role="content">
     <ul id="calc_result_spend" data-inset="true" data-role="listview"><li><div class="scroll">自身购买的宝物</div></li></ul>
+    <ul data-inset="true" data-role="listview"><li id="calc_result_spend_count">共计</li></ul>
+
     <ul id="calc_result_outcome" data-inset="true" data-role="listview"><li><div class="scroll">支出情况-由其他用户代购的宝物</div></li></ul>
+    <ul data-inset="true" data-role="listview"><li id="calc_result_outcome_count">共计<li></ul>
+
     <ul id="calc_result_income" data-inset="true" data-role="listview"><li><div class="scroll">收入情况-由自己代购的宝物</div></li></ul>
+    <ul data-inset="true" data-role="listview"><li id="calc_result_income_count">共计</li></ul>
+
+
   </div>
 
 </div>
@@ -796,7 +821,7 @@
   </div>
 
   <div data-role="content">
-   <center> ver 1.0</center>
+   <center> ver 1.1</center>
    <center>「正式版」</center>
    <br><hr><br><br><br>
    <center>code by suica</center>
@@ -808,7 +833,7 @@
    <center>和其他所有给我帮助的各位!</center>
    <br><br><br><br><br>
    <center>结算界面还没有显示总价</center>
-   <center>预计修正时间:2014.8.14上午8:15分</center>
+   <center>预计修正时间:2014.8.14 ???????</center>
    <br>
    <center>是否登录验证还不严谨</center>
    <center>预计修正时间:KJ-PROJECT第二期工程</center>
