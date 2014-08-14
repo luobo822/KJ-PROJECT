@@ -11,7 +11,7 @@ var server = http.createServer(function(req, res) {
     res.writeHead(200, { 'Content-type': 'text/html'});
     res.end('running');
 }).listen(2333, function() {
-    console.log('监听: http://157.7.138.169:2333');    
+    console.log('监听: http://157.7.138.169:2333');
     console.log('处理register/login/message/main');
 });
 
@@ -36,7 +36,7 @@ var server = http.createServer(function(req, res) {
 
 
 socketio.listen(server).on('connection', function (socket) {
-    
+
 //reg
 
     socket.on('reg_check_username_server', function (uzndata) {
@@ -67,7 +67,7 @@ socketio.listen(server).on('connection', function (socket) {
            console.log('reg_check_username_server:所有结果输出完毕');
          });
     });
-    
+
     socket.on('reg_check_nickname_server', function (nickname) {
         console.log('reg_check_nickname_server:收到需检查的昵称:',nickname);
         var is_checked = -1;
@@ -103,7 +103,7 @@ socketio.listen(server).on('connection', function (socket) {
         c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq])
          .on('result', function(res) {
            res.on('row', function(row) {
-            console.log('注册的结果是:' + inspect(row));    
+            console.log('注册的结果是:' + inspect(row));
            })
            .on('error', function(err) {
              console.log('发生异常错误:' + inspect(err));
@@ -133,7 +133,7 @@ socketio.listen(server).on('connection', function (socket) {
            });
         console.log('返回:',regdata);
         socket.emit('reg_submit_client',regdata); //如果成功插入数据,返回对象.
-    });    
+    });
 
 //login
 
@@ -190,14 +190,14 @@ socketio.listen(server).on('connection', function (socket) {
         console.log('main_message_server:收到消息:', msgdata);
         socket.broadcast.emit('message', msgdata);
     });
-    
+
     socket.on('main_csv_submit_server', function (csvdata_nickname) { //csvdata是一个数组,格式为[csvdata[],nickname]
         console.log('main_csv_submit_server:收到提交的csv数组:\n',csvdata_nickname);
         var is_success = -1;
         // var name_whobuy = '/\"'+csvdata_nickname[1]+'/\"';
         c.query('SELECT COUNT(i2)=0 FROM itemdata WHERE i2 = ?',[csvdata_nickname[0][1]])
          .on('result', function(res) {
-           res.on('row', function(row) { 
+           res.on('row', function(row) {
             for (var temp in row){
                 if (row[temp] == 1) { //这里判断itemdata表里是否已经有了这个item的数据,这是没有数据
                   console.log('main_csv_submit_server:item没有重复:'+csvdata_nickname[0][1]);
@@ -242,8 +242,8 @@ socketio.listen(server).on('connection', function (socket) {
        .on('end', function() {
          console.log('main_mission_list_server:结果输出完毕');
        });
-      
-    }); //socket.on('main_mission_list_server') ending 
+
+    }); //socket.on('main_mission_list_server') ending
 
     socket.on('main_edit_data_server', function (editdata,editprice,nickname,itemid){
      console.log('main_edit_data_server:收到关系表编辑请求,请求的发送用户是'+nickname);
@@ -251,7 +251,7 @@ socketio.listen(server).on('connection', function (socket) {
        .on('result', function(res) {
          res.on('row', function(row) {
           console.log('main_edit_data_server:关系表编辑的结果是'+inspect(row));
-          
+
          })
          .on('error', function(err) {
            console.log('main_edit_data_server:关系表编辑过程中发生异常错误:' + inspect(err));
@@ -282,7 +282,7 @@ socketio.listen(server).on('connection', function (socket) {
          console.log('main_edit_data_server:价格编辑结果输出完毕');
        });
     });
-    
+
     socket.on('main_calc_server', function(nickname,day){
 
       console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
@@ -303,8 +303,8 @@ socketio.listen(server).on('connection', function (socket) {
        .on('end', function() {
          console.log('main_mission_list_server:结果输出完毕');
        });
-      
-    }); //socket.on('main_calc_server') ending 
+
+    }); //socket.on('main_calc_server') ending
 
 
 
@@ -404,7 +404,7 @@ c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?',[itemid]) //检查关系
                            })
                            .on('end', function() {
                              console.log('update_relation:所有结果输出完毕');
-                          });                
+                          });
                 }else {
                   console.log('itemid重复了:' + itemid);
                   console.log('那么开始UPDATE');
@@ -426,7 +426,7 @@ c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?',[itemid]) //检查关系
                            })
                            .on('end', function() {
                              console.log('update_relation:所有结果输出完毕');
-                            });                  
+                            });
                 };
               };
            })
