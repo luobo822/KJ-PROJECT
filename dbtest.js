@@ -21,7 +21,7 @@ c.on('connect', function() {
  });
 
 // var test = {id:'233',username:'233'};
-// var TABLE = 'test'; 
+// var TABLE = 'test';
 
 // c.query('SELECT * FROM '+TABLE+' WHERE username = :username',test)
 //  .on('result', function(res) {
