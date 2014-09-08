@@ -146,14 +146,14 @@ socketio.listen(server).on('connection', function (socket) {
             console.log('查到的结果是:' + inspect(row));
             for (x in row){
                 is_right = row[x];
-                if (row[x] == 1) { //若id和用户名正确,进行第二遍查询,查出nickname
+                if (row[x] == 1) { //若id和用户名正确,进行第二遍查询,查出这个用户的所有数据
                   console.log('允许登录'+logindata.username);
                   c.query('SELECT * FROM user WHERE id = :id AND username = :username',logindata)
                      .on('result', function(res) {
                        res.on('row', function(row) {
                         row.flag = is_right;
                         console.log('输出row'+inspect(row));
-                        socket.emit('login_client',row); //允许登录发送1/不允许登录发送0/错误发送-1
+                        socket.emit('login_client',row); //允许登录flag=1/不允许登录flag=0/发生错误flag=-1
                        })
                        .on('error', function(err) {
                          console.log('结果输出错误: ' + inspect(err));
@@ -168,7 +168,7 @@ socketio.listen(server).on('connection', function (socket) {
                 }else {
                   console.log('不允许登录,没有此用户或密码错误:'+logindata.username);
                   row.flag = 0;
-                  socket.emit('login_client',row); //允许登录发送1/不允许登录发送0/错误发送-1
+                  socket.emit('login_client',row); //允许登录flag=1/不允许登录flag=0/发生错误flag=-1
                 };
               };
            })

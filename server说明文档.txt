@@ -1,0 +1,76 @@
+**************************
+
+特殊用语说明:
+i2 ->指的是moe数据库(的所有表)中存储这个item官方的识别id,是一串数字,和itemid意思相同.
+i27 ->指的是moe数据库itemdata表中的字段i27,因为CSV中并不具有很大意义,所以用来存储item的价格.
+关系表 ->指的是moe数据库中relation这个表,存储的是每个用户和每个item的关系
+user表 ->指的是moe数据库中user这个表.存储的是每个用户注册时输入的信息.
+row ->nodejs在用query语句查询SQL数据库时,返回的一个对象.这个单词本身指的是"行".存储的是符合要求的记录.例如查询列名[test]中列名[baka]=3的这一格的数据,返回的row就可能是{"test":value},用row['test']或者row["test"]就可以取得value.
+
+**************************
+
+在http://157.7.138.169:2333开启服务器.
+连接数据库[moe];charset:utf8
+
+reg_check_username_server:
+收到用户名,查询user表username字段,已有此用户名发送0,没有此用户名发送1.
+调用客户端事件reg_check_username_client.
+
+reg_check_nickname_server:
+收到昵称,查询user表nickname字段,已有此昵称发送0,没有此昵称发送1.
+调用客户端事件reg_check_nickname_client.
+
+reg_submit_server:
+收到注册表单对象.在user表中插入新的记录.
+在relation表中以昵称为字段名添加新的字段.
+(因为在程序的运行逻辑上不可能出现有重复的字段名,所以不必检测直接添加)
+
+login_server:
+收到登录数据.查询user的id字段和用户名字段.
+id和用户名符合则进行第二遍查询.查询user表对应此用户的行记录.
+接着作为一个对象发送记录,并在对象里加个flag属性.flag=1表示允许登录.flag=0表示不允许登录.
+
+若id和用户名不符合,则查询结果加上属性flag,flag=0发送.
+
+若出现错误,结果加上flag=-1发送.
+调用客户端事件login_client.
+
+main_message_server:
+收到[message]则广播给所有用户.
+
+main_csv_submit_server:
+收到一个csv数组,对应一条记录.
+查询itemdata,判断是否已经有了这个item.若已经存在,发送0.若出现错误,发送-1.
+若不存在,调用insert_itemdata()函数往itemdata表里插入这个item的记录.
+insert_itemdata()函数能向itemdata表插入item的记录.
+然后调用update_relation()函数,在relation表中插入这个item的新记录,并更新此用户在relation表中,关于这个item的数据.
+
+main_mission_list_server:
+收到任务列表刷新请求,传来的参数是昵称.
+查询relation表中nickname列非空时所对应的行记录.这样就得到了此用户有记录的所有商品和对应商品其他人的购买情况.
+将这行记录传给select_itemdata().
+select_itemdata()函数的功能是,根据得到的参数中i2(就是itemid)在itemdata表中查询出此商品的数据,并和购买此item的所有用户信息一并发送.
+调用客户端事件main_mission_list_client.
+
+main_edit_data_server:
+收到editdata,editprice[用户传来的价格],nickname[发送数据编辑请求的用户的昵称],itemid四个参数.
+其中,editdata是形如
+{
+ "bought":Number($("#edit_bought").val()),
+  "target":Number($("#edit_target").val()),
+  "finish":Number($("#edit_finish").val()),
+  "whobuy":$("#edit_whobuy").val()
+}
+的一个字符串.已经由对象转换为字符串.
+其中:
+bought[已经购入的数量,nunmber类型]
+target[目标要购入的数量,number类型]
+finish[完成情况,1代表已完成,0代表未完成,-1代表出现了一点问题,number类型]
+whobuy[哪个用户跑去买这个item,记录的是这个用户的昵称,string类型]
+
+update关系表,往目标的格子里写入editdata.
+update [itemdata]表,往i27里写入editprice.
+
+这个事件并不向客户端返回任何值.
+
+
