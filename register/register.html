@@ -196,12 +196,12 @@
         }
 			  else if (blank.exec($("#user_nickname").val())) {
                 $("#user_nickname").tooltip("show");
-								$("#user_nickname").attr("data-original-title","用户名不可以含有空格");
+								$("#user_nickname").attr("data-original-title","昵称不可以含有空格");
 								$("#user_nickname").focus();
 						  }
         else if ($("#user_nickname").val().length < 3) {
 								$("#user_nickname").tooltip("show");
-								$("#user_nickname").attr("data-original-title","用户名长度小于3,长度应大于等于3");
+								$("#user_nickname").attr("data-original-title","昵称长度小于3,长度应大于等于3");
 								$("#user_nickname").focus();
 			        }
 				else if (!is_connected) {
@@ -219,7 +219,7 @@
 	          	}else if (is_nickname_checked == 1) { //一切正常则允许focus到下一输入框
 						           $("#user_nickname").tooltip("destroy");
 						           console.log("允许unfocus");
-						           is_nickname_checked = 0;
+						           // is_nickname_checked = 0;
 						         }
 						         else {
                            console.log("不允许unfocus");

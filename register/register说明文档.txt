@@ -35,18 +35,50 @@ blank//检测空白
 检测用户名是否重名,向服务器发送用户名;服务器发送回检测结果,1代表可以使用,0代表不能使用.若可以使用,"检测过"标记is_username_checked = 1.
 }
 
+服务器处理用户名重名的事件名是"reg_check_username_server",
+本页面处理服务器返回的检测结果的事件名是"reg_check_username_client"
+
 密码框得到焦点的时候,若确认密码框不为空且与密码框里的字符不相同,弹出tooltip提示"密码不相同"
 
 密码框失去焦点的时候,按顺序执行下列语句:
 {
 检测密码框是否为空;若不为空,则继续.
 检测密码长度是否大于等于4;若大于等于4,则继续.
-检测[确认密码]框是否为空;若不为空,且不相等,则focus到[确认密码]框
+检测[确认密码]框是否为空;若不为空,且不相等,则focus到[确认密码]框来控制流程.
 }
 
 确认密码框失去焦点的时候,按顺序执行下列语句:
 {
-检测[密码]框和[输入密码]框里的字符是否相同;若不相同,则tooltip提示之.
+检测[密码]框和[输入密码]框里的字符是否相同;若不相同,则tooltip提示之,focus到密码框.
 }
+
+电子邮件,QQ号码都为选填,不进行任何限制.(可能被代码注入?)
+
+昵称框失去焦点的时候,流程和用户名框类似.但允许输入汉字.
+它的服务器事件是"reg_check_nickname_server",
+处理返回的数据的事件是"reg_check_nickname_client".
+
+两个密保框都是为空就focus回来,没有其他限制.
+
+用户点击[注册]按钮的时候,弹出modal框,里面是隐私协议.
+
+若用户选择"同意并注册",则发送对象到事件reg_submit_server
+clientdata = {
+	id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
+	    username:$("#user_name").val(),
+	password:$.md5($("#user_password").val()),
+	email:$("#user_email").val(),
+	qq:$("#user_qq").val(),
+	nickname:$("#user_nickname").val(),
+	sq:$("#security_question").val(),
+	isq:$("#input_security_question").val()
+};
+
+服务器返回信息到reg_submit_client,向localstorage写入数据,并alert注册信息,以提示注册成功.
+跳转到main页面.
+
+
+不值得注意的一点是,若localstorage里面有了这个注册过的用户名,则会弹出一个卖萌的alert,并不向服务器发送注册信息.
+
 
 
