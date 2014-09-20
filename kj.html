@@ -27,6 +27,7 @@
     "use strict"
 
       $(function(){
+
 //未登录跳转
           if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined){
             console.log("已登录");
@@ -56,19 +57,11 @@
                 return "#message";
                 break;
 
-              case "#additem_self":
-                return "#additem_self"; //不翻页
-                break;
-
-              case "#additem_other":
-                return "#additem_other";  //不翻页
-                break;
-
               case "#input_csv":
                 return "#input_csv"; //不翻页
                 break;
 
-              case "#filter_setting":
+              case "#calc_setting":
                 return "#tools";
                 break;
 
@@ -157,7 +150,6 @@
             }; //handleTouchEvent() ending
 
 //读取商品详情/编辑关系,绑定至window作为全局对象
-
               window.op_details = new Object();
               window.op_details = {
 
@@ -218,9 +210,7 @@
 
                   $.mobile.changePage("#edit");
                 }
-
               };
-
 //结算时的数据存储,绑定为全局对象
               window.calc_data;
               window.calc_data = {
@@ -229,9 +219,6 @@
                 "outcome_count":0,
                 // "date":true  //为了效率注释掉这个变量;它用来存储用户选择的结算日期
               };
-
-
-
 //信息机能
 
               var socket = io.connect("http://157.7.138.169:2333");
@@ -303,7 +290,6 @@
                       window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
                   };
                 });
-
 //输出结算结果
                 socket.on("main_calc_client", function(iteminfo,otherinfo){
                   var pureobj_myinfo = eval('('+otherinfo[localStorage.nickname]+')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
@@ -408,7 +394,6 @@
                 }; // if 判断日期 ending
 
               });
-
 //掉线
                 socket.on("disconnect", function() {
                   $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
@@ -417,10 +402,7 @@
                 }); //socket.on("disconnect", function() ending
 
               }); //socket.on("connect") ending
-
-
 //消息发送机能
-
               $("#sent_message").keypress(function(event) {
                 if(event.which == 13) {
                   event.preventDefault();
@@ -437,43 +419,18 @@
                 $("#recived_message").listview("refresh");
                 $("#sent_message").val("");
               }); //$("#button_message_send").click(function() ending
-
-            // }); //$("#link_start").click() ending
-
 //清除消息
-
             $("#button_message_clear").click(function(){
               $("#recived_message").empty();
               $("#recived_message").append("<li><center><h1>对话消息</h1></center></li>");
-
               if (is_connected) {
                 $("#recived_message").append("<li><center>连接成功<center></li>");
               };
-              //因为点击这个按钮的时候,用户必定在meeage页面,所以也可以不用page()
-              // $("#message").page();
               $("#recived_message").listview("refresh");
 
             }); //$("#button_message_clear").click() ending
-
-//重置表单
-
-            $("#reset_in_addtiem_self").click(function(){
-               var is_reset=confirm("你确定要重置这个表单？");
-                if (is_reset==true){
-                  form_additem_self.reset();
-                };
-            });
-
-            $("#reset_in_addtiem_other").click(function(){
-               var is_reset=confirm("你确定要重置这个表单？");
-                if (is_reset==true){
-                  form_additem_other.reset();
-                };
-            });
-
 //CSV上传
             $("#upload_csv").click(function(){
-              // console.log($("#unfinished_count").text());
               if (window.csvdata != "") {
                 $("#upload_result").empty();
                 console.log("上传开始");
@@ -484,9 +441,7 @@
                 alert("请选择文件");
               };
             });
-
 //刷新与数据获取
-
             $("#refresh_data").click(function(){
               $("#unfinished").empty();
               $("#finished").empty(); //载入新数据之前清空旧数据
@@ -494,7 +449,6 @@
               $("#finished_count").text(0);
               socket.emit("main_mission_list_server",localStorage.nickname);
             });
-
 //ROLL
             $("#edit_roll").click(function(){
               if (op_details.custom.length != 0) {
@@ -522,8 +476,7 @@
               }else{
                 alert("你没有受到任何委托,所以不能发起ROLL点");
               };
-            });
-
+            });//$("#edit_roll").click(function()) ending
 //上传edit后的数据
             $("#edit_save").click(function(){
               if ($("#edit_whobuy").val() &&　$("#edit_target").val()　&& $("#edit_bought").val() && $("#edit_finish").val() && $("#edit_price").val()){
@@ -543,8 +496,6 @@
                 alert("请完成所有表单");
               };
             });
-
-
 //最终结算
             $("#calc_start").click(function(){
               window.calc_data.spend_count =  0;
@@ -574,7 +525,6 @@
               socket.emit("main_calc_server",localStorage.nickname);
               $.mobile.changePage("#calc_result");
             });
-
 //代购详情跳转
             $("#turn_to_calc_result_details").click(function(){
               $("#calc_result_details").page();
@@ -836,7 +786,7 @@
   </div>
 
   <div data-role="content">
-   <center> ver 1.1</center>
+   <center> ver 1.2</center>
    <center>「正式版」</center>
    <br><hr><br><br><br>
    <center>code by suica</center>
@@ -846,10 +796,7 @@
    <center>Katsuragi Mikoto 的帮助</center>
    <center>Testarossa 的意见</center>
    <center>和其他所有给我帮助的各位!</center>
-   <br><br><br><br><br>
-   <center>结算界面还没有显示总价</center>
-   <center>已修正</center>
-   <br>
+   <br><br>
    <center>是否登录验证还不严谨</center>
    <center>预计修正时间:KJ-PROJECT第二期工程</center>
    <br>

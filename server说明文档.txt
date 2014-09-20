@@ -73,4 +73,57 @@ update [itemdata]表,往i27里写入editprice.
 
 这个事件并不向客户端返回任何值.
 
+main_calc_server:
+收到客户端发来的结算请求.传来的参数是nickname和day(day可能是个无用的参数.这一小段程序里没有出现任何day的调用,  服务器不筛选item的参展日期,而是发送所有该用户有记录的item到客户端,客户端筛选之后显示,因此可能会造成不必要的流量消耗.)
+
+select出relation中所有nickname字段下不为空的数据.
+select的结果记作row,传入select_itemdata_for_calc()中.
+
+select_itemdata_for_calc(row)在itemdata表里找出每个i2(就是itemid)对应的item的数据,返回给客户端此item的itemdata和relation情况如下.
+
+{ rowid: '368',
+  i1: 'Circle',
+  i2: '103597',
+  i3: '5',
+  i4: '99',
+  i5: '34',
+  i6: '金',
+  i7: '東',
+  i8: 'Ａ',
+  i9: '88',
+  i10: '999',
+  i11: 'Yan-Yam',
+  i12: 'ヤンヤン',
+  i13: 'Yan-Yam',
+  i14: '提督さんは甘えん坊',
+  i15: 'https://twitter.com/Yan_Yam',
+  i16: 'fujimaya040@hotmail.com',
+  i17: 'アニパロ中心の18禁サークルです。SAO 艦これ IS etc…新刊 はニセコイ本を予定してます。',
+  i18: '',
+  i19: '20',
+  i20: '450',
+  i21: '4',
+  i22: '1',
+  i23: '',
+  i24: 'https://webcatalog.circle.ms/Circle/11311524/',
+  i25: '',
+  i26: '',
+  i27: '' }
+
+  dataobject:{ rowid: '416',
+  i2: '103597',
+  admin: '{"bought":1,"target":1,"finish":1,"whobuy":"admin"}',
+  test: '{"bought":0,"target":1,"finish":0,"whobuy":"test"}',
+  MIKOTO: null,
+  '长老': null,
+  '十六夜maki': null,
+  '小光羽': null,
+  '九條しろは': null,
+  '赫秋hq': null,
+  '伊依一': null,
+  '大穷逼lone': null,
+  '十六夜果姬': null }
+
+调用客户端事件main_mission_list_client.
+
 

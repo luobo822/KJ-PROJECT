@@ -285,7 +285,7 @@ socketio.listen(server).on('connection', function (socket) {
 
     socket.on('main_calc_server', function(nickname,day){
 
-      console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是'+nickname);
+      console.log('main_calc_server:收到结算请求,请求的发送用户是'+nickname);
 
       c.query('SELECT * FROM relation WHERE '+nickname+' is not null')
        .on('result', function(res) {
@@ -294,14 +294,14 @@ socketio.listen(server).on('connection', function (socket) {
           select_itemdata_for_calc(row);
          })
          .on('error', function(err) {
-           console.log('main_mission_list_server:发生异常错误:' + inspect(err));
+           console.log('main_calc_server:发生异常错误:' + inspect(err));
          })
          .on('end', function(info) {
-           console.log('main_mission_list_server:推送完毕');
+           console.log('main_calc_server:推送完毕');
          })
        })
        .on('end', function() {
-         console.log('main_mission_list_server:结果输出完毕');
+         console.log('main_calc_server:结果输出完毕');
        });
 
     }); //socket.on('main_calc_server') ending
@@ -338,6 +338,7 @@ function select_itemdata_for_calc (dataobject){
   c.query('SELECT * FROM itemdata WHERE i2 = ?',[dataobject['i2']])
      .on('result', function(res) {
        res.on('row', function(row) {
+        console.log('测试'+inspect(row)+'dataobject:'+inspect(dataobject));
         socket.emit('main_calc_client',row,dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
        })
        .on('error', function(err) {
