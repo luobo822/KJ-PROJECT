@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title></title>
+    <title>要求</title>
 
     <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
     <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
@@ -21,7 +21,7 @@
               socket.on("connect", function() {
 
                 socket.emit("request_read_server",1);
-                console.log("read成功");
+                // console.log("read成功");
 
                 socket.on("request_read_client",function(result){
                     console.log("时间："+result["time"]);
@@ -53,17 +53,19 @@
 </script>
 
     <body>
+    <br>
     <ul data-role="listview" data-inset="true">
       <li>
         <center>
-          <h1>要求</h1>
+          <h1>说出你对会场程序的要求吧！</h1>
         </center>
       </li>
     </ul>
+    <br>
 <ul id="request_result" data-role="listview" data-inset="true">
 
     </ul>
     <textarea rows="10" cols="30" id="text"></textarea>
-    <input type="button" id="send" value="发送要求">
+    <input type="button" id="send" value="发送">
     </body>
 </html>
