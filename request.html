@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title></title>
+
+    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
+    <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
+
+    <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+  </head>
+
+<script>
+    $(function(){
+        var socket = io.connect("http://157.7.138.169:2333");
+
+              socket.on("connect", function() {
+
+                socket.emit("request_read_server",1);
+                console.log("read成功");
+
+                socket.on("request_read_client",function(result){
+                    console.log("时间："+result["time"]);
+                    console.log("文本："+result["text"]);
+                    $("#request_result").append($("<li>"+result["time"]+"<br><br>"+result["text"]+"</li>"));
+                    $("#request_result").listview("refresh");
+
+                });
+//掉线
+                socket.on("disconnect", function() {
+                  $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
+                  console.log("与服务器的连接已关闭.刷新页面以重新连接.");
+                  $("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器
+                }); //socket.on("disconnect", function() ending
+
+              }); //socket.on("connect") ending
+
+              $("#send").click(function(){
+                var _text = $("#text").val();
+                if (_text != "") {
+                    $("#text").val("");
+                    socket.emit("request_write_server",_text);
+                    var d = new Date();
+                    $("#request_result").append($("<li>"+d.toString()+"<br><br>"+_text+"</li>"));
+                    $("#request_result").listview("refresh");
+                };
+              });
+    });
+</script>
+
+    <body>
+    <ul data-role="listview" data-inset="true">
+      <li>
+        <center>
+          <h1>要求</h1>
+        </center>
+      </li>
+    </ul>
+<ul id="request_result" data-role="listview" data-inset="true">
+
+    </ul>
+    <textarea rows="10" cols="30" id="text"></textarea>
+    <input type="button" id="send" value="发送要求">
+    </body>
+</html>

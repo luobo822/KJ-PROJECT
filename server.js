@@ -37,7 +37,56 @@ var server = http.createServer(function(req, res) {
 
 socketio.listen(server).on('connection', function (socket) {
 
+//requset
+
+    socket.on('request_read_server', function () {
+       console.log('requset_read_server:收到要求数据库推送请求');
+       c.query('SELECT * FROM request')
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          console.log(inspect(row));
+          socket.emit('request_read_client',row);
+         })
+         .on('error', function(err) {
+           console.log('requset_read_server:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('requset_read_server:完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('requset_read_server:结果输出完毕');
+     });
+
+    });
+
+    socket.on('request_write_server', function (text) {
+       console.log('requset_write_server:收到要求数据库写入请求');
+       var d = new Date();
+       console.log(d.toString());
+       c.query('INSERT INTO request SET time = ?,text = ?',[d.toString(),text])
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          console.log(inspect(row));
+          console.log("apasjkdkajsdk");
+          socket.emit('request_read_client',row);
+         })
+         .on('error', function(err) {
+           console.log('requset_write_server:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('requset_write_server:完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('requset_write_server:结果输出完毕');
+     });
+
+    });
+
+
 //reg
+
 
     socket.on('reg_check_username_server', function (uzndata) {
         console.log('reg_check_username_server:收到需检查的用户名:',uzndata);
@@ -100,7 +149,7 @@ socketio.listen(server).on('connection', function (socket) {
 
     socket.on('reg_submit_server', function (regdata) {
         console.log('收到提交的新用户注册表单对象:\n',regdata);
-        c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq])
+        c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ? ,power = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq,"member"])
          .on('result', function(res) {
            res.on('row', function(row) {
             console.log('注册的结果是:' + inspect(row));
