@@ -12,6 +12,13 @@
     <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
 
     <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+
+    <style>
+      div.scroll{
+      overflow:auto;  /*这个的作用是让溢出的<li><div></div></li>能够滑动,不至于在手机上看不全消息*/
+    }
+    </style>
+
   </head>
 
 <script>
@@ -26,7 +33,7 @@
                 socket.on("request_read_client",function(result){
                     console.log("时间："+result["time"]);
                     console.log("文本："+result["text"]);
-                    $("#request_result").append($("<li>"+result["time"]+"<br><br>"+result["text"]+"</li>"));
+                    $("#request_result").append($("<li><div class=\"scroll\">"+result["time"]+"<br><br>"+result["text"]+"</div></li>"));
                     $("#request_result").listview("refresh");
 
                 });
@@ -45,7 +52,7 @@
                     $("#text").val("");
                     socket.emit("request_write_server",_text);
                     var d = new Date();
-                    $("#request_result").append($("<li>"+d.toString()+"<br><br>"+_text+"</li>"));
+                    $("#request_result").append($("<li><div class=\"scroll\">"+d.toString()+"<br><br>"+_text+"</div></li>"));
                     $("#request_result").listview("refresh");
                 };
               });
