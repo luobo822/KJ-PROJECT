@@ -398,9 +398,69 @@ socketio.listen(server).on('connection', function (socket) {
 
     }); //socket.on('main_select_group_server') ending
 
+    socket.on('main_manage_group_add_server', function(new_group_data,nickname){
+
+      console.log('main_manage_group_add_server:收到新队伍创建请求,请求的发送用户是'+nickname);
+
+      c.query('SELECT COUNT(group_name)=0 FROM groups WHERE group_name = ?',[new_group_data['group_name']])
+         .on('result', function(res) {
+            res.on('row', function(row) {
+              for (var temp in row){
+                  if (row[temp] == 1) {
+                    console.log('main_manage_group_add_server:队伍名字没有重复:'+new_group_data['group_name']);
+                    write_new_group(new_group_data,nickname);
+                  }else{
+                      console.log('main_manage_group_add_server:队伍名字重复了:'+new_group_data['group_name']);
+                      socket.emit('main_manage_group_add_client',0);
+                  };
+                };
+            })
+         .on('error', function(err) {
+           console.log('main_manage_group_add_server:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('main_manage_group_add_server:推送完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_manage_group_add_server:结果输出完毕');
+       });
+
+    }); //socket.on('main_manage_group_add_server') ending
+
 /////////////////////////function_part//////////////////////////
 
-
+function write_new_group(new_group_data,nickname){
+  c.query('INSERT INTO groups SET group_name = ?,group_password = ?,group_introduction = ?',[new_group_data['group_name'],new_group_data['group_password'],new_group_data['group_introduction']])
+       .on('result', function(res) {
+         res.on('row', function(row) {
+         })
+         .on('error', function(err) {
+           console.log('write_new_group:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('write_new_group:完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('write_new_group:结果输出完毕');
+         c.query('UPDATE groups SET '+nickname+'= ? WHERE group_name = ?',['leader',new_group_data['group_name']])//不捕捉错误了
+            .on('result', function(res) {
+               res.on('row', function(row) {
+                 socket.emit('main_manage_group_add_client',1);
+               })
+               .on('error', function(err) {
+                 console.log('write_new_group:发生异常错误:' + inspect(err));
+               })
+               .on('end', function(info) {
+                 console.log('write_new_group:完毕');
+               })
+             })
+             .on('end', function() {
+               console.log('write_new_group:结果输出完毕');
+             });
+       });
+};
 
 function select_itemdata (dataobject){
 

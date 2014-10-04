@@ -89,7 +89,7 @@
             var pre = new Array();
             var end = new Array();
             var delta = new Array();//对于这三个数组,[0]->x,[1]->y
-            var is_turning = 0;
+            window.is_turning = 0;
 
 
             $("#shift_to_message").on("swipeleft",function(){ //特别为#mission的导航栏添加滑动翻页功能
@@ -225,19 +225,42 @@
               window.op_group = {
                 all_group:new Array(),
                 my_group:new Array(),
+                other_group:new Array(),
                 manage:function(){
-                  $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
-                  for (var i in window.op_group["my_group"]) {
-                    $("#manage_recived_group").append("<li>"
-                      +window.op_group["my_group"][i]["group_name"]
-                      +"<p>"+window.op_group["my_group"][i]["my_power"]+"</p>"
-                      +"</li>");
-                    $("#manage_group").page();
-                    $("#manage_recived_group").listview("refresh");
+                  // $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
+                  // for (var i in window.op_group["my_group"]) {
+                  //   $("#manage_recived_group").append("<li>"
+                  //     +window.op_group["my_group"][i]["group_name"]
+                  //     +"<p>"+window.op_group["my_group"][i]["my_power"]+"</p>"
+                  //     +"</li>");
+                  //   $("#manage_group").page();
+                  //   $("#manage_recived_group").listview("refresh");
+                  // };
+                  // //跳转
+                  // $.mobile.changePage("#manage_group");
+                },
+                add:function(){
+                  if ($("#manage_group_add_group_name").val() && $("#manage_group_add_group_introduction").val() && $("#manage_group_add_group_password").val()) {
+                    var new_group_data = new Object();
+                    new_group_data = {"group_name":$("#manage_group_add_group_name").val(),"group_introduction":$("#manage_group_add_group_introduction").val(),"group_password":$("#manage_group_add_group_password").val()};
+                    console.log("要上传的信息"+new_group_data);
+                    socket.emit("main_manage_group_add_server",new_group_data,localStorage.nickname);
+                    alert("新队伍信息已经成功上传,请刷新查看\n若没有出现新队伍,则说明队伍重名");
+                  }else{
+                    alert("三项信息都不能为空");
                   };
-                  //跳转
-                  $.mobile.changePage("#manage_group");
-                }
+                },
+                details:function(group_name){
+                for (var i in window.op_group.my_group) {
+                  if (window.op_group.my_group[i]["group_name"] == group_name){
+                     $("#group_details_change_group_name").val(group_name);
+                     $("#group_details_change_group_password").val(window.op_group.my_group[i]["group_password"]);
+                     $("#group_details_change_group_introduction").val(window.op_group.my_group[i]["group_introduction"]);
+                  };
+                };
+                $.mobile.changePage("#group_details");
+                },
+
               };
 //通讯机能
 
@@ -416,34 +439,44 @@
               });
 //队伍推送
                 socket.on("main_select_group_client", function(result){
-                  var main_select_group_client_tempObj = new Object();
-                  main_select_group_client_tempObj = {"group_name":result['group_name'],"group_introduction":result['group_introduction']};
-                  window.op_group["all_group"].push(main_select_group_client_tempObj);
-
+                  // var main_select_group_client_tempObj = new Object();
+                  // main_select_group_client_tempObj = {"group_name":result['group_name'],"group_introduction":result['group_introduction']};
+                  window.op_group.all_group.push({"group_name":result['group_name'],"group_introduction":result['group_introduction']});
                   if (result[localStorage.nickname]) {
-                    var main_manage_group_client_tempObj = new Object();
-                    main_manage_group_client_tempObj ={"group_name":result["group_name"],"my_power":result[localStorage.nickname]};
-                    window.op_group["my_group"].push(main_manage_group_client_tempObj);
 
-                    console.log(op_group["my_group"]);
+                    window.op_group["my_group"].push({"group_name":result["group_name"],"my_power":result[localStorage.nickname]});
 
-                  };
-
-                  $("#recived_group").append("<li><a>"
-                    +result["group_name"]
+                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\""+result["group_name"]+"\")\">"
+                    +result["group_name"]+"("+result[localStorage.nickname]+")"
                     +"<p>"+result["group_introduction"]+"</p>"
                     +"</a></li>");
+                  }else{
+                    window.op_group["other_group"].push({"group_name":result["group_name"],"my_power":""});
+                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\""
+                    +result["group_name"]+"\")\">"
+                    +result["group_name"]+"(未加入此队伍)"
+                    +"<p>"+result["group_introduction"]+"</p>"
+                    +"</a></li>");
+                  };
+
                   $("#select_group").page();
                   $("#recived_group").listview("refresh");
 
                   if (!is_turning) {
-                    is_turning = 1;
                     $.mobile.changePage("#select_group");
+                    is_turning = 1;
+                    console.log(is_turning);
                   };
 
                 });//socket.on("main_select_group_client") ending
 
-
+                // socket.on("main_manage_group_add_client", function(number){
+                //   if (number == 1) {
+                //     alert("真的成功");
+                //   }else{
+                //     alert("失败");
+                //   };
+                // });
 //掉线
                 socket.on("disconnect", function() {
                   $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
@@ -595,7 +628,21 @@
             });
 
             $("#turn_to_manage_group").click(function(){
+              is_turning = 0;
               socket.emit("main_manage_group_server",localStorage.nickname);
+            });
+
+            $("#manage_group_add_save").click(function(){
+              window.op_group.add();
+              $.mobile.changePage("#select_group");
+            });
+
+            $("#select_group_refresh").click(function(){
+              $("#recived_group").empty().append("<li><center><h1>所有的队伍</h1></center></li>");
+              //清空队伍信息
+              window.op_group["all_group"] = [];
+              window.op_group["my_group"] = [];
+              socket.emit("main_select_group_server",localStorage.nickname);
             });
 
       }); //$(function) ending
@@ -750,49 +797,54 @@
   <div data-role="footer" data-position="fixed">
     <div data-role="navbar">
       <ul>
-        <li><a onclick="window.op_group.manage()" id="turn_to_manage_group" data-icon="info" class="ui-btn">管理你的队伍!</a></li>
+        <li><a href="#manage_group_add" id="turn_to_manage_group_add" data-icon="info" class="ui-btn">创建新队伍!</a></li>
       </ul>
     </div>
   </div>
 
 </div>
 
-<div data-role="page" id="manage_group">
+<div data-role="page" id="group_details">
   <div data-role="header">
-    <h1>管理队伍</h1>
+    <h1>队伍详情</h1>
 
     <div data-role="button" class="ui-btn-left">
       <a href="#select_group" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
     </div>
 
     <div data-role="button" class="ui-btn-right">
-      <input type="button" id="manage_group_refresh" value="刷新" data-icon="alert">
+      <input type="button" id="group_details_save" value="保存更改" data-icon="alert">
     </div>
   </div>
 
   <div data-role="content">
-    <ul id="manage_recived_group" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索队伍...">
-      <li>
-        <center>
-          <h1>管理你的队伍！</h1>
-        </center>
-      </li>
-    </ul>
-  </div>
-
-  <div data-role="footer" data-position="fixed">
-    <div data-role="navbar">
-      <ul>
-        <li><a onclick="" id="turn_to_manage_group_add" data-icon="info" class="ui-btn">添加新队伍</a></li>
-      </ul>
+    <div data-role="fieldcontain">
+      <label for="group_details_change_group_name">队伍名:</label>
+      <input type="text" name="name" id="group_details_change_group_name" value="" placeholder="队伍的名字" disabled="">
     </div>
+
+    <div data-role="fieldcontain">
+      <label for="group_details_change_group_introduction">队伍介绍:</label>
+      <input type="text" name="text" id="group_details_change_group_introduction" value="" placeholder="随便写点吧" disabled="">
+    </div>
+
+    <div data-role="fieldcontain">
+      <label for="group_details_change_group_password">密码:</label>
+      <input type="text" name="text" id="group_details_change_group_password" value="" placeholder="加入队伍时所需要的密码" disabled="">
+    </div>
+
+    <input type="button" id="button_join_group" value="加入此队伍">
+    <input type="button" id="button_exit_group" value="退出此队伍">
+    <input type="button" disabled="disabled" id="button_delete_group" value="解散此队伍">
+
   </div>
 
 </div>
 
+
 <div data-role="page" id="manage_group_add">
   <div data-role="header">
-    <h1>添加新队伍</h1>
+    <h1>创建新队伍</h1>
     <div data-role="button" class="ui-btn-left">
       <a href="#select_group" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
     </div>
@@ -822,8 +874,6 @@
   </div>
 
 </div>
-
-
 
 
 
@@ -998,13 +1048,12 @@
   </div>
 
   <div data-role="content">
-   <center> ver 1.2</center>
-   <center>「正式版」</center>
+   <center> ver 2.1</center>
+   <center>「升级版」</center>
    <br><hr><br><br><br>
    <center>code by suica</center>
    <br>
    <center>感谢:</center>
-   <center>lala 的代码</center>
    <center>Katsuragi Mikoto 的帮助</center>
    <center>Testarossa 的意见</center>
    <center>和其他所有给我帮助的各位!</center>
