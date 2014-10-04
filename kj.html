@@ -33,7 +33,7 @@
             console.log("已登录");
           }else{
             console.log("跳转到登录界面");
-            window.location.assign("http://test.eshicon.org/login.html");
+            // window.location.assign("http://test.eshicon.org/login.html");
           };
 //定义标记
           var is_connected = 0; //是否连接消息服务器
@@ -149,7 +149,7 @@
                 }; //if ending
             }; //handleTouchEvent() ending
 
-//读取商品详情/编辑关系,绑定至window作为全局对象
+//读取物品详情/编辑关系,绑定至window作为全局对象
               window.op_details = new Object();
               window.op_details = {
 
@@ -219,7 +219,27 @@
                 "outcome_count":0,
                 // "date":true  //为了效率注释掉这个变量;它用来存储用户选择的结算日期
               };
-//信息机能
+
+//队伍操作,绑定为全局对象
+              window.op_group =new Object();
+              window.op_group = {
+                all_group:new Array(),
+                my_group:new Array(),
+                manage:function(){
+                  $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
+                  for (var i in window.op_group["my_group"]) {
+                    $("#manage_recived_group").append("<li>"
+                      +window.op_group["my_group"][i]["group_name"]
+                      +"<p>"+window.op_group["my_group"][i]["my_power"]+"</p>"
+                      +"</li>");
+                    $("#manage_group").page();
+                    $("#manage_recived_group").listview("refresh");
+                  };
+                  //跳转
+                  $.mobile.changePage("#manage_group");
+                }
+              };
+//通讯机能
 
               var socket = io.connect("http://157.7.138.169:2333");
 
@@ -394,6 +414,36 @@
                 }; // if 判断日期 ending
 
               });
+//队伍推送
+                socket.on("main_select_group_client", function(result){
+                  var main_select_group_client_tempObj = new Object();
+                  main_select_group_client_tempObj = {"group_name":result['group_name'],"group_introduction":result['group_introduction']};
+                  window.op_group["all_group"].push(main_select_group_client_tempObj);
+
+                  if (result[localStorage.nickname]) {
+                    var main_manage_group_client_tempObj = new Object();
+                    main_manage_group_client_tempObj ={"group_name":result["group_name"],"my_power":result[localStorage.nickname]};
+                    window.op_group["my_group"].push(main_manage_group_client_tempObj);
+
+                    console.log(op_group["my_group"]);
+
+                  };
+
+                  $("#recived_group").append("<li><a>"
+                    +result["group_name"]
+                    +"<p>"+result["group_introduction"]+"</p>"
+                    +"</a></li>");
+                  $("#select_group").page();
+                  $("#recived_group").listview("refresh");
+
+                  if (!is_turning) {
+                    is_turning = 1;
+                    $.mobile.changePage("#select_group");
+                  };
+
+                });//socket.on("main_select_group_client") ending
+
+
 //掉线
                 socket.on("disconnect", function() {
                   $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
@@ -534,6 +584,20 @@
               $("#calc_result_spend").listview("refresh");
             });
 
+            ///////////////第二期新增代码/////////////////
+
+            $("#turn_to_select_group").click(function(){
+              $("#recived_group").empty().append("<li><center><h1>所有的队伍</h1></center></li>");
+              //清空队伍信息
+              window.op_group["all_group"] = [];
+              window.op_group["my_group"] = [];
+              socket.emit("main_select_group_server",localStorage.nickname);
+            });
+
+            $("#turn_to_manage_group").click(function(){
+              socket.emit("main_manage_group_server",localStorage.nickname);
+            });
+
       }); //$(function) ending
 
       </script>
@@ -541,6 +605,8 @@
     </head>
 
 <body>
+
+
 
 <div data-role="page" id="mission">
   <div data-role="header" data-position="fixed" >
@@ -614,6 +680,18 @@
   </div>
 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
 <div data-role="page" id="tools">
 	<div data-role="header">
 	   <h1>工具</h1>
@@ -623,12 +701,147 @@
 	</div>
 
 	<div data-role="content">
+      <input type="button" id="turn_to_select_group" value="队伍管理">
       <a href="#calc_setting" data-role="button">结算</a>
       <a href="#about" data-role="button" data-transition="slide">关于</a>
       <br><hr><br>
       <a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
 	</div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div data-role="page" id="select_group">
+  <div data-role="header">
+    <h1>选择一个或多个队伍</h1>
+
+    <div data-role="button" class="ui-btn-left">
+      <a href="#tools" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
+    </div>
+
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="select_group_refresh" value="刷新" data-icon="alert">
+    </div>
+  </div>
+
+  <div data-role="content">
+    <ul id="recived_group" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索队伍...">
+      <li>
+        <center>
+          <h1>所有的队伍</h1>
+        </center>
+      </li>
+    </ul>
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="navbar">
+      <ul>
+        <li><a onclick="window.op_group.manage()" id="turn_to_manage_group" data-icon="info" class="ui-btn">管理你的队伍!</a></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div data-role="page" id="manage_group">
+  <div data-role="header">
+    <h1>管理队伍</h1>
+
+    <div data-role="button" class="ui-btn-left">
+      <a href="#select_group" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
+    </div>
+
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="manage_group_refresh" value="刷新" data-icon="alert">
+    </div>
+  </div>
+
+  <div data-role="content">
+    <ul id="manage_recived_group" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索队伍...">
+      <li>
+        <center>
+          <h1>管理你的队伍！</h1>
+        </center>
+      </li>
+    </ul>
+  </div>
+
+  <div data-role="footer" data-position="fixed">
+    <div data-role="navbar">
+      <ul>
+        <li><a onclick="" id="turn_to_manage_group_add" data-icon="info" class="ui-btn">添加新队伍</a></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div data-role="page" id="manage_group_add">
+  <div data-role="header">
+    <h1>添加新队伍</h1>
+    <div data-role="button" class="ui-btn-left">
+      <a href="#select_group" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
+    </div>
+
+    <div data-role="button" class="ui-btn-right">
+      <input type="button" id="manage_group_add_save" value="保存" data-icon="alert">
+    </div>
+    </div>
+
+  <div data-role="content">
+
+        <div data-role="fieldcontain">
+          <label for="name">队伍名:</label>
+          <input type="text" name="name" id="manage_group_add_group_name" value="" placeholder="队伍的名字">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="text">队伍介绍:</label>
+          <input type="text" name="text" id="manage_group_add_group_introduction" value="" placeholder="随便写点吧">
+        </div>
+
+        <div data-role="fieldcontain">
+          <label for="password">密码:</label>
+          <input type="text" name="text" id="manage_group_add_group_password" value="" placeholder="加入队伍时所需要的密码">
+        </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <div data-role="page" id="input_csv">
   <div data-role="header">
@@ -737,7 +950,6 @@
 
   </div>
 
-
 </div>
 
 <div data-role="page" id="calc_result">
@@ -796,12 +1008,6 @@
    <center>Katsuragi Mikoto 的帮助</center>
    <center>Testarossa 的意见</center>
    <center>和其他所有给我帮助的各位!</center>
-   <br><br>
-   <center>是否登录验证还不严谨</center>
-   <center>预计修正时间:KJ-PROJECT第二期工程</center>
-   <br>
-   <center>数据库乱码之后难以修正,预定为每个用户建立一个表,然后分别存储itemdata.并提供用户直接删除itemdata的功能</center>
-   <center>预计修正时间:KJ-PROJECT第二期工程</center>
   </div>
 </div>
 

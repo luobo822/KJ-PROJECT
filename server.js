@@ -87,7 +87,6 @@ socketio.listen(server).on('connection', function (socket) {
 
 //reg
 
-
     socket.on('reg_check_username_server', function (uzndata) {
         console.log('reg_check_username_server:收到需检查的用户名:',uzndata);
         var is_checked = -1;
@@ -148,8 +147,10 @@ socketio.listen(server).on('connection', function (socket) {
 
 
     socket.on('reg_submit_server', function (regdata) {
+
         console.log('收到提交的新用户注册表单对象:\n',regdata);
-        c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ? ,power = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq,"member"])
+
+        c.query('INSERT INTO user SET id = ?, username = ?, password = ?, email = ?, qq = ?, nickname = ?, sq = ?, isq = ? ,power = ?',[regdata.id,regdata.username,regdata.password,regdata.email,regdata.qq,regdata.nickname,regdata.sq,regdata.isq,0])
          .on('result', function(res) {
            res.on('row', function(row) {
             console.log('注册的结果是:' + inspect(row));
@@ -163,8 +164,26 @@ socketio.listen(server).on('connection', function (socket) {
          })
          .on('end', function() {
            console.log('所有结果输出完毕');
-         });
-         console.log('alter_relation:开始添加新用户字段:'+regdata.nickname);
+        });
+
+        console.log('alter_group:开始添加新用户字段:'+regdata.nickname);
+
+        c.query('ALTER TABLE group ADD '+regdata.nickname+' text')
+             .on('result', function(res) {
+               res.on('row', function(row) {
+                console.log('alter_group:加入新用户字段的结果是:' + inspect(row));
+               })
+               .on('error', function(err) {
+                 console.log('alter_group:发生异常错误:' + inspect(err));
+               })
+               .on('end', function(info) {
+                 console.log('alter_group:新用户字段添加完毕');
+               });
+             })
+          .on('end', function() {
+             console.log('alter_group:所有结果输出完毕');
+        });
+
         c.query('ALTER TABLE relation ADD '+regdata.nickname+' text')
              .on('result', function(res) {
                res.on('row', function(row) {
@@ -179,7 +198,7 @@ socketio.listen(server).on('connection', function (socket) {
              })
           .on('end', function() {
              console.log('alter_relation:所有结果输出完毕');
-           });
+        });
         console.log('返回:',regdata);
         socket.emit('reg_submit_client',regdata); //如果成功插入数据,返回对象.
     });
@@ -355,7 +374,29 @@ socketio.listen(server).on('connection', function (socket) {
 
     }); //socket.on('main_calc_server') ending
 
+    socket.on('main_select_group_server', function(nickname){
 
+      console.log('main_select_group_server:收到队伍推送请求,请求的发送用户是'+nickname);
+
+      c.query('SELECT * FROM groups')
+       .on('result', function(res) {
+         res.on('row', function(row) {
+          delete row['group_password'];
+          socket.emit('main_select_group_client',row);
+          console.log('main_select_group_server:向客户端推送成功'+inspect(row));
+         })
+         .on('error', function(err) {
+           console.log('main_select_group_server:发生异常错误:' + inspect(err));
+         })
+         .on('end', function(info) {
+           console.log('main_select_group_server:推送完毕');
+         })
+       })
+       .on('end', function() {
+         console.log('main_select_group_server:结果输出完毕');
+       });
+
+    }); //socket.on('main_select_group_server') ending
 
 /////////////////////////function_part//////////////////////////
 
