@@ -226,6 +226,7 @@
                 all_group:new Array(),
                 my_group:new Array(),
                 other_group:new Array(),
+                now_group:"",
                 manage:function(){
                   // $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
                   // for (var i in window.op_group["my_group"]) {
@@ -251,11 +252,46 @@
                   };
                 },
                 details:function(group_name){
-                for (var i in window.op_group.my_group) {
-                  if (window.op_group.my_group[i]["group_name"] == group_name){
+                window.op_group.now_group = group_name;
+                for (var i in window.op_group.all_group) {
+                  if (window.op_group.all_group[i]["group_name"] == group_name){
                      $("#group_details_change_group_name").val(group_name);
-                     $("#group_details_change_group_password").val(window.op_group.my_group[i]["group_password"]);
-                     $("#group_details_change_group_introduction").val(window.op_group.my_group[i]["group_introduction"]);
+                     // $("#group_details_change_group_password").val(window.op_group.all_group[i]["group_password"]);
+                     $("#group_details_change_group_introduction").val(window.op_group.all_group[i]["group_introduction"]);
+                     $("#group_details_change_group_my_power").val(window.op_group.all_group[i]["my_power"]);
+                     $("#group_details").page();
+                     switch (window.op_group.all_group[i]["my_power"]){
+
+                        case "leader":
+                        $("#group_details_change_group_name").removeAttr("readonly");
+                        $("#group_details_change_group_password").removeAttr("readonly");
+                        $("#group_details_change_group_introduction").removeAttr("readonly");
+                        $("#group_details_save").button("enable");
+                        $("#button_join_group").button("disable");
+                        $("#button_exit_group").button("disable");
+                        $("#button_delete_group").button("enable");
+                        break;
+
+                        case "member":
+                        $("#group_details_change_group_name").attr("readonly",true);
+                        $("#group_details_change_group_password").attr("readonly",true);
+                        $("#group_details_change_group_introduction").attr("readonly",true);
+                        $("#group_details_save").button("disable");
+                        $("#button_join_group").button("disable");
+                        $("#button_exit_group").button("enable");
+                        $("#button_delete_group").button("disable");
+                        break;
+
+                        case null:
+                        $("#group_details_change_group_name").attr("readonly",true);
+                        $("#group_details_change_group_password").removeAttr("readonly");
+                        $("#group_details_change_group_introduction").attr("readonly",true);
+                        $("#group_details_save").button("disable");
+                        $("#button_join_group").button("enable");
+                        $("#button_exit_group").button("disable");
+                        $("#button_delete_group").button("disable");
+                        break;
+                     };
                   };
                 };
                 $.mobile.changePage("#group_details");
@@ -441,19 +477,20 @@
                 socket.on("main_select_group_client", function(result){
                   // var main_select_group_client_tempObj = new Object();
                   // main_select_group_client_tempObj = {"group_name":result['group_name'],"group_introduction":result['group_introduction']};
-                  window.op_group.all_group.push({"group_name":result['group_name'],"group_introduction":result['group_introduction']});
+                  window.op_group.all_group.push({"group_name":result['group_name'],"group_introduction":result['group_introduction'],"my_power":result[localStorage.nickname]});
                   if (result[localStorage.nickname]) {
 
-                    window.op_group["my_group"].push({"group_name":result["group_name"],"my_power":result[localStorage.nickname]});
+                    window.op_group["my_group"].push({"group_name":result["group_name"],"group_introduction":result["group_introduction"],"my_power":result[localStorage.nickname]});
 
-                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\""+result["group_name"]+"\")\">"
+                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\'"+result["group_name"]+"\')\">"
                     +result["group_name"]+"("+result[localStorage.nickname]+")"
                     +"<p>"+result["group_introduction"]+"</p>"
                     +"</a></li>");
                   }else{
                     window.op_group["other_group"].push({"group_name":result["group_name"],"my_power":""});
-                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\""
-                    +result["group_name"]+"\")\">"
+                    $("#recived_group").append("<li><a onclick=\"window.op_group.details(\'"
+                    +result["group_name"]
+                    +"\')\">"
                     +result["group_name"]+"(未加入此队伍)"
                     +"<p>"+result["group_introduction"]+"</p>"
                     +"</a></li>");
@@ -465,18 +502,10 @@
                   if (!is_turning) {
                     $.mobile.changePage("#select_group");
                     is_turning = 1;
-                    console.log(is_turning);
+                    // console.log(is_turning);
                   };
 
                 });//socket.on("main_select_group_client") ending
-
-                // socket.on("main_manage_group_add_client", function(number){
-                //   if (number == 1) {
-                //     alert("真的成功");
-                //   }else{
-                //     alert("失败");
-                //   };
-                // });
 //掉线
                 socket.on("disconnect", function() {
                   $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
@@ -813,29 +842,44 @@
     </div>
 
     <div data-role="button" class="ui-btn-right">
-      <input type="button" id="group_details_save" value="保存更改" data-icon="alert">
+      <input type="button" id="group_details_save" value="保存更改" data-icon="alert" disabled="disabled">
     </div>
   </div>
 
   <div data-role="content">
     <div data-role="fieldcontain">
       <label for="group_details_change_group_name">队伍名:</label>
-      <input type="text" name="name" id="group_details_change_group_name" value="" placeholder="队伍的名字" disabled="">
+      <input type="text" name="name" id="group_details_change_group_name" value="" placeholder="队伍的名字">
     </div>
 
     <div data-role="fieldcontain">
       <label for="group_details_change_group_introduction">队伍介绍:</label>
-      <input type="text" name="text" id="group_details_change_group_introduction" value="" placeholder="随便写点吧" disabled="">
+      <input type="text" name="text" id="group_details_change_group_introduction" value="" placeholder="随便写点吧">
     </div>
 
     <div data-role="fieldcontain">
       <label for="group_details_change_group_password">密码:</label>
-      <input type="text" name="text" id="group_details_change_group_password" value="" placeholder="加入队伍时所需要的密码" disabled="">
+      <input type="text" name="text" id="group_details_change_group_password" value="" placeholder="输入/变更密码">
     </div>
+
+    <div data-role="fieldcontain">
+      <label for="group_details_change_group_my_power">你的权限:</label>
+      <input type="text" name="text" id="group_details_change_group_my_power" value="" placeholder="" readonly>
+    </div>
+
+    <ul id="group_members" data-role="listview" data-inset="true">
+      <li>
+        <center>
+          <h1>队伍成员</h1>
+        </center>
+      </li>
+    </ul>
+
+
 
     <input type="button" id="button_join_group" value="加入此队伍">
     <input type="button" id="button_exit_group" value="退出此队伍">
-    <input type="button" disabled="disabled" id="button_delete_group" value="解散此队伍">
+    <input type="button" id="button_delete_group" value="解散此队伍">
 
   </div>
 
