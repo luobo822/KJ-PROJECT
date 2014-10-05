@@ -421,7 +421,7 @@ KJ-PROJECT第二期工程
 
 首先权限
 
-
+buttonObject.disabled=true|false
 
 
 
