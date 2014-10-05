@@ -710,6 +710,9 @@
 				$("#button_exit_group").click(function() {
 					var r = confirm("你确定要退出此队伍?");
 					if (r) {
+						if (localStorage.active_group == window.op_group.now_group) {
+							localStorage.active_group = "";
+						};
 						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "","","");
 					};
 				});
