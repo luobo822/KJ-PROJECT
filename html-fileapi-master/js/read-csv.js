@@ -13,13 +13,13 @@ function getAsText(fileToRead) {
 	// Handle errors load
 	reader.onload = loadHandler;
 	reader.onerror = errorHandler;
-	// 以UTF-8编码读文件至内存   
+	// 以UTF-8编码读文件至内存
 	reader.readAsText(fileToRead);
 }
 
 function loadHandler(event) {
 	var csv = event.target.result;
-	processData(csv);             
+	processData(csv);
 }
 
 function processData(csv) {
@@ -28,7 +28,6 @@ function processData(csv) {
     while (allTextLines.length) {
         lines.push(allTextLines.shift().split(','));
     }
-	// console.log(lines);
 	get_result(lines);
 }
 
@@ -42,7 +41,6 @@ function get_result(lines){
 	for (var i = 0; i < lines.length; i++) {
 		window.csvdata[i] = lines[i]; //数组捕捉大法
 	};
-	console.log(window.csvdata);
 }
 
 
