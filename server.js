@@ -494,33 +494,35 @@ socketio.listen(server).on('connection', function (socket) {
                       console.log("此人是leader,允许解散");
                     };
                     // console.log('main_op_group_server_delete_select:向客户端推送成功'+inspect(row));
-                    c.query('DELETE FROM groups WHERE group_name = \`'+now_group+'\`')
+                    c.query('DELETE FROM groups WHERE group_name = ?',[now_group])
                      .on('result', function(res) {
                        res.on('row', function(row) {
                         // console.log('main_op_group_server_delete:向客户端推送成功'+inspect(row));
                        })
                        .on('error', function(err) {
+                        console.log("DELETE行出错");
                          socket.emit('alert_client',3,0);
                          console.log('main_op_group_server_delete:发生异常错误:' + inspect(err));
                        })
                        .on('end', function(info) {
 //DROP表
-                        c.query('DROP TABLE IF EXISTS \`'+now_group+'\'')
+                        c.query('DROP TABLE IF EXISTS \`'+now_group+'\`')
                          .on('result', function(res) {
                            res.on('row', function(row) {
-                            console.log('main_op_group_server_delete:向客户端推送成功'+inspect(row));
+                            console.log('main_op_group_server_delete_drop:已删除表'+inspect(row));
                            })
                            .on('error', function(err) {
+                            console.log("DROP出错")
                              socket.emit('alert_client',3,0);
-                             console.log('main_op_group_server_delete:发生异常错误:' + inspect(err));
+                             console.log('main_op_group_server_delete_drop:删除表出错:' + inspect(err));
                            })
                            .on('end', function(info) {
                               socket.emit('alert_client',3,1);
-                              console.log('main_op_group_server_delete:推送完毕');
+                              console.log('main_op_group_server_delete_drop:删除表结束');
                            })
                          })
                          .on('end', function() {
-                           console.log('main_op_group_server_delete:结果输出完毕');
+                           console.log('main_op_group_server_delete_drop:结果输出完毕');
                          });
 //DROP表结束
                        })
