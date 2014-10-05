@@ -407,7 +407,7 @@ socketio.listen(server).on('connection', function (socket) {
                     write_new_group(new_group_data,nickname);
                   }else{
                       console.log('main_manage_group_add_server:队伍名字重复了:'+new_group_data['group_name']);
-                      socket.emit('main_manage_group_add_client',0);
+                      socket.emit('alert_client',5,0);
                   };
                 };
             })
@@ -424,40 +424,184 @@ socketio.listen(server).on('connection', function (socket) {
 
     }); //socket.on('main_manage_group_add_server') ending
 
-    socket.on('main_op_group_server', function(nickname,op_type,now_group,group_password){
+    socket.on('main_op_group_server', function(nickname,op_type,now_group,group_password,group_introduction,new_group_name){
           switch (op_type){
             case 1:
-              console.log("main_op_group_server:收到加入队伍请求:"+nickname+"将加入"+now_group);
+              console.log("main_op_group_server_join:收到加入队伍请求:"+nickname+"将加入"+now_group);
+              c.query('SELECT group_password FROM groups WHERE group_name = ?',[now_group])
+               .on('result', function(res) {
+                 res.on('row', function(row) {
+                  if (row['group_password'] == group_password) {
+                    c.query('UPDATE groups SET \`'+nickname+'\` = ? WHERE group_name = ?',['member',now_group])
+                     .on('result', function(res) {
+                       res.on('row', function(row) {
+                       })
+                       .on('error', function(err) {
+                         console.log('main_op_group_server_join_update:发生异常错误:' + inspect(err));
+                       })
+                       .on('end', function(info) {
+                         console.log('main_op_group_server_join_update:推送完毕');
+                       })
+                     })
+                     .on('end', function() {
+                        socket.emit('alert_client',1,1);
+                        console.log('main_op_group_server_join_update:结果输出完毕');
+                     });
+                  }else{
+                    socket.emit("alert_client",1,0);
+                  };
+                  console.log('main_op_group_server_join:向客户端推送成功'+inspect(row));
+                 })
+                 .on('error', function(err) {
+                   console.log('main_op_group_server_join:发生异常错误:' + inspect(err));
+                 })
+                 .on('end', function(info) {
+                   console.log('main_op_group_server_join:推送完毕');
+                 })
+               })
+               .on('end', function() {
+                 console.log('main_op_group_server_join:结果输出完毕');
+               });
             break;
 
             case 2:
-              console.log("main_op_group_server:收到退出队伍请求:"+nickname+"将退出"+now_group);
+              console.log("main_op_group_server_exit:收到退出队伍请求:"+nickname+"将退出"+now_group);
+              c.query('UPDATE groups SET \`'+nickname+'\` = ? WHERE group_name = ?',[null,now_group])
+               .on('result', function(res) {
+                 res.on('row', function(row) {
+                  console.log('main_op_group_server_exit:向客户端推送成功'+inspect(row));
+                 })
+                 .on('error', function(err) {
+                    socket.emit('alert_client',2,0);
+                    console.log('main_op_group_server_exit:发生异常错误:' + inspect(err));
+                 })
+                 .on('end', function(info) {
+                  socket.emit('alert_client',2,1);
+                   console.log('main_op_group_server_exit:推送完毕');
+                 })
+               })
+               .on('end', function() {
+                  console.log('main_op_group_server_exit:结果输出完毕');
+               });
             break;
 
             case 3:
-              console.log("main_op_group_server:收到解散队伍请求:"+nickname+"将解散"+now_group);
+              console.log("main_op_group_server_delete:收到解散队伍请求:"+nickname+"将解散"+now_group);
+             c.query('SELECT \`'+nickname+'\` FROM groups WHERE group_name = ?',[now_group])
+               .on('result', function(res) {
+                 res.on('row', function(row) {
+                    if (row[nickname] == 'leader') {
+                      console.log("此人是leader,允许解散");
+                    };
+                    // console.log('main_op_group_server_delete_select:向客户端推送成功'+inspect(row));
+                    c.query('DELETE FROM groups WHERE group_name = \`'+now_group+'\`')
+                     .on('result', function(res) {
+                       res.on('row', function(row) {
+                        // console.log('main_op_group_server_delete:向客户端推送成功'+inspect(row));
+                       })
+                       .on('error', function(err) {
+                         socket.emit('alert_client',3,0);
+                         console.log('main_op_group_server_delete:发生异常错误:' + inspect(err));
+                       })
+                       .on('end', function(info) {
+//DROP表
+                        c.query('DROP TABLE IF EXISTS \`'+now_group+'\'')
+                         .on('result', function(res) {
+                           res.on('row', function(row) {
+                            console.log('main_op_group_server_delete:向客户端推送成功'+inspect(row));
+                           })
+                           .on('error', function(err) {
+                             socket.emit('alert_client',3,0);
+                             console.log('main_op_group_server_delete:发生异常错误:' + inspect(err));
+                           })
+                           .on('end', function(info) {
+                              socket.emit('alert_client',3,1);
+                              console.log('main_op_group_server_delete:推送完毕');
+                           })
+                         })
+                         .on('end', function() {
+                           console.log('main_op_group_server_delete:结果输出完毕');
+                         });
+//DROP表结束
+                       })
+                     })//result ending
+                     .on('end', function() {
+                       console.log('main_op_group_server_delete:结果输出完毕');
+                     });
+
+                 })//result ending
+                 .on('error', function(err) {
+                   socket.emit('alert_client',3,0);
+                   console.log('main_op_group_server_delete_select:发生异常错误:' + inspect(err));
+                 })
+                 .on('end', function(info) {
+                   console.log('main_op_group_server_delete_select:推送完毕');
+                 })
+                })
+               .on('end', function() {
+                 console.log('main_op_group_server_delete_select:结果输出完毕');
+               });
             break;
 
             case 4:
-              console.log("main_op_group_server:4");
+              console.log("main_op_group_server_rewrite:收到队伍信息覆写请求");
+              c.query('SELECT \`'+nickname+'\` FROM groups WHERE group_name = ?',[now_group])
+                .on('result', function(res) {
+                  res.on('row', function(row) {
+                    // socket.emit('alert_client',4,1);
+                    if (row[nickname] == 'leader') {
+                    console.log("此人是leader,允许覆写");
+                    c.query('UPDATE groups SET group_name = ?,group_password = ?,group_introduction = ? WHERE group_name = ?',[new_group_name,group_password,group_introduction,now_group])
+                     .on('result', function(res) {
+                       res.on('row', function(row) {
+                       })
+                       .on('error', function(err) {
+                        socket.emit('alert_client',4,0);
+                        console.log('main_op_group_server_update:发生异常错误:' + inspect(err));
+                       })
+                       .on('end', function(info) {
+                        console.log('main_op_group_server_update:推送完毕');
+
+                        if (new_group_name != now_group) {
+//重命名表
+                          c.query('RENAME TABLE \`'+now_group+'\` TO \`'+new_group_name+'\`')
+                           .on('result', function(res) {
+                             res.on('row', function(row) {
+                             })
+                             .on('error', function(err) {
+                              socket.emit('alert_client',4,0);
+                              console.log('main_op_group_server_rename:发生异常错误:' + inspect(err));
+                             })
+                             .on('end', function(info) {
+                              socket.emit('alert_client',4,1);
+                              console.log('main_op_group_server_rename:推送完毕');
+                             })
+                           })
+                           .on('end', function() {
+                             console.log('main_op_group_server_rename:结果输出完毕');
+                           });
+                        };//  if ending
+                       })// previous end ending
+                     })// previous result ending
+                     .on('end', function() {
+                       console.log('main_op_group_server_update:结果输出完毕');
+                     });
+                  };
+
+                  })
+                  .on('error', function(err) {
+                    socket.emit('alert_client',4,0);
+                    console.log('main_op_group_server_rewrite_select:发生异常错误:' + inspect(err));
+                  })
+                  .on('end', function(info) {
+                    console.log('main_op_group_server_rewrite_select:完毕');
+                  })
+                })
+                .on('end', function() {
+                  console.log('main_op_group_server_rewrite_select:结果输出完毕');
+                });
             break;
-          };
-          // c.query('SELECT * FROM groups')
-          //  .on('result', function(res) {
-          //    res.on('row', function(row) {
-          //     // socket.emit('main_select_group_client',row);
-          //     console.log('main_op_group_server:向客户端推送成功'+inspect(row));
-          //    })
-          //    .on('error', function(err) {
-          //      console.log('main_op_group_server:发生异常错误:' + inspect(err));
-          //    })
-          //    .on('end', function(info) {
-          //      console.log('main_op_group_server:推送完毕');
-          //    })
-          //  })
-          //  .on('end', function() {
-          //    console.log('main_op_group_server:结果输出完毕');
-          //  });
+          };//  switch ending
         }); //socket.on('main_op_group_server') ending
 
 /////////////////////////function_part//////////////////////////
@@ -467,6 +611,7 @@ function write_new_group(new_group_data,nickname){
          res.on('row', function(row) {
          })
          .on('error', function(err) {
+           socket.emit('alert_client',5,0);
            console.log('write_new_group:发生异常错误:' + inspect(err));
          })
          .on('end', function(info) {
@@ -475,22 +620,41 @@ function write_new_group(new_group_data,nickname){
        })
        .on('end', function() {
          console.log('write_new_group:结果输出完毕');
-         c.query('UPDATE groups SET '+nickname+'= ? WHERE group_name = ?',['leader',new_group_data['group_name']])//不捕捉错误了
-            .on('result', function(res) {
-               res.on('row', function(row) {
-                 socket.emit('main_manage_group_add_client',1);
-               })
-               .on('error', function(err) {
-                 console.log('write_new_group:发生异常错误:' + inspect(err));
-               })
-               .on('end', function(info) {
-                 console.log('write_new_group:完毕');
-               })
-             })
-             .on('end', function() {
-               console.log('write_new_group:结果输出完毕');
-             });
        });
+
+       c.query('UPDATE groups SET '+nickname+'= ? WHERE group_name = ?',['leader',new_group_data['group_name']])//不捕捉错误了
+        .on('result', function(res) {
+           res.on('row', function(row) {
+             // socket.emit('main_manage_group_add_client',1);
+           })
+           .on('error', function(err) {
+            socket.emit('alert_client',5,0);
+            console.log('write_new_group:发生异常错误:' + inspect(err));
+           })
+           .on('end', function(info) {
+             console.log('write_new_group:完毕');
+            c.query('CREATE TABLE IF NOT EXISTS \`'+new_group_data['group_name']+'\` ( i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text)CHARSET=utf8')
+              .on('result', function(res) {
+                 res.on('row', function(row) {
+                 })
+                 .on('error', function(err) {
+                  socket.emit('alert_client',5,0);
+                  console.log('write_new_group:发生异常错误:' + inspect(err));
+                 })
+                 .on('end', function(info) {
+                   socket.emit('alert_client',5,1);
+                   console.log('write_new_group:完毕');
+                 })
+               })
+               .on('end', function() {
+                 console.log('write_new_group:结果输出完毕');
+               });
+           })
+         })
+         .on('end', function() {
+           console.log('write_new_group:结果输出完毕');
+         });
+
 };
 
 function select_itemdata (dataobject){
@@ -655,17 +819,17 @@ c.query('SELECT COUNT('+columnname+')=0 FROM '+tablename+' '+condition)
 //SQL模板
 
 // c.query('')
-     // .on('result', function(res) {
-     //   res.on('row2', function(row2) {
-     //    console.log('成功');
-     //   })
-     //   .on('error', function(err) {
-     //     console.log('发生异常错误:' + inspect(err));
-     //   })
-     //   .on('end', function(info) {
-     //     console.log('完毕');
-     //   })
-     // })
-     // .on('end', function() {
-     //   console.log('结果输出完毕');
-     // });
+//      .on('result', function(res) {
+//        res.on('row', function(row) {
+//         console.log('成功');
+//        })
+//        .on('error', function(err) {
+//          console.log('发生异常错误:' + inspect(err));
+//        })
+//        .on('end', function(info) {
+//          console.log('完毕');
+//        })
+//      })
+//      .on('end', function() {
+//        console.log('结果输出完毕');
+//      });
