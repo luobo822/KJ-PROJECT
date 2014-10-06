@@ -25,7 +25,6 @@
 		</style>
 
 		<script>
-
 			"use strict"
 
 			$(document).on("pageshow","#select_group",function(){
@@ -34,6 +33,8 @@
 
 			$(function() {
 
+				"use strict"
+
 				//未登录跳转
 				if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined) {
 					console.log("已登录");
@@ -41,6 +42,14 @@
 					console.log("跳转到登录界面");
 					// window.location.assign("http://test.eshicon.org/login.html");
 				};
+
+//输出活跃队伍名
+				if (localStorage.active_group) {
+					$("#mission_title").text(localStorage.active_group);
+				}else{
+					$("#mission_title").text("未选择活跃队伍");
+				};
+
 				//定义标记
 				var is_connected = 0; //是否连接消息服务器
 				var identification = ""; //用户识别码
@@ -123,7 +132,6 @@
 							reverse: true,
 							changeHash: true
 						});
-
 					};
 
 				}; //function turnpage() ending
@@ -325,7 +333,7 @@
 						}else{
 							$("#button_active_group").val("设为活跃").button("refresh");
 						};
-            $("#group_members").listview("refresh");
+            			$("#group_members").listview("refresh");	
 						$.mobile.changePage("#group_details");
 					},
 
@@ -492,8 +500,12 @@
 									break;
 
 								case 5:
-								  alert("队伍创建成功!");
-								break;
+									alert("队伍创建成功!");
+									break;
+								
+								case 6:
+									alert("item添加成功!");
+									break;
 							}
 						} else if (type_number == 0){
 							switch (text_number) {
@@ -514,7 +526,11 @@
 									break;
 								case 5:
 									alert("队伍创建失败.\n请检查是否重名或者使用汉字/英文字母的队伍名!");
-								break;
+									break;
+								
+								case 6:
+									alert("item添加失败.\n请检查当前活跃队伍中的列表中是否已存在此circle!");
+									break;
 
 							};
 						};
@@ -522,9 +538,11 @@
 
 					//掉线
 					socket.on("disconnect", function() {
-						$("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
+						$("#recived_message").append("<br><li><center>连接异常关闭</center></li>");
 						console.log("与服务器的连接已关闭.刷新页面以重新连接.");
-						$("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器
+						$("#connect_flag").empty().append("消息(连接已断开)");
+						$("#message").page();
+						$("#recived_message").listview("refresh");
 					}); //socket.on("disconnect", function() ending
 
 				}); //socket.on("connect") ending
@@ -640,7 +658,8 @@
 						alert("请完成所有表单");
 					};
 				});
-				//最终结算
+
+//最终结算
 				$("#calc_start").click(function() {
 					window.calc_data.spend_count = 0;
 					window.calc_data.income_count = 0;
@@ -683,6 +702,7 @@
 				$("#turn_to_select_group").click(function() {
 					$("#recived_group").empty().append("<li><center><h1>所有的队伍</h1></center></li>");
 					//清空队伍信息
+					window.op_group["raw_all_group"] = [];
 					window.op_group["all_group"] = [];
 					window.op_group["my_group"] = [];
 					socket.emit("main_select_group_server", localStorage.nickname);
@@ -701,6 +721,7 @@
 				$("#select_group_refresh").click(function() {
 					$("#recived_group").empty().append("<li><center><h1>所有的队伍</h1></center></li>");
 					//清空队伍信息
+					window.op_group["raw_all_group"] = [];
 					window.op_group["all_group"] = [];
 					window.op_group["my_group"] = [];
 					socket.emit("main_select_group_server", localStorage.nickname);
@@ -720,6 +741,7 @@
 					if (r) {
 						if (localStorage.active_group == window.op_group.now_group) {
 							localStorage.active_group = "";
+							$("#mission_title").text("未选择活跃队伍");
 						};
 						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "","","");
 					};
@@ -752,11 +774,67 @@
 
 				$("#button_active_group").click(function(){
 					localStorage.active_group = window.op_group.now_group;
+					$("#mission_title").text(localStorage.active_group);
 					alert("成功设置"+localStorage.active_group+"为活跃队伍");
 					$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 				});
-
-
+				
+				$("#turn_to_add_item").click(function(){
+					$("#add_item_name").val("");
+					$("#add_item_price").val("");
+					$("#add_item_place_number").val("");
+					$("#add_item_copy_num").val("");
+					if (localStorage.active_group) {
+						$.mobile.changePage("#add_item");
+					}else{
+						alert("请选择活跃队伍!");
+					};
+				});
+				
+				$("#add_item_upload").click(function(){
+					if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_place_number").val() && $("#add_item_copy_num").val()) {
+						if ($("#add_item_place_number").val().length == 6) {
+							var r =confirm("确认为"+localStorage.active_group+"添加item?");
+							if (r) {
+								socket.emit("main_add_item_server",$("#add_item_name").val(),$("#add_item_price").val(),$("#add_item_place_number").val(),$("#add_item_copy_num").val(),localStorage.nickname,localStorage.active_group);
+							};
+						}else{
+							alert("请确认摊位号是否正确!");
+						};
+					}else{
+						alert("请填写所有的信息");
+					};
+				});
+				
+				$("#turn_to_add_circle").click(function(){
+					$("#days_in_add_circle").val(1);
+					$("#add_circle_name").val("");
+					$("#add_circle_number").val("");
+					$("#add_circle_rank").val("");
+					if (localStorage.active_group) {
+						$.mobile.changePage("#add_circle");
+					}else{
+						alert("请选择活跃队伍!");
+					};
+				});
+				
+				$("#add_circle_upload").click(function(){//STOP
+					
+					if ($("#days_in_add_circle").val() && $("#add_circle_name").val()  && $("#add_circle_number").val() && $("#add_circle_author").val() && $("#add_circle_rank").val()) {
+						if ($("#add_circle_number").val().length == 6) {
+							//尚未考虑摊位的日期
+							var r = confirm("确认为"+localStorage.active_group+"添加circle?");
+							if (r) {
+								socket.emit("main_add_circle_server",$("#days_in_add_circle").val(),$("#add_circle_name").val(),$("#add_circle_number").val(),$("#add_circle_author").val(),$("#add_circle_rank").val(),localStorage.nickname,localStorage.active_group);
+							};
+						}else{
+							alert("请确认摊位号是否正确!");
+						};
+					}else{
+						alert("请填写所有的信息");
+					};
+				});
+				
 			}); //$(function) ending
 		</script>
 
@@ -768,7 +846,7 @@
 
 		<div data-role="page" id="mission">
 			<div data-role="header" data-position="fixed">
-				<h1>任务</h1>
+				<h1 id="mission_title">任务</h1>
 				<div data-role="button" class="ui-btn-right">
 					<a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
 				</div>
@@ -796,8 +874,8 @@
 					<ul>
 						<li><a href="#" data-icon="info" class="ui-state-persist">任务</a>
 						</li>
-						<li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade">消息</a>
 						</li>
+						<li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade">消息</a>
 					</ul>
 				</div>
 			</div>
@@ -807,14 +885,13 @@
 			<div data-role="header">
 				<h1 id="connect_flag">消息</h1>
 				<div data-role="button" class="ui-btn-left">
-					<input type="button" id="button_message_clear" value="清空消息" data-role="button" data-icon="alert">
+					<input type="button" id="button_message_clear" value="清空" data-role="button" data-icon="alert">
 				</div>
 			</div>
 
 			<div data-role="content">
-
-				<br>
-				<ul id="recived_message" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="搜索消息记录...">
+				<!-- <br> -->
+				<ul id="recived_message" data-role="listview" data-inset="false" data-filter-placeholder="搜索消息记录...">
 					<li>
 						<center>
 							<h1>对话消息</h1>
@@ -822,7 +899,7 @@
 					</li>
 				</ul>
 				<br>
-				<label for="outgingChatMessage">输入:</label>
+				<!-- <label for="outgingChatMessage">输入:</label> -->
 				<input type="text" id="sent_message">
 				<input type="button" id="button_message_send" value="发送消息">
 				<br>
@@ -842,18 +919,6 @@
 			</div>
 		</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
 		<div data-role="page" id="tools">
 			<div data-role="header">
 				<h1>工具</h1>
@@ -864,29 +929,16 @@
 
 			<div data-role="content">
 				<input type="button" id="turn_to_select_group" value="队伍管理">
-				<a href="#calc_setting" data-role="button">结算</a>
-				<a href="#about" data-role="button" data-transition="slide">关于</a>
+				<input type="button" id="turn_to_add_item" value="登录新物品">
+				<input type="button" id="turn_to_add_circle" value="登录新摊位">
+				<a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
 				<br>
 				<hr>
 				<br>
-				<a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
+				<a href="#calc_setting" data-role="button">结算</a>
+				<a href="#about" data-role="button" data-transition="slide">关于</a>
 			</div>
 		</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 		<div data-role="page" id="select_group">
 			<div data-role="header">
@@ -966,14 +1018,13 @@
 
 
 
-        <input type="button" id="button_active_group" value="设为活跃" disabled>
+				<input type="button" id="button_active_group" value="设为活跃" disabled>
 				<input type="button" id="button_join_group" value="加入此队伍" disabled>
 				<input type="button" id="button_exit_group" value="退出此队伍" disabled>
 				<input type="button" id="button_delete_group" value="解散此队伍" disabled>
 			</div>
 
 		</div>
-
 
 		<div data-role="page" id="manage_group_add">
 			<div data-role="header">
@@ -1008,23 +1059,87 @@
 
 		</div>
 
+		<div data-role="page" id="add_item">
+			<div data-role="header">
+				<h1>登录新的宝物</h1>
+				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<div data-role="button" class="ui-btn-right">
+					<input type="button" id="reset_add_item" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
+				</div>
+			</div>
 
+			<div data-role="content">
+				<div data-role="fieldcontain">
+					<label for="add_item_name">宝物名:</label>
+					<input type="text" id="add_item_name" value="" placeholder="宝物的名字">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="add_item_price">价格:</label>
+					<input type="text" id="add_item_price" value="" placeholder="円/份">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="add_item_place">摊位号:</label>
+					<input type="text" id="add_item_place_number" value="" placeholder="宝物的摊位号">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="add_item_copy_num">需求份数:</label>
+					<input type="range" id="add_item_copy_num" value="1" min="1" max="30">
+				</div>
+				
+				<input type="button" id="add_item_upload" value="上传信息" />
+				
+			</div>
 
+		</div>
 
+		<div data-role="page" id="add_circle">
+			<div data-role="header">
+				<h1>登录新摊位</h1>
+				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<div data-role="button" class="ui-btn-right">
+					<input type="button" id="reset_in_add_circle" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
+				</div>
+			</div>
 
+			<div data-role="content">
 
+				<fieldset data-role="fieldcontain">
+					<label for="days_in_add_circle">摊位何日参展:</label>
+					<select name="days_in_add_circle" id="days_in_add_circle" data-native-menu="false">
+						<option value="1">第一天 X曜日</option>
+						<option value="2">第二天 X曜日</option>
+						<option value="3">第三天 X曜日</option>
+					</select>
+				</fieldset>
 
+				<div data-role="fieldcontain">
+					<label for="name">摊位名:</label>
+					<input type="text" name="text" id="add_circle_name" value="" placeholder="宝物的名字">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="name">摊位号:</label>
+					<input type="text" name="text" id="add_circle_number" value="" placeholder="宝物的摊位号">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="name">作者:</label>
+					<input type="text" name="text" id="add_circle_author" value="" placeholder="作者的名字">
+				</div>
 
+				<div data-role="fieldcontain">
+					<label for="points">优先级:</label>
+					<input type="range" name="points" id="add_circle_rank" value="1" min="1" max="100">
+				</div>
+				
+				<input type="button" id="add_circle_upload" value="上传信息" />
 
+			</div>
 
-
-
-
+		</div>
 
 		<div data-role="page" id="input_csv">
 			<div data-role="header">
@@ -1073,7 +1188,6 @@
 				</div>
 			</div>
 		</div>
-
 
 		<div data-role="page" id="edit">
 			<div data-role="header">
@@ -1205,7 +1319,6 @@
 			</div>
 
 		</div>
-
 
 		<div data-role="page" id="about">
 			<div data-role="header">
