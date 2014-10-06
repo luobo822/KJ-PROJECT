@@ -228,6 +228,7 @@
 				//队伍操作,绑定为全局对象
 				window.op_group = new Object();
 				window.op_group = {
+					raw_all_group: new Array(),
 					all_group: new Array(),
 					my_group: new Array(),
 					other_group: new Array(),
@@ -261,14 +262,15 @@
 					},
 					details: function(group_name) {
 						window.op_group.now_group = group_name;
-						for (var i in window.op_group.all_group) {
-							if (window.op_group.all_group[i]["group_name"] == group_name) {
+						$("#group_members").empty().append("<li><center><h1>队伍成员</h1></center></li>");
+						for (var i in window.op_group.raw_all_group) {
+							if (window.op_group.raw_all_group[i]["group_name"] == group_name) {
 								$("#group_details_change_group_name").val(group_name);
 								$("#group_details_change_group_password").val("");
-								$("#group_details_change_group_introduction").val(window.op_group.all_group[i]["group_introduction"]);
-								$("#group_details_change_group_my_power").val(window.op_group.all_group[i]["my_power"]);
+								$("#group_details_change_group_introduction").val(window.op_group.raw_all_group[i]["group_introduction"]);
+								$("#group_details_change_group_my_power").val(window.op_group.raw_all_group[i][localStorage.nickname]);
 								$("#group_details").page();
-								switch (window.op_group.all_group[i]["my_power"]) {
+								switch (window.op_group.raw_all_group[i][localStorage.nickname]) {
 
 									case "leader":
 										$("#group_details_change_group_name").removeAttr("readonly");
@@ -304,13 +306,26 @@
 										break;
 								};
 							};
+							if (window.op_group.raw_all_group[i]["group_name"] == window.op_group.now_group) {
+								for (var x in window.op_group.raw_all_group[i]){
+									if (x != "group_introduction" && x != "group_name" && window.op_group.raw_all_group[i][x] != null) {
+										if (window.op_group.raw_all_group[i][x] == "leader") {
+											$("#group_members").prepend("<li><div class=\"scroll\"><center>"+x+"</center></div></li>");
+											$("#group_members").prepend("<li><center><h1>队长</h1></center></li>");
+										}else if (window.op_group.raw_all_group[i][x] == "member") {
+											$("#group_members").append("<li><div class=\"scroll\"><center>"+x+"</center></li>");
+										};
+									};
+								};
+							};
 						};
+
 						if (window.op_group.now_group == localStorage.active_group) {
 							$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 						}else{
 							$("#button_active_group").val("设为活跃").button("refresh");
 						};
-
+            $("#group_members").listview("refresh");
 						$.mobile.changePage("#group_details");
 					},
 
@@ -423,14 +438,7 @@
 					});
 					//队伍推送
 					socket.on("main_select_group_client", function(result) {
-						// window.member = new Object();
-						// var group_name = result["group_name"];
-						// for (var i in result) {
-						// 	if (i != "group_name" && i != "group_introduction") {
-						// 		window.member[group_name] = new Array();
-						// 	  window.member[group_name][i] = result[i];
-						// 	};
-						// };
+						window.op_group.raw_all_group.push(result);
 						window.op_group.all_group.push({
 							"group_name": result['group_name'],
 							"group_introduction": result['group_introduction'],
