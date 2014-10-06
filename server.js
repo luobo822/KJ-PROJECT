@@ -145,7 +145,6 @@ socketio.listen(server).on('connection', function (socket) {
          });
     });
 
-
     socket.on('reg_submit_server', function (regdata) {
 
         console.log('收到提交的新用户注册表单对象:\n',regdata);
@@ -444,7 +443,22 @@ socketio.listen(server).on('connection', function (socket) {
                        })
                      })
                      .on('end', function() {
-                        socket.emit('alert_client',1,1);
+	                        c.query('ALTER TABLE \`'+now_group+'\` ADD '+nickname+' text')//233
+			              .on('result', function(res) {
+			                 res.on('row', function(row) {
+			                 })
+			                 .on('error', function(err) {
+			                  socket.emit('alert_client',1,0);
+			                  console.log('write_new_group:发生异常错误:' + inspect(err));
+			                 })
+			                 .on('end', function(info) {
+		                       socket.emit('alert_client',1,1);
+			                   console.log('write_new_group:完毕');
+			                 })
+			               })
+			               .on('end', function() {
+			                 console.log('write_new_group:结果输出完毕');
+			               });
                         console.log('main_op_group_server_join_update:结果输出完毕');
                      });
                   }else{
@@ -476,7 +490,23 @@ socketio.listen(server).on('connection', function (socket) {
                     console.log('main_op_group_server_exit:发生异常错误:' + inspect(err));
                  })
                  .on('end', function(info) {
-                  socket.emit('alert_client',2,1);
+                     c.query('ALTER TABLE \`'+now_group+'\` DROP \`'+nickname+'\`')
+					    .on('result', function(res) {
+					      res.on('row', function(row) {
+					       console.log('main_op_group_server_exit_drop:成功');
+					      })
+					      .on('error', function(err) {
+						  	socket.emit('alert_client',2,0);
+					        console.log('main_op_group_server_exit_drop:发生异常错误:' + inspect(err));
+					      })
+					      .on('end', function(info) {
+			                socket.emit('alert_client',2,1);
+					        console.log('main_op_group_server_exit_drop:完毕');
+					      })
+					    })
+					    .on('end', function() {
+					      console.log('main_op_group_server_exit_drop:结果输出完毕');
+					    });
                    console.log('main_op_group_server_exit:推送完毕');
                  })
                })
@@ -604,7 +634,86 @@ socketio.listen(server).on('connection', function (socket) {
                 });
             break;
           };//  switch ending
-        }); //socket.on('main_op_group_server') ending
+        }); //	socket.on('main_op_group_server') ending
+        
+        socket.on('main_add_item_server',function(item_name,item_price,circle_name,item_copy_number,nickname,which_group){
+		   c.query('SELECT COUNT(i2)  FROM '+which_group+' WHERE i2 = ?',[item_number])
+	        .on('result', function(res) {
+	          res.on('row', function(row) {
+	           	for (x in row){
+                	if (row[x] >= 1) {
+              		 c.query('INSERT INTO '+which_group+' SET i2 = ?,i14 = ?, i27 = ?',[item_number,item_name,item_price])
+					    .on('result', function(res) {
+					      res.on('row', function(row) {
+					       console.log('main_add_item_server_insert:成功');
+					      })
+					      .on('error', function(err) {//STOPSTOP
+					        console.log('main_add_item_server_insert:发生异常错误:' + inspect(err));
+					      })
+					      .on('end', function(info) {
+					      	socket.emit('alert_client',6,1);
+					        console.log('main_add_item_server_insert:完毕');
+					      })
+					    })
+					    .on('end', function() {
+					      console.log('main_add_item_server_insert:结果输出完毕');
+					    });
+                	}else{
+                		socket.emit('alert_client',6,0);
+                	};
+              	};//	for ending
+	          })
+	          .on('error', function(err) {
+	            console.log('main_add_item_server:发生异常错误:' + inspect(err));
+	          })
+	          .on('end', function(info) {
+	            console.log('main_add_item_server:完毕');
+	          })
+	        })
+	        .on('end', function() {
+	          console.log('main_add_item_server:结果输出完毕');
+	        });//	query ending
+        });//	socket.on('main_add_item_server') ending
+        
+        socket.on('main_add_circle_server',function(circle_date,circle_name,circle_number,circle_rank,nickname,which_group){
+		   c.query('SELECT COUNT(i2)=0  FROM '+which_group+' WHERE i2 = ?',[circle_name])
+	        .on('result', function(res) {
+	          res.on('row', function(row) {
+	           	for (x in row){
+                	if (row[x] == 1) {
+              		 c.query('INSERT INTO '+which_group+' SET i2 = ?, i5 = ?, i11 = ?',[circle_number,circle_rank,circle_name])
+					    .on('result', function(res) {
+					      res.on('row', function(row) {
+					       console.log('main_add_circle_server_insert:成功');
+					      })
+					      .on('error', function(err) {
+					      	socket.emit('alert_client',6,0);
+					        console.log('main_add_circle_server_insert:发生异常错误:' + inspect(err));
+					      })
+					      .on('end', function(info) {
+					      	socket.emit('alert_client',6,1);
+					        console.log('main_add_circle_server_insert:完毕');
+					      })
+					    })
+					    .on('end', function() {
+					      console.log('main_add_circle_server_insert:结果输出完毕');
+					    });
+                	}else{
+                		socket.emit('alert_client',6,0);
+                	};
+              	};//	for ending
+	          })
+	          .on('error', function(err) {
+	            console.log('main_add_circle_server:发生异常错误:' + inspect(err));
+	          })
+	          .on('end', function(info) {
+	            console.log('main_add_circle_server:完毕');
+	          })
+	        })
+	        .on('end', function() {
+	          console.log('main_add_item_server:结果输出完毕');
+	        });//	query ending
+        });//	socket.on('main_add_item_server') ending
 
 /////////////////////////function_part//////////////////////////
 function write_new_group(new_group_data,nickname){
@@ -644,7 +753,22 @@ function write_new_group(new_group_data,nickname){
                   console.log('write_new_group:发生异常错误:' + inspect(err));
                  })
                  .on('end', function(info) {
-                   socket.emit('alert_client',5,1);
+                 	c.query('ALTER TABLE \`'+new_group_data['group_name']+'\` ADD '+nickname+' text')//233
+		              .on('result', function(res) {
+		                 res.on('row', function(row) {
+		                 })
+		                 .on('error', function(err) {
+		                  socket.emit('alert_client',5,0);
+		                  console.log('write_new_group:发生异常错误:' + inspect(err));
+		                 })
+		                 .on('end', function(info) {
+		                   socket.emit('alert_client',5,1);
+		                   console.log('write_new_group:完毕');
+		                 })
+		               })
+		               .on('end', function() {
+		                 console.log('write_new_group:结果输出完毕');
+		               });
                    console.log('write_new_group:完毕');
                  })
                })
@@ -821,17 +945,17 @@ c.query('SELECT COUNT('+columnname+')=0 FROM '+tablename+' '+condition)
 //SQL模板
 
 // c.query('')
-//      .on('result', function(res) {
-//        res.on('row', function(row) {
-//         console.log('成功');
-//        })
-//        .on('error', function(err) {
-//          console.log('发生异常错误:' + inspect(err));
-//        })
-//        .on('end', function(info) {
-//          console.log('完毕');
-//        })
-//      })
-//      .on('end', function() {
-//        console.log('结果输出完毕');
-//      });
+//  .on('result', function(res) {
+//    res.on('row', function(row) {
+//     console.log('成功');
+//    })
+//    .on('error', function(err) {
+//      console.log('发生异常错误:' + inspect(err));
+//    })
+//    .on('end', function(info) {
+//      console.log('完毕');
+//    })
+//  })
+//  .on('end', function() {
+//    console.log('结果输出完毕');
+//  });
