@@ -443,22 +443,42 @@ socketio.listen(server).on('connection', function (socket) {
                        })
                      })
                      .on('end', function() {
-	                        c.query('ALTER TABLE \`'+now_group+'\` ADD '+nickname+' text')//233
+                     	
+	                        c.query('ALTER TABLE \`'+now_group+'_circle\` ADD '+nickname+' text')
 			              .on('result', function(res) {
 			                 res.on('row', function(row) {
 			                 })
 			                 .on('error', function(err) {
 			                  socket.emit('alert_client',1,0);
-			                  console.log('join_group_alter:发生异常错误:' + inspect(err));
+			                  console.log('join_group_alter_circle:发生异常错误:' + inspect(err));
 			                 })
 			                 .on('end', function(info) {
-		                       socket.emit('alert_client',1,1);
-			                   console.log('join_group_alter:完毕');
+//		                       socket.emit('alert_client',1,1);
+			                   console.log('join_group_alter_circle:完毕');
 			                 })
 			               })
 			               .on('end', function() {
-			                 console.log('join_group_alter:结果输出完毕');
+			                 console.log('join_group_alter_circle:结果输出完毕');
 			               });
+			               
+			               c.query('ALTER TABLE \`'+now_group+'_data\` ADD '+nickname+' text')
+			              .on('result', function(res) {
+			                 res.on('row', function(row) {
+			                 })
+			                 .on('error', function(err) {
+			                  socket.emit('alert_client',1,0);
+			                  console.log('join_group_alter_data:发生异常错误:' + inspect(err));
+			                 })
+			                 .on('end', function(info) {
+		                       socket.emit('alert_client',1,1);
+			                   console.log('join_group_alter_data:完毕');
+			                 })
+			               })
+			               .on('end', function() {
+			                 console.log('join_group_alter_data:结果输出完毕');
+			               });
+			               
+			               
                         console.log('main_op_group_server_join_update:结果输出完毕');
                      });
                   }else{
@@ -490,7 +510,25 @@ socketio.listen(server).on('connection', function (socket) {
                     console.log('main_op_group_server_exit:发生异常错误:' + inspect(err));
                  })
                  .on('end', function(info) {
-                     c.query('ALTER TABLE \`'+now_group+'\` DROP \`'+nickname+'\`')
+                     c.query('ALTER TABLE \`'+now_group+'_circle\` DROP \`'+nickname+'\`')
+					    .on('result', function(res) {
+					      res.on('row', function(row) {
+					       console.log('main_op_group_server_exit_drop:成功');
+					      })
+					      .on('error', function(err) {
+						  	socket.emit('alert_client',2,0);
+					        console.log('main_op_group_server_exit_drop:发生异常错误:' + inspect(err));
+					      })
+					      .on('end', function(info) {
+//			                socket.emit('alert_client',2,1);
+					        console.log('main_op_group_server_exit_drop:完毕');
+					      })
+					    })
+					    .on('end', function() {
+					      console.log('main_op_group_server_exit_drop:结果输出完毕');
+					    });
+					    
+					    c.query('ALTER TABLE \`'+now_group+'_data\` DROP \`'+nickname+'\`')
 					    .on('result', function(res) {
 					      res.on('row', function(row) {
 					       console.log('main_op_group_server_exit_drop:成功');
@@ -507,6 +545,7 @@ socketio.listen(server).on('connection', function (socket) {
 					    .on('end', function() {
 					      console.log('main_op_group_server_exit_drop:结果输出完毕');
 					    });
+					    
                    console.log('main_op_group_server_exit:推送完毕');
                  })
                })
@@ -536,7 +575,26 @@ socketio.listen(server).on('connection', function (socket) {
                        })
                        .on('end', function(info) {
 //DROP表
-                        c.query('DROP TABLE IF EXISTS \`'+now_group+'\`')
+                        c.query('DROP TABLE IF EXISTS \`'+now_group+'_circle\`')
+                         .on('result', function(res) {
+                           res.on('row', function(row) {
+                            console.log('main_op_group_server_delete_drop:已删除表'+inspect(row));
+                           })
+                           .on('error', function(err) {
+                            console.log("DROP出错")
+                             socket.emit('alert_client',3,0);
+                             console.log('main_op_group_server_delete_drop:删除表出错:' + inspect(err));
+                           })
+                           .on('end', function(info) {
+                              socket.emit('alert_client',3,1);
+                              console.log('main_op_group_server_delete_drop:删除表结束');
+                           })
+                         })
+                         .on('end', function() {
+                           console.log('main_op_group_server_delete_drop:结果输出完毕');
+                         });
+                         
+                         c.query('DROP TABLE IF EXISTS \`'+now_group+'_data\`')
                          .on('result', function(res) {
                            res.on('row', function(row) {
                             console.log('main_op_group_server_delete_drop:已删除表'+inspect(row));
@@ -596,7 +654,7 @@ socketio.listen(server).on('connection', function (socket) {
 
                         if (new_group_name != now_group) {
 //重命名表
-                          c.query('RENAME TABLE \`'+now_group+'\` TO \`'+new_group_name+'\`')
+                          c.query('RENAME TABLE \`'+now_group+'_circle\` TO \`'+new_group_name+'_circle\`')
                            .on('result', function(res) {
                              res.on('row', function(row) {
                              })
@@ -612,6 +670,24 @@ socketio.listen(server).on('connection', function (socket) {
                            .on('end', function() {
                              console.log('main_op_group_server_rename:结果输出完毕');
                            });
+                           
+                           c.query('RENAME TABLE \`'+now_group+'_data\` TO \`'+new_group_name+'_data\`')
+                           .on('result', function(res) {
+                             res.on('row', function(row) {
+                             })
+                             .on('error', function(err) {
+                              socket.emit('alert_client',4,0);
+                              console.log('main_op_group_server_rename:发生异常错误:' + inspect(err));
+                             })
+                             .on('end', function(info) {
+                              socket.emit('alert_client',4,1);
+                              console.log('main_op_group_server_rename:推送完毕');
+                             })
+                           })
+                           .on('end', function() {
+                             console.log('main_op_group_server_rename:结果输出完毕');
+                           });
+                           
                         };//  if ending
                        })// previous end ending
                      })// previous result ending
@@ -636,18 +712,18 @@ socketio.listen(server).on('connection', function (socket) {
           };//  switch ending
         }); //	socket.on('main_op_group_server') ending
         
-        socket.on('main_add_item_server',function(item_name,item_price,circle_name,item_copy_number,nickname,which_group){
-		   c.query('SELECT COUNT(i2)  FROM '+which_group+' WHERE i2 = ?',[item_number])
+        socket.on('main_add_item_server',function(item_name,item_price,circle_name,item_copy_number,nickname,which_group,reser){ // (name text ,price text,circle_id text
+		   c.query('SELECT COUNT(i2)  FROM \`'+which_group+'_circle\` WHERE i2 = ?',[item_number])
 	        .on('result', function(res) {
 	          res.on('row', function(row) {
 	           	for (x in row){
                 	if (row[x] >= 1) {
-              		 c.query('INSERT INTO '+which_group+' SET i2 = ?,i14 = ?, i27 = ?',[item_number,item_name,item_price])
-					    .on('result', function(res) {
+              		 c.query('INSERT INTO \`'+which_group+'_data\` SET circle_id = ?,name = ?, price = ?,\`'+nickname+'\` = ?',[item_number,item_name,item_price,'{"bought":0,"target":'+item_copy_number+',"finish":0,"whobuy":"'+reser+'"}'])
+					    .on('result', function(res) {//STOP
 					      res.on('row', function(row) {
 					       console.log('main_add_item_server_insert:成功');
 					      })
-					      .on('error', function(err) {//STOPSTOP
+					      .on('error', function(err) {
 					        console.log('main_add_item_server_insert:发生异常错误:' + inspect(err));
 					      })
 					      .on('end', function(info) {
@@ -675,13 +751,13 @@ socketio.listen(server).on('connection', function (socket) {
 	        });//	query ending
         });//	socket.on('main_add_item_server') ending
         
-        socket.on('main_add_circle_server',function(circle_date,circle_name,circle_number,circle_rank,nickname,which_group){
-		   c.query('SELECT COUNT(i2)=0  FROM '+which_group+' WHERE i2 = ?',[circle_name])
+        socket.on('main_add_circle_server',function(circle_date,circle_area,circle_number,circle_block_name,circle_space_number,circle_name,circle_rank,circle_author,nickname,which_group){
+		   c.query('SELECT COUNT(i2)=0  FROM \`'+which_group+'_circle\` WHERE i2 = ?',[circle_number])
 	        .on('result', function(res) {
 	          res.on('row', function(row) {
 	           	for (x in row){
                 	if (row[x] == 1) {
-              		 c.query('INSERT INTO '+which_group+' SET i2 = ?, i5 = ?, i11 = ?',[circle_number,circle_rank,circle_name])
+              		 c.query('INSERT INTO \`'+which_group+'_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,responsibility = ?',['Circle',circle_number,circle_rank,circle_date,circle_area,circle_block_name,circle_space_number,circle_name,circle_author,nickname])//可能有对应上的错误
 					    .on('result', function(res) {
 					      res.on('row', function(row) {
 					       console.log('main_add_circle_server_insert:成功');
@@ -762,7 +838,7 @@ function write_new_group(new_group_data,nickname){
 		              //     console.log('write_new_group_alter_circle:发生异常错误:' + inspect(err));
 		              //    })
 		              //    .on('end', function(info) {
-		                   socket.emit('alert_client',5,1);
+//		                   socket.emit('alert_client',5,1);
 		              //      console.log('write_new_group_alter_circle:完毕');
 		              //    })
 		              //  })
