@@ -372,24 +372,35 @@
 						$("#upload_result").listview("refresh");
 					});
 					//任务推送
-					socket.on("main_mission_list_client", function(circleinfo, datainfo) {
-						var pureobj_myinfo = eval('(' + datainfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
-						if (pureobj_myinfo['finish'] == 0) {
-							$("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
-								+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a>'+'<a onclick=\"window.op_items.read('+circleinfo['i2']+')\">'+'</a>'+'</li>');
+					socket.on("main_mission_list_client", function(otherinfo, circleinfo) {
+						if (otherinfo != 0) {
+//						console.log(otherinfo);
+						console.log(otherinfo);
 
-							$("#unfinished").listview("refresh");
-							$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
-							window.op_details[datainfo['circle_id']] = circleinfo;
-							window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
-						} else {
-							$("#finished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
-								+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a><a onclick=\"window.op_items.read('+circleinfo['i2']+')\">'+'</a></li>');
+						console.log(circleinfo);
+						
+							var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
+							console.log(pureobj_myinfo);
+//							if (pureobj_myinfo['finish'] == 0) {
+//								$("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
+//									+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
+//
+//								$("#unfinished").listview("refresh");
+//								$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
+//								window.op_details[datainfo['circle_id']] = circleinfo;
+//								window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
+//							} else {
+//								$("#finished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
+//									+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+//
+//								$("#finished").listview("refresh");
+//								$("#finished_count").text(Number($("#finished_count").text()) + 1);
+//								window.op_details[datainfo['circle_id']] = circleinfo;
+//								window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
+//							};
 
-							$("#finished").listview("refresh");
-							$("#finished_count").text(Number($("#finished_count").text()) + 1);
-							window.op_details[datainfo['circle_id']] = circleinfo;
-							window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
+						} else { //otherinfo为空
+							
 						};
 					});
 					//输出结算结果
