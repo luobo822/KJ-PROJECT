@@ -12,7 +12,7 @@ var server = http.createServer(function(req, res) {
     res.end('running');
 }).listen(2333, function() {
     console.log('监听: http://157.7.138.169:2333');
-    console.log('处理register/login/message/main');
+    console.log('处理register/login/message/main/request');
 });
 
     c.connect({
@@ -449,15 +449,15 @@ socketio.listen(server).on('connection', function (socket) {
 			                 })
 			                 .on('error', function(err) {
 			                  socket.emit('alert_client',1,0);
-			                  console.log('write_new_group:发生异常错误:' + inspect(err));
+			                  console.log('join_group_alter:发生异常错误:' + inspect(err));
 			                 })
 			                 .on('end', function(info) {
 		                       socket.emit('alert_client',1,1);
-			                   console.log('write_new_group:完毕');
+			                   console.log('join_group_alter:完毕');
 			                 })
 			               })
 			               .on('end', function() {
-			                 console.log('write_new_group:结果输出完毕');
+			                 console.log('join_group_alter:结果输出完毕');
 			               });
                         console.log('main_op_group_server_join_update:结果输出完毕');
                      });
@@ -733,48 +733,67 @@ function write_new_group(new_group_data,nickname){
          console.log('write_new_group:结果输出完毕');
        });
 
-       c.query('UPDATE groups SET '+nickname+'= ? WHERE group_name = ?',['leader',new_group_data['group_name']])//不捕捉错误了
+       c.query('UPDATE groups SET '+nickname+'= ? WHERE group_name = ?',['leader',new_group_data['group_name']])
         .on('result', function(res) {
            res.on('row', function(row) {
              // socket.emit('main_manage_group_add_client',1);
            })
            .on('error', function(err) {
             socket.emit('alert_client',5,0);
-            console.log('write_new_group:发生异常错误:' + inspect(err));
+            console.log('write_new_group_update:发生异常错误:' + inspect(err));
            })
            .on('end', function(info) {
-             console.log('write_new_group:完毕');
-            c.query('CREATE TABLE IF NOT EXISTS \`'+new_group_data['group_name']+'\` ( i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text)CHARSET=utf8')
+             console.log('write_new_group_update:完毕');
+            c.query('CREATE TABLE IF NOT EXISTS \`'+new_group_data['group_name']+'_circle\` ( i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text,responsibility text)CHARSET=utf8')
               .on('result', function(res) {
                  res.on('row', function(row) {
                  })
                  .on('error', function(err) {
                   socket.emit('alert_client',5,0);
-                  console.log('write_new_group:发生异常错误:' + inspect(err));
+                  console.log('write_new_group_create_circle:发生异常错误:' + inspect(err));
                  })
                  .on('end', function(info) {
-                 	c.query('ALTER TABLE \`'+new_group_data['group_name']+'\` ADD '+nickname+' text')//233
-		              .on('result', function(res) {
-		                 res.on('row', function(row) {
-		                 })
-		                 .on('error', function(err) {
-		                  socket.emit('alert_client',5,0);
-		                  console.log('write_new_group:发生异常错误:' + inspect(err));
-		                 })
-		                 .on('end', function(info) {
+                //  	c.query('ALTER TABLE \`'+new_group_data['group_name']+'_circle\` ADD '+nickname+' text')//233
+		              // .on('result', function(res) {
+		              //    res.on('row', function(row) {
+		              //    })
+		              //    .on('error', function(err) {
+		              //     socket.emit('alert_client',5,0);
+		              //     console.log('write_new_group_alter_circle:发生异常错误:' + inspect(err));
+		              //    })
+		              //    .on('end', function(info) {
 		                   socket.emit('alert_client',5,1);
-		                   console.log('write_new_group:完毕');
-		                 })
-		               })
-		               .on('end', function() {
-		                 console.log('write_new_group:结果输出完毕');
-		               });
-                   console.log('write_new_group:完毕');
+		              //      console.log('write_new_group_alter_circle:完毕');
+		              //    })
+		              //  })
+		              //  .on('end', function() {
+		              //    console.log('write_new_group_alter_circle:结果输出完毕');
+		              //  });
+                   console.log('write_new_group_create_circle:完毕');
                  })
                })
                .on('end', function() {
                  console.log('write_new_group:结果输出完毕');
                });
+
+            c.query('CREATE TABLE IF NOT EXISTS \`'+new_group_data['group_name']+'_data\` (name text ,price text,circle_id text,\`'+nickname+'\` text)CHARSET=utf8')
+                 .on('result', function(res) {
+                   res.on('row', function(row) {
+                    console.log('write_new_group_create_data:成功');
+                   })
+                   .on('error', function(err) {
+                     socket.emit('alert_client',5,0);
+                     console.log('write_new_group_create_data:发生异常错误:' + inspect(err));
+                   })
+                   .on('end', function(info) {
+                     console.log('write_new_group_create_data:完毕');
+                     socket.emit('alert_client',5,1);
+                   })
+                 })
+                 .on('end', function() {
+                   console.log('write_new_group_create_data:结果输出完毕');
+                 });
+
            })
          })
          .on('end', function() {
