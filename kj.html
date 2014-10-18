@@ -7,7 +7,8 @@
 
 		<title></title>
 
-		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<!--<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>-->
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
@@ -371,24 +372,24 @@
 						$("#upload_result").listview("refresh");
 					});
 					//任务推送
-					socket.on("main_mission_list_client", function(iteminfo, otherinfo) {
-						var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
+					socket.on("main_mission_list_client", function(circleinfo, datainfo) {
+						var pureobj_myinfo = eval('(' + datainfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
 						if (pureobj_myinfo['finish'] == 0) {
-							$("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read(' + iteminfo['i2'] + ')" id=\"' + otherinfo['i2'] + '\">' + iteminfo['i14'] //标题自动变大
-								+ '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>摊位:' + iteminfo['i7'] + '-' + iteminfo['i8'] + '</p>' + '<p>备注:' + iteminfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</a></li>');
+							$("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
+								+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a>'+'<a onclick=\"window.op_items.read('+circleinfo['i2']+')\">'+'</a>'+'</li>');
 
 							$("#unfinished").listview("refresh");
 							$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
-							window.op_details[otherinfo['i2']] = iteminfo;
-							window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
+							window.op_details[datainfo['circle_id']] = circleinfo;
+							window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
 						} else {
-							$("#finished").append('<li><a herf="#details" onclick="window.op_details.read(' + iteminfo['i2'] + ')" id=\"' + otherinfo['i2'] + '\">' + iteminfo['i14'] //标题自动变大
-								+ '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>摊位:' + iteminfo['i7'] + '-' + iteminfo['i8'] + '</p>' + '<p>备注:' + iteminfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</a></li>');
+							$("#finished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
+								+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a><a onclick=\"window.op_items.read('+circleinfo['i2']+')\">'+'</a></li>');
 
 							$("#finished").listview("refresh");
 							$("#finished_count").text(Number($("#finished_count").text()) + 1);
-							window.op_details[otherinfo['i2']] = iteminfo;
-							window.op_details.otherinfo[otherinfo['i2']] = otherinfo;
+							window.op_details[datainfo['circle_id']] = circleinfo;
+							window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
 						};
 					});
 					//输出结算结果
@@ -506,6 +507,10 @@
 								case 6:
 									alert("item添加成功!");
 									break;
+
+								case 7:
+									alert("circle添加成功!");
+									break;
 							}
 						} else if (type_number == 0) {
 							switch (text_number) {
@@ -529,7 +534,11 @@
 									break;
 
 								case 6:
-									alert("item添加失败.\n请检查当前活跃队伍中的列表中是否已存在此circle!");
+									alert("item添加失败.\n1.请检查当前活跃队伍中的列表中是否不存在此circle!\n若不存在,请先添加circle!\n2.请检查当前活跃队伍中的列表中是否已存在此item名!\n若已存在,请更换item名!");
+									break;
+
+								case 7:
+									alert("circle添加失败.\n请检查当前活跃队伍中的列表中是否已存在此circle!\n若已存在,则不必再次添加!");
 									break;
 
 							};
@@ -575,41 +584,47 @@
 				}); //$("#button_message_clear").click() ending
 				//CSV上传
 				$("#upload_csv").click(function() {
-					if (window.csvdata != "") {
-						$("#upload_result").empty();
-						console.log("上传开始");
-						for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
-							switch (window.csvdata[pointer][0]) {
-								case "Circle":
-									socket.emit("main_csv_submit_server", [window.csvdata[pointer], localStorage.nickname]);
-									break;
+					var r = confirm("确认为\"" + localStorage.active_group + "\"上传CSV?");
+					if (r) {
+						if (window.csvdata != "") {
+							$("#upload_result").empty();
+							console.log("上传开始");
+							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
+								switch (window.csvdata[pointer][0]) {
+									case "Circle":
+										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.nickname, localStorage.active_group);
+										break;
 
-								case "Header":
-									break;
+									case "Header":
+										break;
 
-								case "Color":
-									break;
+									case "Color":
+										break;
 
-								default:
-									console.log(pointer);
-									if (pointer + 1 == window.csvdata.length && window.csvdata[pointer].length == 1) { //	行尾空格,不报错.
-									} else {
-										$("#upload_result").append("<li><div class=\"scroll\">错误:" + window.csvdata[pointer] + "</div></li>");
-									};
-									break;
+									default:
+										console.log(pointer);
+										if (pointer + 1 == window.csvdata.length && window.csvdata[pointer].length == 1) { //	行尾空格,不报错.
+										} else {
+											$("#upload_result").append("<li><div class=\"scroll\">错误:" + window.csvdata[pointer] + "</div></li>");
+										};
+										break;
+								};
 							};
+						} else {
+							alert("请选择文件");
 						};
-					} else {
-						alert("请选择文件");
 					};
-				});
-				//刷新与数据获取
+				}); //刷新与数据获取
 				$("#refresh_data").click(function() {
-					$("#unfinished").empty();
-					$("#finished").empty(); //载入新数据之前清空旧数据
-					$("#unfinished_count").text(0);
-					$("#finished_count").text(0);
-					socket.emit("main_mission_list_server", localStorage.nickname);
+					if (localStorage.active_group) {
+						$("#unfinished").empty();
+						$("#finished").empty(); //载入新数据之前清空旧数据
+						$("#unfinished_count").text(0);
+						$("#finished_count").text(0);
+						socket.emit("main_mission_list_server", localStorage.nickname, localStorage.active_group);
+					} else {
+						alert("尚未选择活跃队伍~");
+					};
 				});
 				//ROLL
 				$("#edit_roll").click(function() {
@@ -768,14 +783,14 @@
 					if ($("#group_details_change_group_name").val() && $("#group_details_change_group_password").val() && $("#group_details_change_group_introduction").val()) {
 						socket.emit("main_op_group_server", localStorage.nickname, 4, window.op_group.now_group, $("#group_details_change_group_password").val(), $("#group_details_change_group_introduction").val(), $("#group_details_change_group_name").val());
 					} else {
-						alert("请填写所有的空");
+						alert("请填写所有的信息!");
 					};
 				});
 
 				$("#button_active_group").click(function() {
 					localStorage.active_group = window.op_group.now_group;
 					$("#mission_title").text(localStorage.active_group);
-					alert("成功设置" + localStorage.active_group + "为活跃队伍");
+					alert("成功设置\"" + localStorage.active_group + "\"为活跃队伍");
 					$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 				});
 
@@ -784,37 +799,36 @@
 						$("#add_item").page();
 						$("#add_item_name").val("");
 						$("#add_item_price").val("");
-						$("#add_item_place_number").val("");
+						$("#add_item_number").val("");
 						$("#add_item_copy_num").val(1).slider("refresh");
 						$.mobile.changePage("#add_item");
 					} else {
 						alert("请选择活跃队伍!");
 					};
 				});
-				
-				$("#add_item_reset").click(function(){
+
+				$("#add_item_reset").click(function() {
 					var r = confirm("确认重置这个表单?");
 					if (r) {
 						$("#add_item_name").val("");
 						$("#add_item_price").val("");
-						$("#add_item_place_number").val("");
+						$("#add_item_number").val("");
 						$("#add_item_copy_num").val(1).slider("refresh");
 					};
 				});
 
 				$("#add_item_upload").click(function() {
-					if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_place_number").val() && $("#add_item_copy_num").val()) {
-						if ($("#add_item_place_number").val().length == 6) {
-							var r = confirm("确认为" + localStorage.active_group + "添加item?");
-							if (r) {
-								//STOP
-//								socket.emit("main_add_item_server", $("#add_item_name").val(), $("#add_item_price").val(), $("#add_item_place_number").val(), $("#add_item_copy_num").val(), localStorage.nickname, localStorage.active_group);
+					var r = confirm("确认为" + localStorage.active_group + "添加item?");
+					if (r) {
+						if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_number").val() && $("#add_item_copy_num").val()) {
+							if ($("#add_item_number").val().length == 6) {
+								socket.emit("main_add_item_server", $("#add_item_name").val(), $("#add_item_price").val(), $("#add_item_number").val(), $("#add_item_copy_num").val(), localStorage.nickname, localStorage.active_group, localStorage.nickname);
+							} else {
+								alert("请确认摊位号是否正确!");
 							};
 						} else {
-							alert("请确认摊位号是否正确!");
+							alert("请填写所有的信息!");
 						};
-					} else {
-						alert("请填写所有的信息");
 					};
 				});
 
@@ -834,8 +848,8 @@
 						alert("请选择活跃队伍!");
 					};
 				});
-				
-				$("#add_circle_reset").click(function(){
+
+				$("#add_circle_reset").click(function() {
 					var r = confirm("确认重置这个表单?");
 					if (r) {
 						$("#add_circle_which_day").val("日").selectmenu("refresh");
@@ -850,17 +864,17 @@
 				});
 
 				$("#add_circle_upload").click(function() {
-					if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
-						if ($("#add_circle_number").val().length == 6) {
-							var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
-							if (r) {
-								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(),$("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.nickname, localStorage.active_group);
+					var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
+					if (r) {
+						if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
+							if ($("#add_circle_number").val().length == 6) {
+								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.nickname, localStorage.active_group);
+							} else {
+								alert("请确认サークルシリアル番号是否正确!");
 							};
 						} else {
-							alert("请确认サークルシリアル番号是否正确!");
+							alert("请填写所有的信息!");
 						};
-					} else {
-						alert("请填写所有的信息!");
 					};
 				});
 
@@ -919,7 +933,6 @@
 			</div>
 
 			<div data-role="content">
-				<!-- <br> -->
 				<ul id="recived_message" data-role="listview" data-inset="false" data-filter-placeholder="搜索消息记录...">
 					<li>
 						<center>
@@ -928,7 +941,6 @@
 					</li>
 				</ul>
 				<br>
-				<!-- <label for="outgingChatMessage">输入:</label> -->
 				<input type="text" id="sent_message">
 				<input type="button" id="button_message_send" value="发送消息">
 				<br>
@@ -971,7 +983,7 @@
 
 		<div data-role="page" id="select_group">
 			<div data-role="header">
-				<h1>选择一个或多个队伍</h1>
+				<h1>队伍选择的时刻</h1>
 
 				<div data-role="button" class="ui-btn-left">
 					<a href="#tools" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
@@ -1110,7 +1122,7 @@
 
 				<div data-role="fieldcontain">
 					<label for="add_item_place_number">サークルシリアル番号</label>
-					<input type="text" id="add_item_place_number" value="" placeholder="circle的序列号">
+					<input type="text" id="add_item_number" value="" placeholder="circle的序列号">
 				</div>
 
 				<div data-role="fieldcontain">
