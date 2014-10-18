@@ -27,7 +27,7 @@
 		<script>
 			"use strict"
 
-			$(document).on("pageshow","#select_group",function(){
+			$(document).on("pageshow", "#select_group", function() {
 				is_turning = 0;
 			});
 
@@ -43,10 +43,10 @@
 					// window.location.assign("http://test.eshicon.org/login.html");
 				};
 
-//输出活跃队伍名
+				//输出活跃队伍名
 				if (localStorage.active_group) {
 					$("#mission_title").text(localStorage.active_group);
-				}else{
+				} else {
 					$("#mission_title").text("未选择活跃队伍");
 				};
 
@@ -315,13 +315,13 @@
 								};
 							};
 							if (window.op_group.raw_all_group[i]["group_name"] == window.op_group.now_group) {
-								for (var x in window.op_group.raw_all_group[i]){
+								for (var x in window.op_group.raw_all_group[i]) {
 									if (x != "group_introduction" && x != "group_name" && window.op_group.raw_all_group[i][x] != null) {
 										if (window.op_group.raw_all_group[i][x] == "leader") {
-											$("#group_members").prepend("<li><div class=\"scroll\"><center>"+x+"</center></div></li>");
+											$("#group_members").prepend("<li><div class=\"scroll\"><center>" + x + "</center></div></li>");
 											$("#group_members").prepend("<li><center><h1>队长</h1></center></li>");
-										}else if (window.op_group.raw_all_group[i][x] == "member") {
-											$("#group_members").append("<li><div class=\"scroll\"><center>"+x+"</center></li>");
+										} else if (window.op_group.raw_all_group[i][x] == "member") {
+											$("#group_members").append("<li><div class=\"scroll\"><center>" + x + "</center></li>");
 										};
 									};
 								};
@@ -330,10 +330,10 @@
 
 						if (window.op_group.now_group == localStorage.active_group) {
 							$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
-						}else{
+						} else {
 							$("#button_active_group").val("设为活跃").button("refresh");
 						};
-            			$("#group_members").listview("refresh");	
+						$("#group_members").listview("refresh");
 						$.mobile.changePage("#group_details");
 					},
 
@@ -502,12 +502,12 @@
 								case 5:
 									alert("队伍创建成功!");
 									break;
-								
+
 								case 6:
 									alert("item添加成功!");
 									break;
 							}
-						} else if (type_number == 0){
+						} else if (type_number == 0) {
 							switch (text_number) {
 								case 1:
 									alert("加入此队伍失败.请确认密码!");
@@ -527,7 +527,7 @@
 								case 5:
 									alert("队伍创建失败.\n请检查是否重名或者使用汉字/英文字母的队伍名!");
 									break;
-								
+
 								case 6:
 									alert("item添加失败.\n请检查当前活跃队伍中的列表中是否已存在此circle!");
 									break;
@@ -659,7 +659,7 @@
 					};
 				});
 
-//最终结算
+				//最终结算
 				$("#calc_start").click(function() {
 					window.calc_data.spend_count = 0;
 					window.calc_data.income_count = 0;
@@ -729,7 +729,7 @@
 
 				$("#button_join_group").click(function() {
 					if ($("#group_details_change_group_password").val()) {
-						socket.emit("main_op_group_server", localStorage.nickname, 1, window.op_group.now_group, $("#group_details_change_group_password").val(),"");
+						socket.emit("main_op_group_server", localStorage.nickname, 1, window.op_group.now_group, $("#group_details_change_group_password").val(), "");
 					} else {
 						alert("请输入队伍密码!");
 						$("#group_details_change_group_password").focus();
@@ -743,7 +743,7 @@
 							localStorage.active_group = "";
 							$("#mission_title").text("未选择活跃队伍");
 						};
-						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "","","");
+						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "", "", "");
 					};
 				});
 
@@ -752,89 +752,118 @@
 					if (r1) {
 						var r2 = confirm("真的要解散此队伍吗?所有的数据都会被永久删除!");
 						if (r2) {
-							socket.emit("main_op_group_server", localStorage.nickname, 3, window.op_group.now_group, "","","");
+							socket.emit("main_op_group_server", localStorage.nickname, 3, window.op_group.now_group, "", "", "");
 						};
 					};
 				});
 
-				$("#turn_to_manage_group_add").click(function(){
+				$("#turn_to_manage_group_add").click(function() {
 					$("#manage_group_add_group_name").val("");
 					$("#manage_group_add_group_introduction").val("");
 					$("#manage_group_add_group_password").val("");
 					$.mobile.changePage("#manage_group_add");
 				});
 
-				$("#group_details_save").click(function(){
+				$("#group_details_save").click(function() {
 					if ($("#group_details_change_group_name").val() && $("#group_details_change_group_password").val() && $("#group_details_change_group_introduction").val()) {
-	          socket.emit("main_op_group_server",localStorage.nickname,4,window.op_group.now_group,$("#group_details_change_group_password").val(),$("#group_details_change_group_introduction").val(),$("#group_details_change_group_name").val());
-					}else{
+						socket.emit("main_op_group_server", localStorage.nickname, 4, window.op_group.now_group, $("#group_details_change_group_password").val(), $("#group_details_change_group_introduction").val(), $("#group_details_change_group_name").val());
+					} else {
 						alert("请填写所有的空");
 					};
 				});
 
-				$("#button_active_group").click(function(){
+				$("#button_active_group").click(function() {
 					localStorage.active_group = window.op_group.now_group;
 					$("#mission_title").text(localStorage.active_group);
-					alert("成功设置"+localStorage.active_group+"为活跃队伍");
+					alert("成功设置" + localStorage.active_group + "为活跃队伍");
 					$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 				});
-				
-				$("#turn_to_add_item").click(function(){
-					$("#add_item_name").val("");
-					$("#add_item_price").val("");
-					$("#add_item_place_number").val("");
-					$("#add_item_copy_num").val("");
+
+				$("#turn_to_add_item").click(function() {
 					if (localStorage.active_group) {
+						$("#add_item").page();
+						$("#add_item_name").val("");
+						$("#add_item_price").val("");
+						$("#add_item_place_number").val("");
+						$("#add_item_copy_num").val(1).slider("refresh");
 						$.mobile.changePage("#add_item");
-					}else{
+					} else {
 						alert("请选择活跃队伍!");
 					};
 				});
 				
-				$("#add_item_upload").click(function(){
+				$("#add_item_reset").click(function(){
+					var r = confirm("确认重置这个表单?");
+					if (r) {
+						$("#add_item_name").val("");
+						$("#add_item_price").val("");
+						$("#add_item_place_number").val("");
+						$("#add_item_copy_num").val(1).slider("refresh");
+					};
+				});
+
+				$("#add_item_upload").click(function() {
 					if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_place_number").val() && $("#add_item_copy_num").val()) {
 						if ($("#add_item_place_number").val().length == 6) {
-							var r =confirm("确认为"+localStorage.active_group+"添加item?");
+							var r = confirm("确认为" + localStorage.active_group + "添加item?");
 							if (r) {
-								socket.emit("main_add_item_server",$("#add_item_name").val(),$("#add_item_price").val(),$("#add_item_place_number").val(),$("#add_item_copy_num").val(),localStorage.nickname,localStorage.active_group);
+								//STOP
+//								socket.emit("main_add_item_server", $("#add_item_name").val(), $("#add_item_price").val(), $("#add_item_place_number").val(), $("#add_item_copy_num").val(), localStorage.nickname, localStorage.active_group);
 							};
-						}else{
+						} else {
 							alert("请确认摊位号是否正确!");
 						};
-					}else{
+					} else {
 						alert("请填写所有的信息");
 					};
 				});
-				
-				$("#turn_to_add_circle").click(function(){
-					$("#days_in_add_circle").val(1);
-					$("#add_circle_name").val("");
-					$("#add_circle_number").val("");
-					$("#add_circle_rank").val("");
+
+				$("#turn_to_add_circle").click(function() {
 					if (localStorage.active_group) {
+						$("#add_circle").page();
+						$("#add_circle_which_day").val("日").selectmenu("refresh");
+						$("#add_circle_area").val("東").selectmenu("refresh");
+						$("#add_circle_block_name").val("");
+						$("#add_circle_space_number").val("");
+						$("#add_circle_name").val("");
+						$("#add_circle_number").val("");
+						$("#add_circle_rank").val("");
+						$("#add_circle_author").val("");
 						$.mobile.changePage("#add_circle");
-					}else{
+					} else {
 						alert("请选择活跃队伍!");
 					};
 				});
 				
-				$("#add_circle_upload").click(function(){//STOP
-					
-					if ($("#days_in_add_circle").val() && $("#add_circle_name").val()  && $("#add_circle_number").val() && $("#add_circle_author").val() && $("#add_circle_rank").val()) {
-						if ($("#add_circle_number").val().length == 6) {
-							//尚未考虑摊位的日期
-							var r = confirm("确认为"+localStorage.active_group+"添加circle?");
-							if (r) {
-								socket.emit("main_add_circle_server",$("#days_in_add_circle").val(),$("#add_circle_name").val(),$("#add_circle_number").val(),$("#add_circle_author").val(),$("#add_circle_rank").val(),localStorage.nickname,localStorage.active_group);
-							};
-						}else{
-							alert("请确认摊位号是否正确!");
-						};
-					}else{
-						alert("请填写所有的信息");
+				$("#add_circle_reset").click(function(){
+					var r = confirm("确认重置这个表单?");
+					if (r) {
+						$("#add_circle_which_day").val("日").selectmenu("refresh");
+						$("#add_circle_area").val("東").selectmenu("refresh");
+						$("#add_circle_block_name").val("");
+						$("#add_circle_space_number").val("");
+						$("#add_circle_name").val("");
+						$("#add_circle_number").val("");
+						$("#add_circle_rank").val("");
+						$("#add_circle_author").val("");
 					};
 				});
-				
+
+				$("#add_circle_upload").click(function() {
+					if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
+						if ($("#add_circle_number").val().length == 6) {
+							var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
+							if (r) {
+								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(),$("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.nickname, localStorage.active_group);
+							};
+						} else {
+							alert("请确认サークルシリアル番号是否正确!");
+						};
+					} else {
+						alert("请填写所有的信息!");
+					};
+				});
+
 			}); //$(function) ending
 		</script>
 
@@ -995,12 +1024,12 @@
 
 				<div data-role="fieldcontain">
 					<label for="group_details_change_group_introduction">队伍介绍:</label>
-					<input type="text" name="text" id="group_details_change_group_introduction" value="" placeholder="随便写点吧" readonly>
+					<input type="text" id="group_details_change_group_introduction" value="" placeholder="随便写点吧" readonly>
 				</div>
 
 				<div data-role="fieldcontain">
 					<label for="group_details_change_group_password">密码:</label>
-					<input type="text" name="text" id="group_details_change_group_password" value="" placeholder="输入/变更密码" readonly>
+					<input type="text" id="group_details_change_group_password" value="" placeholder="输入/变更密码" readonly>
 				</div>
 
 				<div data-role="fieldcontain">
@@ -1064,33 +1093,33 @@
 				<h1>登录新的宝物</h1>
 				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
-					<input type="button" id="reset_add_item" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
+					<input type="button" id="add_item_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
 			</div>
 
 			<div data-role="content">
 				<div data-role="fieldcontain">
-					<label for="add_item_name">宝物名:</label>
+					<label for="add_item_name">item名</label>
 					<input type="text" id="add_item_name" value="" placeholder="宝物的名字">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="add_item_price">价格:</label>
+					<label for="add_item_price">价格</label>
 					<input type="text" id="add_item_price" value="" placeholder="円/份">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="add_item_place">摊位号:</label>
-					<input type="text" id="add_item_place_number" value="" placeholder="宝物的摊位号">
+					<label for="add_item_place_number">サークルシリアル番号</label>
+					<input type="text" id="add_item_place_number" value="" placeholder="circle的序列号">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="add_item_copy_num">需求份数:</label>
+					<label for="add_item_copy_num">自身需求份数</label>
 					<input type="range" id="add_item_copy_num" value="1" min="1" max="30">
 				</div>
-				
+
 				<input type="button" id="add_item_upload" value="上传信息" />
-				
+
 			</div>
 
 		</div>
@@ -1100,41 +1129,61 @@
 				<h1>登录新摊位</h1>
 				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
-					<input type="button" id="reset_in_add_circle" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
+					<input type="button" id="add_circle_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
 			</div>
 
 			<div data-role="content">
 
 				<fieldset data-role="fieldcontain">
-					<label for="days_in_add_circle">摊位何日参展:</label>
-					<select name="days_in_add_circle" id="days_in_add_circle" data-native-menu="false">
-						<option value="1">第一天 X曜日</option>
-						<option value="2">第二天 X曜日</option>
-						<option value="3">第三天 X曜日</option>
+					<label for="add_circle_which_day">参加曜日</label>
+					<select id="add_circle_which_day" data-native-menu="false">
+						<option value="日">第一天 日曜日</option>
+						<option value="月">第二天 月曜日</option>
+						<option value="火">第三天 火曜日</option>
+					</select>
+				</fieldset>
+
+				<fieldset data-role="fieldcontain">
+					<label for="add_circle_area">配置地区</label>
+					<select id="add_circle_area" data-native-menu="false">
+						<option value="東">東</option>
+						<option value="西">西</option>
 					</select>
 				</fieldset>
 
 				<div data-role="fieldcontain">
-					<label for="name">摊位名:</label>
-					<input type="text" name="text" id="add_circle_name" value="" placeholder="宝物的名字">
+					<label for="add_circle_block_name">ブロック名</label>
+					<input type="text" id="add_circle_block_name" value="" placeholder="A~Z/ア~ロ/あ～れ">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="name">摊位号:</label>
-					<input type="text" name="text" id="add_circle_number" value="" placeholder="宝物的摊位号">
+					<label for="add_circle_space_number">スペース番号</label>
+					<input type="text" id="add_circle_space_number" value="" placeholder="space序号">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="name">作者:</label>
-					<input type="text" name="text" id="add_circle_author" value="" placeholder="作者的名字">
+					<label for="add_circle_name">サークル名</label>
+					<input type="text" id="add_circle_name" value="" placeholder="circle的名字">
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="points">优先级:</label>
-					<input type="range" name="points" id="add_circle_rank" value="1" min="1" max="100">
+					<label for="add_circle_number">サークルシリアル番号</label>
+					<input type="text" id="add_circle_number" value="" placeholder="circle序列号">
 				</div>
-				
+
+
+				<div data-role="fieldcontain">
+					<label for="add_circle_rank">カットインデックス</label>
+					<input type="text" id="add_circle_rank" value="" placeholder="摊位优先级">
+				</div>
+
+				<div data-role="fieldcontain">
+					<label for="add_circle_author">執筆者名</label>
+					<input type="text" id="add_circle_author" value="" placeholder="执笔者的名字">
+				</div>
+
+
 				<input type="button" id="add_circle_upload" value="上传信息" />
 
 			</div>
