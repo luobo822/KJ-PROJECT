@@ -167,49 +167,41 @@
 				window.op_details = new Object();
 				window.op_details = {
 
-					"otherinfo": new Object(),
-
-					"custom": new Array(),
-
-					"now_itemid": "",
-
-					"read": function(itemid) {
-
-						$("#details_otherinfo").empty();
-						$("#details_itemdata").empty();
-						$("#edit_whobuy").empty();
-						window.op_details.custom = [];
-
-						window.op_details.now_itemid = itemid;
-						window.op_details.now_itemdata = window.op_details[itemid];
-
-						$("#details_itemdata").append($("<li></li>").text("详细信息"));
-						for (var x in window.op_details[itemid]) {
-							$("#details_itemdata").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.now_itemdata[x] + "</div></li>"); //这一步的结果是一个类似itemdata的对象
+					"otherinfo": new Object(), //存储对于circleid的relation;调用方式:window.op_details.otherinfo[circleid],为0则不存在item,不为0则存在item
+					"now_circleid": "",
+					"read": function(circleid) {
+						//						$("#circle_details_otherinfo").empty();
+						$("#circle_details_circledata").empty();
+						//						$("#edit_whobuy").empty();
+						//						window.op_details.custom = [];
+						window.op_details.now_circleid = circleid;
+						window.op_details.now_circledata = window.op_details[circleid];
+						//						$("#circle_details_circledata").append("<li><center><h1>详细信息</h1></center></li>");
+						for (var x in window.op_details[circleid]) {
+							$("#circle_details_circledata").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.now_circledata[x] + "</div></li>");
 						};
-						$("#details_otherinfo").append($("<li></li>").text("同样购买这件宝物的"));
-						for (var x in window.op_details.otherinfo[itemid]) {
-							if (x != "rowid" && x != "i2" && x != localStorage.nickname) {
-								if (window.op_details.otherinfo[itemid][x]) {
-									$("#details_otherinfo").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.otherinfo[itemid][x] + "</div></li>");
-									var pureobj_custominfo = eval('(' + window.op_details.otherinfo[itemid][x] + ')');
-									if (pureobj_custominfo['whobuy'] == localStorage.nickname) {
-										window.op_details.custom.push(x);
-									};
-								};
-								$("#edit_whobuy").append($("<option value=\'" + x + "\''></option>").text(x));
-							};
-						};
-						$("#edit_whobuy").append($("<option value=\'" + localStorage.nickname + "\' selected></option>").text(localStorage.nickname + "(你自己)"));
+						//						$("#circle_details_otherinfo").append($("<li></li>").text("同样购买这件宝物的"));
+						//						for (var x in window.op_details.otherinfo[itemid]) {
+						//							if (x != "rowid" && x != "i2" && x != localStorage.nickname) {
+						//								if (window.op_details.otherinfo[itemid][x]) {
+						//									$("#circle_details_otherinfo").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.otherinfo[itemid][x] + "</div></li>");
+						//									var pureobj_custominfo = eval('(' + window.op_details.otherinfo[itemid][x] + ')');
+						//									if (pureobj_custominfo['whobuy'] == localStorage.nickname) {
+						//										window.op_details.custom.push(x);
+						//									};
+						//								};
+						//								$("#edit_whobuy").append($("<option value=\'" + x + "\''></option>").text(x));
+						//							};
+						//						};
+						//						$("#edit_whobuy").append($("<option value=\'" + localStorage.nickname + "\' selected></option>").text(localStorage.nickname + "(你自己)"));
 
-						$("#details").page();
-						$("#details_itemdata").listview("refresh");
-						$("#details_otherinfo").listview("refresh");
-
-						$.mobile.changePage("#details");
+						$("#circle_details").page();
+						$("#circle_details_circledata").listview("refresh");
+						//						$("#circle_details_otherinfo").listview("refresh");
+						$.mobile.changePage("#circle_details");
 					},
-					"edit": function() {
-						var pureobj_myinfo = eval('(' + window.op_details.otherinfo[window.op_details.now_itemid][localStorage.nickname] + ')');
+					"edit": function() { //估计要重构
+						var pureobj_myinfo = eval('(' + window.op_details.otherinfo[window.op_details.now_circleid][localStorage.nickname] + ')');
 						$("#edit_price").val(window.op_details.now_itemdata['i27']);
 						$("#edit_target").val(pureobj_myinfo['target']);
 						$("#edit_bought").val(pureobj_myinfo['bought']);
@@ -226,13 +218,31 @@
 					}
 				};
 				//结算时的数据存储,绑定为全局对象
-				window.calc_data;
+				window.calc_data = new Object();
 				window.calc_data = {
 					"spend_count": 0,
 					"income_count": 0,
 					"outcome_count": 0,
-					// "date":true  //为了效率注释掉这个变量;它用来存储用户选择的结算日期
 				};
+
+				//读取circle的item数据
+				window.op_items = new Object();
+				window.op_items = {
+					"edit": function() {
+						//留空
+					},
+					"read": function(circleid) {
+						$("#items_list").empty();
+						for (var x in window.op_details.otherinfo[circleid]) {
+							//stop
+							$("#items_list").append('<li><a herf=\"#\" onclick=\"window.op_items.edit(' + x + ')\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '<p>价格:' + window.op_details.otherinfo[circleid][x]["item_price"] + '</p>' + '</li>');
+						};
+						$("#items").page();
+						$("#items_list").listview("refresh");
+						$.mobile.changePage("#items");
+
+					},
+				}
 
 				//队伍操作,绑定为全局对象
 				window.op_group = new Object();
@@ -242,19 +252,19 @@
 					my_group: new Array(),
 					other_group: new Array(),
 					now_group: "",
-					manage: function() {
-						// $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
-						// for (var i in window.op_group["my_group"]) {
-						//   $("#manage_recived_group").append("<li>"
-						//     +window.op_group["my_group"][i]["group_name"]
-						//     +"<p>"+window.op_group["my_group"][i]["my_power"]+"</p>"
-						//     +"</li>");
-						//   $("#manage_group").page();
-						//   $("#manage_recived_group").listview("refresh");
-						// };
-						// //跳转
-						// $.mobile.changePage("#manage_group");
-					},
+					//					manage: function() {
+					//						 $("#manage_recived_group").empty().append("<li><center><h1>管理你的队伍！</h1></center></li>");
+					//						 for (var i in window.op_group["my_group"]) {
+					//						   $("#manage_recived_group").append("<li>"
+					//						     +window.op_group["my_group"][i]["group_name"]
+					//						     +"<p>"+window.op_group["my_group"][i]["my_power"]+"</p>"
+					//						     +"</li>");
+					//						   $("#manage_group").page();
+					//						   $("#manage_recived_group").listview("refresh");
+					//						 };
+					//						 //跳转
+					//						 $.mobile.changePage("#manage_group");
+					//					},
 					add: function() {
 						if ($("#manage_group_add_group_name").val() && $("#manage_group_add_group_introduction").val() && $("#manage_group_add_group_password").val()) {
 							var new_group_data = new Object();
@@ -374,33 +384,46 @@
 					//任务推送
 					socket.on("main_mission_list_client", function(otherinfo, circleinfo) {
 						if (otherinfo != 0) {
-//						console.log(otherinfo);
-						console.log(otherinfo);
-
-						console.log(circleinfo);
-						
 							var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
-							console.log(pureobj_myinfo);
-//							if (pureobj_myinfo['finish'] == 0) {
-//								$("#unfinished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
-//									+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
-//
-//								$("#unfinished").listview("refresh");
-//								$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
-//								window.op_details[datainfo['circle_id']] = circleinfo;
-//								window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
-//							} else {
-//								$("#finished").append('<li><a herf="#details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + datainfo['circle_id'] + '\">' + circleinfo['i14'] //标题自动变大
-//									+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i7'] + '-' + circleinfo['i8'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + circleinfo['i27'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
-//
-//								$("#finished").listview("refresh");
-//								$("#finished_count").text(Number($("#finished_count").text()) + 1);
-//								window.op_details[datainfo['circle_id']] = circleinfo;
-//								window.op_details.otherinfo[datainfo['circle_id']] = datainfo;
-//							};
+							if (pureobj_myinfo['finish'] == 0 && circleinfo['responsibility'] == localStorage.nickname ) {
+								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
+								} else {
+									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
+										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
+
+									$("#unfinished").listview("refresh");
+									$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
+									window.op_details[circleinfo['i2']] = circleinfo;
+								};
+								if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+									window.op_details.otherinfo[circleinfo['i2']] = new Array();
+								};
+								window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+							} else { //无法正确显示是否此摊位已经全部完成
+								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
+								} else {
+									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
+										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>已入手数量:' + pureobj_myinfo['bought'] + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+
+									$("#finished").listview("refresh");
+									$("#finished_count").text(Number($("#finished_count").text()) + 1);
+									window.op_details[circleinfo['i2']] = circleinfo;
+									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+										window.op_details.otherinfo[circleinfo['i2']] = new Array();
+									};
+									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+								};
+							};
 
 						} else { //otherinfo为空
-							
+							if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
+							} else { //不存在此元素
+								$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+								$("#all_mission").listview("refresh");
+								$("#all_count").text(Number($("#all_count").text()) + 1);
+								window.op_details[circleinfo['i2']] = circleinfo;
+								window.op_details.otherinfo[circleinfo['i2']] = 0; //为空则记作0
+							};
 						};
 					});
 					//输出结算结果
@@ -632,39 +655,40 @@
 						$("#finished").empty(); //载入新数据之前清空旧数据
 						$("#unfinished_count").text(0);
 						$("#finished_count").text(0);
+						$("#all_count").text(0);
 						socket.emit("main_mission_list_server", localStorage.nickname, localStorage.active_group);
 					} else {
 						alert("尚未选择活跃队伍~");
 					};
 				});
 				//ROLL
-				$("#edit_roll").click(function() {
-					if (op_details.custom.length != 0) {
-						socket.emit("main_message_server", localStorage.nickname + "发起了:" + "商品编号" + window.op_details.now_itemid + "的ROLL点");
-						socket.emit("main_message_server", "入手数量" + $("#edit_bought").val());
-						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + "发起了:" + "商品编号" + window.op_details.now_itemid + "的ROLL点" + "</div></li>");
-						$("#recived_message").append("<li><div class=\"scroll\">" + "入手数量" + $("#edit_bought").val() + "</div></li>");
-						while (window.op_details.custom.length != 0) {
-							console.log("参与ROLL点的用户有:" + window.op_details.custom);
-							console.log("开始!ROLL!");
-							var temp_custom = window.op_details.custom.shift();
-							if (typeof(temp_custom) != undefined) {
-								var i = 0;
-								var roll = Math.ceil(Math.sin(Math.random()) * 100);
-								socket.emit("main_message_server", "商品编号" + window.op_details.now_itemid + "的第" + (i + 1) + "次:" + temp_custom + "的ROLL的点数是" + roll);
-								$("#recived_message").append("<li><div class=\"scroll\">商品编号" + window.op_details.now_itemid + "的第" + (i + 1) + "次:" + temp_custom + "的ROLL的点数是" + roll + "</div></li>");
-								i++;
-							};
-						};
-						socket.emit("main_message_server", localStorage.nickname + "发起的:" + "商品编号 " + window.op_details.now_itemid + "的ROLL点结束了请根据ROLL点结果自行修改数据");
-						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + "发起的:" + "商品编号" + window.op_details.now_itemid + "的ROLL点结束了请根据ROLL点结果自行修改数据" + "</div></li>");
-						alert("此商品ROLL点结束,结果已广播给所有人");
-						$("#message").page();
-						$("#recived_message").listview("refresh");
-					} else {
-						alert("你没有受到任何委托,所以不能发起ROLL点");
-					};
-				}); //$("#edit_roll").click(function()) ending
+				//				$("#edit_roll").click(function() {
+				//					if (op_details.custom.length != 0) {
+				//						socket.emit("main_message_server", localStorage.nickname + "发起了:" + "商品编号" + window.op_details.now_circleid + "的ROLL点");
+				//						socket.emit("main_message_server", "入手数量" + $("#edit_bought").val());
+				//						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + "发起了:" + "商品编号" + window.op_details.now_circleid + "的ROLL点" + "</div></li>");
+				//						$("#recived_message").append("<li><div class=\"scroll\">" + "入手数量" + $("#edit_bought").val() + "</div></li>");
+				//						while (window.op_details.custom.length != 0) {
+				//							console.log("参与ROLL点的用户有:" + window.op_details.custom);
+				//							console.log("开始!ROLL!");
+				//							var temp_custom = window.op_details.custom.shift();
+				//							if (typeof(temp_custom) != undefined) {
+				//								var i = 0;
+				//								var roll = Math.ceil(Math.sin(Math.random()) * 100);
+				//								socket.emit("main_message_server", "商品编号" + window.op_details.now_circleid + "的第" + (i + 1) + "次:" + temp_custom + "的ROLL的点数是" + roll);
+				//								$("#recived_message").append("<li><div class=\"scroll\">商品编号" + window.op_details.now_circleid + "的第" + (i + 1) + "次:" + temp_custom + "的ROLL的点数是" + roll + "</div></li>");
+				//								i++;
+				//							};
+				//						};
+				//						socket.emit("main_message_server", localStorage.nickname + "发起的:" + "商品编号 " + window.op_details.now_circleid + "的ROLL点结束了请根据ROLL点结果自行修改数据");
+				//						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + "发起的:" + "商品编号" + window.op_details.now_circleid + "的ROLL点结束了请根据ROLL点结果自行修改数据" + "</div></li>");
+				//						alert("此商品ROLL点结束,结果已广播给所有人");
+				//						$("#message").page();
+				//						$("#recived_message").listview("refresh");
+				//					} else {
+				//						alert("你没有受到任何委托,所以不能发起ROLL点");
+				//					};
+				//				}); //$("#edit_roll").click(function()) ending
 				//上传edit后的数据
 				$("#edit_save").click(function() {
 					if ($("#edit_whobuy").val() && 　$("#edit_target").val()　 && $("#edit_bought").val() && $("#edit_finish").val() && $("#edit_price").val()) {
@@ -678,8 +702,8 @@
 						edit_data_upload = JSON.stringify(edit_data_upload);
 						console.log("对象字符串化为" + edit_data_upload);
 						var edit_price_upload = Number($("#edit_price").val());
-						socket.emit("main_edit_data_server", edit_data_upload, edit_price_upload, localStorage.nickname, window.op_details.now_itemid);
-						console.log("已上传完毕:" + edit_data_upload + "," + edit_price_upload + "," + localStorage.nickname + "," + window.op_details.now_itemid);
+						socket.emit("main_edit_data_server", edit_data_upload, edit_price_upload, localStorage.nickname, window.op_details.now_circleid);
+						console.log("已上传完毕:" + edit_data_upload + "," + edit_price_upload + "," + localStorage.nickname + "," + window.op_details.now_circleid);
 					} else {
 						alert("请完成所有表单");
 					};
@@ -921,6 +945,11 @@
 					<ul id="finished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在已完成的任务中搜索..."></ul>
 				</div>
 
+				<div data-role="collapsible">
+					<h4>队伍全部任务<span id="all_count" class="ui-li-count">0</span></h4>
+					<ul id="all_mission" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在全部任务中搜索..."></ul>
+				</div>
+
 			</div>
 
 			<div data-role="footer" data-position="fixed">
@@ -928,7 +957,7 @@
 					<ul>
 						<li><a href="#" data-icon="info" class="ui-state-persist">任务</a>
 						</li>
-						</li>
+						<!--</li>-->
 						<li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade">消息</a>
 					</ul>
 				</div>
@@ -1240,21 +1269,44 @@
 
 		</div>
 
-		<div data-role="page" id="details">
+		<div data-role="page" id="circle_details">
 			<div data-role="header">
-				<h1>宝物详情</h1>
+				<h1>circle详情</h1>
 				<a href="#mission" data-role="button" data-icon="back" data-transition="fade">返回</a>
 			</div>
 
 			<div data-role="content">
-				<ul id="details_itemdata" data-role="listview" data-inset="true"></ul>
-				<ul id="details_otherinfo" data-role="listview" data-inset="true"></ul>
+				<ul id="circle_details_circledata" data-role="listview" data-inset="true"></ul>
+				<ul id="circle_details_otherinfo" data-role="listview" data-inset="true"></ul>
+			</div>
+			<!--这里以后加入编辑负责用户-->
+			<!--<div data-role="footer" data-position="fixed">
+				<div data-role="navbar">
+					<ul>
+						<li><a onclick="window.op_details.edit()" id="turn_to_edit" data-icon="info" class="ui-btn">编辑</a></li>
+					</ul>
+				</div>
+			</div>-->
+		</div>
+
+		<div data-role="page" id="items">
+			<div data-role="header">
+				<h1>此circle的item</h1> 
+				<a href="#mission" data-role="button" data-icon="back">返回</a>
+			</div>
+
+			<div data-role="content">
+				<ul id="items_list" data-role="listview" data-inset="false" data-filter-placeholder="搜索此circle中的items...">
+					<li>
+					</li>
+				</ul>
 			</div>
 
 			<div data-role="footer" data-position="fixed">
 				<div data-role="navbar">
 					<ul>
-						<li><a onclick="window.op_details.edit()" id="turn_to_edit" data-icon="info" class="ui-btn">编辑</a>
+						<li>
+							<a href="#" data-icon="info" class="ui-btn"></a>
 						</li>
 					</ul>
 				</div>
@@ -1264,7 +1316,7 @@
 		<div data-role="page" id="edit">
 			<div data-role="header">
 				<h1>编辑</h1>
-				<a href="#details" data-role="button" data-icon="back">返回</a>
+				<a href="#circle_details" data-role="button" data-icon="back">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="edit_save" value="保存" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
@@ -1292,9 +1344,8 @@
 					<label for="edit_finish">完成情况:</label>
 					<input type="text" name="edit_finish" id="edit_finish" value="">
 				</div>
-				<input type="button" id="edit_roll" value="ROLL">
+				<!--<input type="button" id="edit_roll" value="ROLL">-->
 				<ul id="edit_custom" data-role="listview" data-inset="true"></ul>
-				</form>
 			</div>
 
 		</div>
