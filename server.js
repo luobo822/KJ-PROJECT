@@ -305,8 +305,9 @@ socketio.listen(server).on('connection', function(socket) {
 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [row['circle_id']])
 							.on('result', function(res) {
 								res.on('row', function(row) {
-										console.log(inspect(row));
-										socket.emit('main_mission_list_client', row, temp); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
+//										console.log(inspect(row)+inspect(temp));
+										//row 是circle里某一排的值;temp则是对应此circle数据的itemdata&relation
+										socket.emit('main_mission_list_client', temp, row); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
 										//										console.log('main_mission_list_server:成功');
 									})
 									.on('error', function(err) {
