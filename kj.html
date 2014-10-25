@@ -234,9 +234,13 @@
 					"read": function(circleid) {
 						$("#items_list").empty();
 						for (var x in window.op_details.otherinfo[circleid]) {
-							//stop
-							$("#items_list").append('<li><a herf=\"#\" onclick=\"window.op_items.edit(' + x + ')\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '<p>价格:' + window.op_details.otherinfo[circleid][x]["item_price"] + '</p>' + '</li>');
+							//							$("#items_list").append('<li><a herf=\"#\" onclick=\"window.op_items.edit(' + x + ')\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '<p>价格:' + window.op_details.otherinfo[circleid][x]["item_price"] + '</p>' + '</li>');
+							$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+							if (x != "circle_id" && x != "item_name" && x != "item_price" && window.op_details.otherinfo[circleid][x]) {
+                              $("#items_list").append('<li data-role=\"listview\"'+window.op_details.otherinfo[circleid][x]+'</li>');//stop
+							};
 						};
+
 						$("#items").page();
 						$("#items_list").listview("refresh");
 						$.mobile.changePage("#items");
@@ -385,7 +389,14 @@
 					socket.on("main_mission_list_client", function(otherinfo, circleinfo) {
 						if (otherinfo != 0) {
 							var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
-							if (pureobj_myinfo['finish'] == 0 && circleinfo['responsibility'] == localStorage.nickname ) {
+							console.log(otherinfo[localStorage.nickname]);
+							if (circleinfo['i27'] != "finished" && circleinfo['responsibility'] == localStorage.nickname) {
+
+								if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+									window.op_details.otherinfo[circleinfo['i2']] = new Array();
+								};
+								window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+
 								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
 								} else {
 									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
@@ -395,11 +406,13 @@
 									$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
 									window.op_details[circleinfo['i2']] = circleinfo;
 								};
+							} else if (circleinfo['i27'] == "finished" && circleinfo['responsibility'] == localStorage.nickname) {
+
 								if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
 									window.op_details.otherinfo[circleinfo['i2']] = new Array();
 								};
 								window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
-							} else { //无法正确显示是否此摊位已经全部完成
+
 								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
 								} else {
 									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
@@ -408,10 +421,6 @@
 									$("#finished").listview("refresh");
 									$("#finished_count").text(Number($("#finished_count").text()) + 1);
 									window.op_details[circleinfo['i2']] = circleinfo;
-									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
-										window.op_details.otherinfo[circleinfo['i2']] = new Array();
-									};
-									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
 								};
 							};
 
@@ -1234,8 +1243,6 @@
 					<label for="add_circle_author">執筆者名</label>
 					<input type="text" id="add_circle_author" value="" placeholder="执笔者的名字">
 				</div>
-
-
 				<input type="button" id="add_circle_upload" value="上传信息" />
 
 			</div>
@@ -1278,15 +1285,23 @@
 			<div data-role="content">
 				<ul id="circle_details_circledata" data-role="listview" data-inset="true"></ul>
 				<ul id="circle_details_otherinfo" data-role="listview" data-inset="true"></ul>
+				<input type="button" id="circle_details_set_finished" value="设置为已完成" />
+				<select id="circle_details_responsibility" disabled="">
+					<option value="">请选择负责人</option>
+				</select>
+				<!--以后加入负责人设置和完成情况设置-->
+				<!--233-->
 			</div>
-			<!--这里以后加入编辑负责用户-->
-			<!--<div data-role="footer" data-position="fixed">
+
+			<div data-role="footer" data-position="fixed">
 				<div data-role="navbar">
 					<ul>
-						<li><a onclick="window.op_details.edit()" id="turn_to_edit" data-icon="info" class="ui-btn">编辑</a></li>
+						<li>
+							<a data-icon="info" class="ui-btn">保存</a>
+						</li>
 					</ul>
 				</div>
-			</div>-->
+			</div>
 		</div>
 
 		<div data-role="page" id="items">
@@ -1297,10 +1312,10 @@
 
 			<div data-role="content">
 				<ul id="items_list" data-role="listview" data-inset="false" data-filter-placeholder="搜索此circle中的items...">
-					<li>
-					</li>
 				</ul>
 			</div>
+
+
 
 			<div data-role="footer" data-position="fixed">
 				<div data-role="navbar">
