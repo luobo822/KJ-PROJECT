@@ -305,7 +305,7 @@ socketio.listen(server).on('connection', function(socket) {
 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [row['circle_id']])
 							.on('result', function(res) {
 								res.on('row', function(row) {
-//										console.log(inspect(row)+inspect(temp));
+										//										console.log(inspect(row)+inspect(temp));
 										//row 是circle里某一排的值;temp则是对应此circle数据的itemdata&relation
 										socket.emit('main_mission_list_client', temp, row); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
 										//										console.log('main_mission_list_server:成功');
@@ -353,6 +353,68 @@ socketio.listen(server).on('connection', function(socket) {
 			});
 
 	}); //socket.on('main_mission_list_server') ending
+
+	socket.on('main_circle_finish_server', function(flag, circleid, groupname) {
+		if (flag) { //将此circle设为已完成
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE i2 = ?', ['finished', circleid])
+				.on('result', function(res) {
+					res.on('row', function(row) {
+							//			       console.log('main_circle_finish_server:成功');
+						})
+						.on('error', function(err) {
+							console.log('发生异常错误:' + inspect(err));
+							socket.emit('alert_client', 8, 0);
+						})
+						.on('end', function(info) {
+							//			        console.log('完毕');
+							socket.emit('alert_client', 8, 1);
+						})
+				})
+				.on('end', function() {
+					//			      console.log('结果输出完毕');
+				});
+		} else {
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE i2 = ?', ['', circleid])
+				.on('result', function(res) {
+					res.on('row', function(row) {
+							//			       console.log('main_circle_finish_server:成功');
+						})
+						.on('error', function(err) {
+							console.log('发生异常错误:' + inspect(err));
+							socket.emit('alert_client', 8, 0);
+						})
+						.on('end', function(info) {
+							//			        console.log('完毕');
+							socket.emit('alert_client', 8, 1);
+						})
+				})
+				.on('end', function() {
+					//			      console.log('结果输出完毕');
+				});
+
+		};
+	});
+
+	socket.on('main_change_responsibility_server', function(responsibility_username, circleid, groupname) {
+		c.query('UPDATE \`' + groupname + '_circle\` SET responsibility = ? WHERE i2 = ?', [responsibility_username, circleid])
+			.on('result', function(res) {
+				res.on('row', function(row) {
+						//     console.log('成功');
+					})
+					.on('error', function(err) {
+						console.log('发生异常错误:' + inspect(err));
+						socket.emit("alert_client", 9, 0);
+					})
+					.on('end', function(info) {
+						socket.emit("alert_client", 9, 1);
+
+						//      console.log('完毕');
+					})
+			})
+			.on('end', function() {
+				//    console.log('结果输出完毕');
+			});
+	});
 
 	socket.on('main_edit_data_server', function(editdata, editprice, nickname, itemid) {
 		console.log('main_edit_data_server:收到关系表编辑请求,请求的发送用户是' + nickname);
