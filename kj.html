@@ -178,32 +178,36 @@
 
 					"otherinfo": new Object(), //存储对于circleid的relation;调用方式:window.op_details.otherinfo[circleid],为0则不存在item,不为0则存在item
 					"now_circleid": "",
+					"member": "",
 					"read": function(circleid) {
 						$("#circle_details_circledata").empty();
 						window.op_details.now_circleid = circleid;
 						window.op_details.now_circledata = window.op_details[circleid];
+
 						for (var x in window.op_details[circleid]) {
 							$("#circle_details_circledata").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.now_circledata[x] + "</div></li>");
 						};
-						
-//						if (window.op_details.otherinfo[circleid][0]) {
-//							
-//						}
-//						for (var x in window.op_details.otherinfo[circleid][0]) {
-//							
-//							break;
-//						};
 
-
-						$("#circle_details_responsibility").append('');
-						
 						$("#circle_details").page();
 
-						if (localStorage.active_group_power == "leader") {
-							$("#circle_details_responsibility").selectmenu("enable");
-						} else {
-							$("#circle_details_responsibility").selectmenu("disable");
+						$("#circle_details_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
+
+						for (var x in window.op_details.member) {
+							if (x != "item_name" && x != "item_price" && x != "circle_id") {
+								if (x == window.op_details.now_circledata['responsibility']) {
+									$("#circle_details_responsibility").append('<option value=\"' + x + '\" selected>' + x + '</option>');
+								} else {
+									$("#circle_details_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+								};
+							};
 						};
+
+						if (localStorage.active_group_power == "leader") {
+							$("#circle_details_responsibility").selectmenu("enable").selectmenu("refresh");
+						} else {
+							$("#circle_details_responsibility").selectmenu("disable").selectmenu("refresh");
+						};
+
 
 						$("#circle_details_circledata").listview("refresh");
 
@@ -241,28 +245,35 @@
 				//读取circle的item数据,绑定为全局对象
 				window.op_items = new Object();
 				window.op_items = {
+					"now_circleid": "", //存储item对应的circleid,与op_detail的不混用
 					"edit": function() {
 						//留空
 					},
 					"read": function(circleid) {
-						$("#items_list").empty();
-						for (var x in window.op_details.otherinfo[circleid]) {
-							var count_items = 0; //总件数计算
-							$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
-							for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-								if (y != "circle_id" && y != "item_name" && y != "item_price" && window.op_details.otherinfo[circleid][x][y]) {
-									var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
-									count_items += temp['target'];
-
-									$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>'); //stop
+						if (window.op_details.otherinfo) {
+							window.op_items.now_circleid = circleid;
+							$("#items_list").empty();
+							$("#items_for_select").empty();
+							for (var x in window.op_details.otherinfo[circleid]) {
+								var count_items = 0; //总件数计数器
+								$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
+								$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+								for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
+									if (y != "circle_id" && y != "item_name" && y != "item_price" && window.op_details.otherinfo[circleid][x][y]) {
+										var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
+										count_items += temp['target'];
+										$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>'); //stop
+									};
 								};
+								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
 							};
-							$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
+	
+							$("#items").page();
+							$("#items_list").listview("refresh");
+							$.mobile.changePage("#items");
+						}else{
+							alert("此circle没有任何item,请添加后查看");
 						};
-
-						$("#items").page();
-						$("#items_list").listview("refresh");
-						$.mobile.changePage("#items");
 					},
 				};
 
@@ -396,14 +407,15 @@
 					//任务推送
 					socket.on("main_mission_list_client", function(otherinfo, circleinfo) {
 						if (otherinfo != 0) {
+							if (!window.op_details.member) {
+								window.op_details.member = otherinfo;
+							};
 							var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
 							if (circleinfo['i27'] != "finished" && circleinfo['responsibility'] == localStorage.nickname) {
-
 								if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
 									window.op_details.otherinfo[circleinfo['i2']] = new Array();
 								};
 								window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
-
 								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
 								} else {
 									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
@@ -414,12 +426,10 @@
 									window.op_details[circleinfo['i2']] = circleinfo;
 								};
 							} else if (circleinfo['i27'] == "finished" && circleinfo['responsibility'] == localStorage.nickname) {
-
 								if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
 									window.op_details.otherinfo[circleinfo['i2']] = new Array();
 								};
 								window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
-
 								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
 								} else {
 									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
@@ -606,8 +616,6 @@
 								case 9:
 									alert("设置此用户为负责人失败!原因不明!");
 									break;
-
-
 							};
 						};
 					});
@@ -936,10 +944,13 @@
 
 				$("#circle_details_responsibility").change(function() {
 					$("#circle_details_responsibility").selectmenu("refresh");
-					if ($("#circle_details_responsibility").val()) {
-						socket.emit("main_change_responsibility_server", $("#circle_details_responsibility").val(), window.op_details.now_circleid, localStorage.active_group);
-					} else {
-						alert("请选择此circle的负责人!");
+					socket.emit("main_change_responsibility_server", $("#circle_details_responsibility").val(), window.op_details.now_circleid, localStorage.active_group);
+				});
+
+
+				$("#items_edit_select_assure").click(function() {
+					if ($("#items_for_select").val() != "") {
+						console.log(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]);
 					};
 				});
 
@@ -1311,7 +1322,6 @@
 				<select id="circle_details_responsibility" data-native-menu="false" disabled="">
 					<option value="">请选择负责人</option>
 				</select>
-				<!--以后加入负责人推送-->
 			</div>
 		</div>
 
@@ -1332,11 +1342,44 @@
 				<div data-role="navbar">
 					<ul>
 						<li>
-							<a href="#" data-icon="info" class="ui-btn">编辑</a>
+							<a href="#items_edit_select" data-rel="dialog" data-icon="info" class="ui-btn">编辑</a>
 						</li>
 					</ul>
 				</div>
 			</div>
+		</div>
+
+		<div data-role="page" id="items_edit_select">
+
+
+			<div data-role="content">
+				<br />
+				<br />
+				<br />
+				<select id="items_for_select" data-native-menu="false">
+					<option value="">选择要编辑的item</option>
+				</select>
+				<br />
+				<br />
+				<br />
+
+				<div class="ui-grid-a">
+					<div class="ui-block-a">
+						<a href="#items" data-role="button">取消</a>
+					</div>
+					<div class="ui-block-b">
+						<input id="items_edit_select_assure" type="button" value="确认" />
+						<!--工作-->
+						<!--到这里-->
+					</div>
+				</div>
+
+				<br />
+				<br />
+
+			</div>
+		</div>
+
 		</div>
 
 		<div data-role="page" id="edit">
