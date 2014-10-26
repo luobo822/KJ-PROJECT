@@ -398,22 +398,16 @@ socketio.listen(server).on('connection', function(socket) {
 	socket.on('main_change_responsibility_server', function(responsibility_username, circleid, groupname) {
 		c.query('UPDATE \`' + groupname + '_circle\` SET responsibility = ? WHERE i2 = ?', [responsibility_username, circleid])
 			.on('result', function(res) {
-				res.on('row', function(row) {
-						//     console.log('成功');
-					})
+				res.on('row', function(row) {})
 					.on('error', function(err) {
 						console.log('发生异常错误:' + inspect(err));
 						socket.emit("alert_client", 9, 0);
 					})
 					.on('end', function(info) {
 						socket.emit("alert_client", 9, 1);
-
-						//      console.log('完毕');
 					})
 			})
-			.on('end', function() {
-				//    console.log('结果输出完毕');
-			});
+			.on('end', function() {});
 	});
 
 	socket.on('main_edit_data_server', function(editdata, editprice, nickname, itemid) {
