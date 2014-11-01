@@ -223,22 +223,6 @@
 						};
 
 						$.mobile.changePage("#circle_details");
-					},
-					"edit": function() { //估计要重构
-						var pureobj_myinfo = eval('(' + window.op_details.otherinfo[window.op_details.now_circleid][localStorage.nickname] + ')');
-						$("#edit_price").val(window.op_details.now_itemdata['i27']);
-						$("#edit_target").val(pureobj_myinfo['target']);
-						$("#edit_bought").val(pureobj_myinfo['bought']);
-						$("#edit_finish").val(pureobj_myinfo['finish']);
-
-						$("#edit_custom").empty();
-						if (window.op_details.custom != "") {
-							$("#edit_custom").append("<li><div class=\"scroll\">" + "委托人有:" + window.op_details.custom + "</div></li>");
-							$("#edit").page();
-							$("#edit_custom").listview("refresh");
-						};
-
-						$.mobile.changePage("#edit");
 					}
 				};
 
@@ -246,20 +230,32 @@
 				window.op_items = new Object();
 				window.op_items = {
 					"now_circleid": "", //存储item对应的circleid,与op_detail的不混用
-					"edit": function() {
-						//留空
+					//					"edit": function(relation_string) {
+					//
+					//					},
+					"clear_selectmemu": function() {
+						$("#items_edit").page();
+						$("#items_for_select").val("").selectmenu("refresh");
+						$("#user_for_select").val("").selectmenu("refresh");
 					},
 					"read": function(circleid) {
 						if (window.op_details.otherinfo) {
 							window.op_items.now_circleid = circleid;
 							$("#items_list").empty();
-							$("#items_for_select").empty();
+							$("#items_for_select").empty().append('<option value=\"\">item名</option>');
+							$("#user_for_select").empty().append('<option value=\"\">user名</option>');
+
+							var username_temp = new Object();
 							for (var x in window.op_details.otherinfo[circleid]) {
 								var count_items = 0; //总件数计数器
 								$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
 								$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 								for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
 									if (y != "circle_id" && y != "item_name" && y != "item_price" && window.op_details.otherinfo[circleid][x][y]) {
+										if (!username_temp[y]) {
+											$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+											username_temp[y] = 1;
+										};
 										var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
 										count_items += temp['target'];
 										$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>'); //stop
@@ -267,11 +263,11 @@
 								};
 								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
 							};
-	
+
 							$("#items").page();
 							$("#items_list").listview("refresh");
 							$.mobile.changePage("#items");
-						}else{
+						} else {
 							alert("此circle没有任何item,请添加后查看");
 						};
 					},
@@ -419,7 +415,7 @@
 								if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
 								} else {
 									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
-										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
+										+ '<p>' + circleinfo['i11'] + ' </p><p>ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
 
 									$("#unfinished").listview("refresh");
 									$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
@@ -517,6 +513,7 @@
 
 							window.op_group["my_group"].push({
 								"group_name": result["group_name"],
+
 								"group_introduction": result["group_introduction"],
 								"my_power": result[localStorage.nickname]
 							});
@@ -579,6 +576,9 @@
 								case 9:
 									alert("成功设置此用户为负责人!");
 									break;
+								case 10:
+									alert("编辑item成功!");
+									break;
 							}
 						} else if (type_number == 0) {
 							switch (text_number) {
@@ -614,8 +614,13 @@
 									break;
 
 								case 9:
-									alert("设置此用户为负责人失败!原因不明!");
+									alert("设置此用户为负责人失败!请检查此人是否已经退出队伍!");
 									break;
+
+								case 10:
+									alert("编辑item失败!请刷新查看此item是否已被删除!");
+									break;
+
 							};
 						};
 					});
@@ -630,6 +635,10 @@
 					}); //socket.on("disconnect", function() ending
 
 				}); //socket.on("connect") ending
+
+
+
+
 				//消息发送机能
 				$("#sent_message").keypress(function(event) {
 					if (event.which == 13) {
@@ -704,22 +713,19 @@
 					};
 				});
 				//上传edit后的数据
-				$("#edit_save").click(function() {
-					if ($("#edit_whobuy").val() && 　$("#edit_target").val()　 && $("#edit_bought").val() && $("#edit_finish").val() && $("#edit_price").val()) {
-						var edit_data_upload = new Object();
-						edit_data_upload = {
-							"bought": Number($("#edit_bought").val()),
-							"target": Number($("#edit_target").val()),
-							"finish": Number($("#edit_finish").val()),
-							"whobuy": $("#edit_whobuy").val()
+				$("#items_edit_save").click(function() {
+					if ($("#items_edit_target").val() && $("#items_edit_bought").val() && $("#items_edit_price").val()) {
+						var edit_data_obj = new Object();
+						edit_data_obj = {
+							"bought": Number($("#items_edit_bought").val()),
+							"target": Number($("#items_edit_target").val())
 						};
-						edit_data_upload = JSON.stringify(edit_data_upload);
-						console.log("对象字符串化为" + edit_data_upload);
-						var edit_price_upload = Number($("#edit_price").val());
-						socket.emit("main_edit_data_server", edit_data_upload, edit_price_upload, localStorage.nickname, window.op_details.now_circleid);
-						console.log("已上传完毕:" + edit_data_upload + "," + edit_price_upload + "," + localStorage.nickname + "," + window.op_details.now_circleid);
+						var edit_data_string = JSON.stringify(edit_data_obj);
+						//						console.log("对象字符串化为" + edit_data_string);
+						var edit_price_number = Number($("#items_edit_price").val());
+						socket.emit("main_edit_data_server", edit_data_string, edit_price_number, $("#items_edit_name").val(), $("#items_edit_username").val(), localStorage.active_group);
 					} else {
-						alert("请完成所有表单");
+						alert("请完成所有表单!");
 					};
 				});
 
@@ -949,8 +955,24 @@
 
 
 				$("#items_edit_select_assure").click(function() {
-					if ($("#items_for_select").val() != "") {
-						console.log(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]);
+					if ($("#items_for_select").val() && $("#user_for_select").val()) {
+						//						console.log(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()][$("#user_for_select").val()]);
+						var pureobj_info = eval('(' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()][$("#user_for_select").val()] + ')');
+						$("#items_edit_name").val("").val(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['item_name'])
+						$("#items_edit_username").val($("#user_for_select").val());
+						$("#items_edit_price").val("").val(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['item_price']);
+
+						$("#items_edit_target").val("");
+						$("#items_edit_bought").val("");
+
+						if (pureobj_info != null) {
+							$("#items_edit_target").val(pureobj_info['target']);
+							$("#items_edit_bought").val(pureobj_info['bought']);
+						};
+
+						$.mobile.changePage("#items_edit");
+					} else {
+						alert("请选择item和user!");
 					};
 				});
 
@@ -1322,6 +1344,8 @@
 				<select id="circle_details_responsibility" data-native-menu="false" disabled="">
 					<option value="">请选择负责人</option>
 				</select>
+				<input type="button" value="从队伍里永久删除此circle" />
+
 			</div>
 		</div>
 
@@ -1336,13 +1360,11 @@
 				</ul>
 			</div>
 
-
-
 			<div data-role="footer" data-position="fixed">
 				<div data-role="navbar">
 					<ul>
 						<li>
-							<a href="#items_edit_select" data-rel="dialog" data-icon="info" class="ui-btn">编辑</a>
+							<a href="#items_edit_select" data-rel="dialog" data-icon="info" class="ui-btn" onclick="window.op_items.clear_selectmemu()">编辑</a>
 						</li>
 					</ul>
 				</div>
@@ -1350,14 +1372,14 @@
 		</div>
 
 		<div data-role="page" id="items_edit_select">
-
-
 			<div data-role="content">
 				<br />
 				<br />
 				<br />
 				<select id="items_for_select" data-native-menu="false">
-					<option value="">选择要编辑的item</option>
+				</select>
+				<br />
+				<select id="user_for_select" data-native-menu="false">
 				</select>
 				<br />
 				<br />
@@ -1369,8 +1391,6 @@
 					</div>
 					<div class="ui-block-b">
 						<input id="items_edit_select_assure" type="button" value="确认" />
-						<!--工作-->
-						<!--到这里-->
 					</div>
 				</div>
 
@@ -1380,37 +1400,39 @@
 			</div>
 		</div>
 
-		</div>
 
-		<div data-role="page" id="edit">
+		<div data-role="page" id="items_edit">
 			<div data-role="header">
 				<h1>编辑</h1>
-				<a href="#circle_details" data-role="button" data-icon="back">返回</a>
+				<a href="#items_edit_select" data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu()">返回</a>
 				<div data-role="button" class="ui-btn-right">
-					<input type="button" id="edit_save" value="保存" data-role="button" data-icon="alert" class="ui-btn-right">
+					<input type="button" id="items_edit_save" value="保存" data-icon="alert">
 				</div>
 			</div>
 
 			<div data-role="content">
 
 				<div data-role="fieldcontain">
-					<label for="edit_price">价格(单位:円)</label>
-					<input type="text" name="edit_price" id="edit_price" value="" placeholder="目前价格尚未输入,注意不要恶意修改价格">
+					<label for="items_edit_name">item名(无法修改)</label>
+					<input type="text" id="items_edit_name" value="" readonly="">
 				</div>
 				<div data-role="fieldcontain">
-					<label for="edit_target">自身目标数:</label>
-					<input type="text" name="edit_target" id="edit_target" value="">
+					<label for="items_edit_username">user名</label>
+					<input type="text" id="items_edit_username" value="" readonly="">
 				</div>
 				<div data-role="fieldcontain">
-					<label for="edit_bought">共计入手数:</label>
-					<input type="text" name="edit_bought" id="edit_bought" value="">
+					<label for="items_edit_price">价格:円</label>
+					<input type="text" id="items_edit_price" value="" placeholder="勿恶意更改价格">
 				</div>
 				<div data-role="fieldcontain">
-					<label for="edit_finish">完成情况:</label>
-					<input type="text" name="edit_finish" id="edit_finish" value="">
+					<label for="items_edit_target">自身目标数:</label>
+					<input type="text" id="items_edit_target" value="" placeholder="必填">
 				</div>
-
-				<ul id="edit_custom" data-role="listview" data-inset="true"></ul>
+				<div data-role="fieldcontain">
+					<label for="items_edit_bought">已经获得数:</label>
+					<input type="text" id="items_edit_bought" value="" placeholder="必填">
+				</div>
+				<input type="button" value="对所有人删除此item" />
 
 			</div>
 
