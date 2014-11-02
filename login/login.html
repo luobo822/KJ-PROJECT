@@ -48,15 +48,14 @@
         is_connected = 1; //已连接
 
         socket.on("login_client", function(logindata){
-          console.log("输出logindata",logindata);
+//        console.log("输出logindata",logindata);
           if (logindata.flag == 1) {
             $("#login_submit").tooltip("destroy");
              localStorage.setItem("id",logindata.id);
              localStorage.setItem("username",logindata.username);
              localStorage.setItem("nickname",logindata.nickname);
-             console.log("登录成功!");
+//           console.log("登录成功!");
              window.location.assign("http://test.eshicon.org/kj.html");
-             //这里跳转到main页面
           }else if (logindata.flag == 0) {
             $("#login_submit").attr("data-original-title","密码或用户名错误");
             $("#login_submit").tooltip("show");
