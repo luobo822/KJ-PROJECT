@@ -450,12 +450,10 @@
 					});
 					//输出结算结果
 					socket.on("main_calc_client", function(iteminfo, otherinfo) {
-						var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1, finish: 0, whobuy: "test"} 其中,1/0都是number类型
+						var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')');
 						// var names = new Array();
 						var pureobj_everyinfo = new Object();
 						if (window.calc_data.date == "233" || window.calc_data.date == iteminfo['i6']) {
-
-
 							for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
 								if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
 									pureobj_everyinfo[x] = eval('(' + otherinfo[x] + ')');
@@ -465,7 +463,6 @@
 											console.log("用户" + x + "给自机的已完成的委托" + iteminfo['i2']);
 											//进income,确认价格和对方的入手数量
 											$("#calc_result_income").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + localStorage.nickname + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(对方入手数量):' + pureobj_everyinfo[x]['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-
 											$("#calc_result_income_simple").append('<li><div class="scroll">应从' + x + '拿到' + Number(iteminfo['i27']) * Number(pureobj_everyinfo[x]['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
 											$("#calc_result_income").listview("refresh");
 											$("#calc_result_income_simple").listview("refresh");
@@ -476,7 +473,6 @@
 											// 扔进outcome,确认价格和自己的入手数量
 											console.log("自机让用户" + x + "买的已完成的委托" + iteminfo['i2']);
 											$("#calc_result_outcome").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(自身入手数量):' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-
 											$("#calc_result_outcome_simple").append('<li><div class=\"scroll\">应付给' + x + Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
 											$("#calc_result_outcome").listview("refresh");
 											$("#calc_result_outcome_simple").listview("refresh");
@@ -490,7 +486,6 @@
 							if (pureobj_myinfo['whobuy'] == localStorage.nickname) {
 								console.log("自机消费" + iteminfo['i2']);
 								$("#calc_result_spend").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(自身入手数量):' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-
 								$("#calc_result_spend_simple").append('<li><div class="scroll">消费' + Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
 								$("#calc_result_spend").listview("refresh");
 								$("#calc_result_spend_simple").listview("refresh");
