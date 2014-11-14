@@ -423,7 +423,11 @@ KJ-PROJECT第二期工程
 
 buttonObject.disabled=true|false
 
+注意：
+res被反复触发直到row全部被输出。
+每个query语句对应一个大end,一个res对应一个小end;
 
+对于node.js中的SQL来说，不需要外部库的带来的同步化。
 
 
 
