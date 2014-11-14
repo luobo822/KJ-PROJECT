@@ -1,6 +1,6 @@
-var fs = require('fs'),
-	http = require('http')
-
+var fs = require('fs');
+var http = require('http');
+var async = require("async");
 var inspect = require('util').inspect;
 var socketio = require('socket.io');
 var Client = require('mariasql');
@@ -197,42 +197,42 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('end', function() {
 				//				console.log('alter_relation:所有结果输出完毕');
 			});
-//		console.log('返回:', regdata);
+		//		console.log('返回:', regdata);
 		socket.emit('reg_submit_client', regdata); //如果成功插入数据,返回对象.
 	});
 
 	//login
 
 	socket.on('login_server', function(logindata) {
-//		console.log('收到登录data:', logindata);
+		//		console.log('收到登录data:', logindata);
 		var is_right = -1;
 		c.query('SELECT COUNT(username)=1 FROM user WHERE id = :id AND username = :username', logindata)
 			.on('result', function(res) {
 				res.on('row', function(row) {
-//						console.log('查到的结果是:' + inspect(row));
+						//						console.log('查到的结果是:' + inspect(row));
 						for (x in row) {
 							is_right = row[x];
 							if (row[x] == 1) { //若id和用户名正确,进行第二遍查询,查出这个用户的所有数据
-//								console.log('允许登录' + logindata.username);
+								//								console.log('允许登录' + logindata.username);
 								c.query('SELECT * FROM user WHERE id = :id AND username = :username', logindata)
 									.on('result', function(res) {
 										res.on('row', function(row) {
 												row.flag = is_right;
-//												console.log('输出row' + inspect(row));
+												//												console.log('输出row' + inspect(row));
 												socket.emit('login_client', row); //允许登录flag=1/不允许登录flag=0/发生错误flag=-1
 											})
 											.on('error', function(err) {
 												console.log('结果输出错误: ' + inspect(err));
 											})
 											.on('end', function(info) {
-//												console.log('结果输出成功');
+												//												console.log('结果输出成功');
 											});
 									})
 									.on('end', function() {
-//										console.log('所有结果输出完毕');
+										//										console.log('所有结果输出完毕');
 									});
 							} else {
-//								console.log('不允许登录,没有此用户或密码错误:' + logindata.username);
+								//								console.log('不允许登录,没有此用户或密码错误:' + logindata.username);
 								row.flag = 0;
 								socket.emit('login_client', row); //允许登录flag=1/不允许登录flag=0/发生错误flag=-1
 							};
@@ -242,157 +242,158 @@ socketio.listen(server).on('connection', function(socket) {
 						console.log('登录程序发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
-//						console.log('登录处理完毕');
+						//						console.log('登录处理完毕');
 					});
 			})
 			.on('end', function() {
-//				console.log('所有结果输出完毕');
+				//				console.log('所有结果输出完毕');
 			});
 	});
 
 	//main
 
 	socket.on('main_message_server', function(msgdata) {
-//		console.log('main_message_server:收到消息:', msgdata);
+		//		console.log('main_message_server:收到消息:', msgdata);
 		socket.broadcast.emit('message', msgdata);
 	});
 
-	socket.on('main_csv_submit_server', function(csvdata,which_group) { //csvdata是一个数组
-//		console.log('main_csv_submit_server:收到提交的csv数组:\n', csvdata);
+	socket.on('main_csv_submit_server', function(csvdata, which_group) { //csvdata是一个数组
+		//		console.log('main_csv_submit_server:收到提交的csv数组:\n', csvdata);
 		//		var is_success = -1;
 		c.query('SELECT COUNT(i2)=0 FROM \`' + which_group + '_circle\` WHERE i2 = ?', [csvdata[1]])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						for (var temp in row) {
 							if (row[temp] == 1) { //which_group_circle表里没有此circle
-//								console.log('main_csv_submit_server:circle没有重复:' + csvdata[1]);
+								//								console.log('main_csv_submit_server:circle没有重复:' + csvdata[1]);
 								// csvdata[27] = nickname;
-//								console.log(csvdata[27]);
+								//								console.log(csvdata[27]);
 								insert_circle(csvdata, which_group); //传csvdata[],11.12删除了csvdata 中的 nickname
 								socket.emit('main_csv_submit_client', csvdata[1]);
 							} else {
-//								console.log('main_csv_submit_server:circle重复了:' + csvdata[1]);
+								//								console.log('main_csv_submit_server:circle重复了:' + csvdata[1]);
 								socket.emit('main_csv_submit_client', 0);
-				 			};
+							};
 							//update_relation(nickname, csvdata[0][1], '{\"bought\":0,\"target\":1,\"finish\":0,\"whobuy\":\"' + nickname + '\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
 						};
 					})
 					.on('error', function(err) {
-//						console.log('main_csv_submit_server:发生异常错误:' + inspect(err));
+						//						console.log('main_csv_submit_server:发生异常错误:' + inspect(err));
 						socket.emit('main_csv_submit_client', -1);
 					})
 					.on('end', function(info) {
-//						console.log('main_csv_submit_server:检查完毕');
+						//						console.log('main_csv_submit_server:检查完毕');
 					});
 			})
 			.on('end', function() {
-//				console.log('main_csv_submit_server:所有结果输出完毕');
+				//				console.log('main_csv_submit_server:所有结果输出完毕');
 			});
 
 	});
 
 
-// 	socket.on('main_mission_list_server', function(nickname, which_group) {
-// //		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
-// 		c.query('SELECT * FROM \`' + which_group + '_data\` ')
-// 			.on('result', function(res) {
-// 				res.on('row', function(row) {
-// 						console.log("data:" + inspect(row));
-// 						var temp = row;
-// 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [row['circle_id']])
-// 							.on('result', function(res) {
-// 								res.on('row', function(row) { //左边的这个row是circle表里某一排的值;temp则是对应此circle数据的itemdata&relation
-// 										socket.emit('main_mission_list_client', temp, row); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
-// 										//										console.log('main_mission_list_server:成功');
-// 									})
-// 									.on('error', function(err) {
-// 										console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-// 									})
-// 									.on('end', function(info) {
-// 										//										console.log('main_mission_list_server:完毕');
-// 									})
-// 							})
-// 							.on('end', function() {
-// 								//								console.log('main_mission_list_server:结果输出完毕');
-// 							});
+	// 	socket.on('main_mission_list_server', function(nickname, which_group) {
+	// //		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
+	// 		c.query('SELECT * FROM \`' + which_group + '_data\` ')
+	// 			.on('result', function(res) {
+	// 				res.on('row', function(row) {
+	// 						console.log("data:" + inspect(row));
+	// 						var temp = row;
+	// 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [row['circle_id']])
+	// 							.on('result', function(res) {
+	// 								res.on('row', function(row) { //左边的这个row是circle表里某一排的值;temp则是对应此circle数据的itemdata&relation
+	// 										socket.emit('main_mission_list_client', temp, row); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
+	// 										//										console.log('main_mission_list_server:成功');
+	// 									})
+	// 									.on('error', function(err) {
+	// 										console.log('main_mission_list_server:发生异常错误:' + inspect(err));
+	// 									})
+	// 									.on('end', function(info) {
+	// 										//										console.log('main_mission_list_server:完毕');
+	// 									})
+	// 							})
+	// 							.on('end', function() {
+	// 								//								console.log('main_mission_list_server:结果输出完毕');
+	// 							});
 
-// 						//						select_itemdata(row, nickname, which_group);
-// 					})
-// 					.on('error', function(err) {
-// //						console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-// 					})
-// 					.on('end', function(info) {
-// 						//						console.log('main_mission_list_server:推送完毕');
-// 					})
-// 			})
-// 			.on('end', function() {
-// 				//								console.log('main_mission_list_server:结果输出完毕');
-// 			});
+	// 						//						select_itemdata(row, nickname, which_group);
+	// 					})
+	// 					.on('error', function(err) {
+	// //						console.log('main_mission_list_server:发生异常错误:' + inspect(err));
+	// 					})
+	// 					.on('end', function(info) {
+	// 						//						console.log('main_mission_list_server:推送完毕');
+	// 					})
+	// 			})
+	// 			.on('end', function() {
+	// 				//								console.log('main_mission_list_server:结果输出完毕');
+	// 			});
 
-// 		c.query('SELECT * FROM \`' + which_group + '_circle\`')
-// 			.on('result', function(res) {
-// 				res.on('row', function(row) {
-// 						//						console.log('main_mission_list_server:成功');
-// 						//						console.log(inspect(row));
-// 						socket.emit('main_mission_list_client', 0, row);
-// 					})
-// 					.on('error', function(err) {
-// 						console.log('发生异常错误:' + inspect(err));
-// 					})
-// 					.on('end', function(info) {
-// 						//						console.log('完毕');
-// 					})
-// 			})
-// 			.on('end', function() {
-// 				//				console.log('结果输出完毕');
-// 			});
+	// 		c.query('SELECT * FROM \`' + which_group + '_circle\`')
+	// 			.on('result', function(res) {
+	// 				res.on('row', function(row) {
+	// 						//						console.log('main_mission_list_server:成功');
+	// 						//						console.log(inspect(row));
+	// 						socket.emit('main_mission_list_client', 0, row);
+	// 					})
+	// 					.on('error', function(err) {
+	// 						console.log('发生异常错误:' + inspect(err));
+	// 					})
+	// 					.on('end', function(info) {
+	// 						//						console.log('完毕');
+	// 					})
+	// 			})
+	// 			.on('end', function() {
+	// 				//				console.log('结果输出完毕');
+	// 			});
 
-// 	}); //socket.on('main_mission_list_server') ending
+	// 	}); //socket.on('main_mission_list_server') ending
 
-//11.12
-//对应修改点4开始
+	//11.12
+	//对应修改点4开始
 
-socket.on('main_mission_list_server', function(nickname, which_group) {
-//		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
+	socket.on('main_mission_list_server', function(nickname, which_group) {
+		//		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
+		var p = 1;
+		var q = 1;
 		c.query('SELECT * FROM \`' + which_group + '_circle\` ')
 			.on('result', function(res) {
 				res.on('row', function(row) {
-					var is_pushed = 0;//为0说明还没有推送过circle数据，为其他值就说明推送过circle数据了,对行circle数据新建一个
-						console.log("data:" + inspect(row));
-						var circle_data = row;//temp存储的是一行circle数据
-						c.query('SELECT * FROM \`' + which_group + '_data\` WHERE i2 = ?', [circle_data['i2']])
+						var is_pushed = 0; //为0说明还没有推送过circle数据，为其他值就说明推送过circle数据了,对行circle数据新建一个
+						//						console.log("data:" + inspect(row));
+						var circle_data = row; //temp存储的是一行circle数据
+						var relation_data = "";
+
+						c.query('SELECT * FROM \`' + which_group + '_data\` WHERE circle_id = ?', [circle_data['i2']])
 							.on('result', function(res) {
-								res.on('row', function(row) { 
-										if (row[nickname] != null) {//如果这个item和self没关系，则push到“其他任务”里
-											//push to “other mission” with "is_other = 1"
-											// socket.emit('main_mission_list_client', row, circle_data, 1);
-										}else{//这个item和self有关系，push to finished or unfinished
-											if (is_pushed !=0) {//若已推送过
-												//push without circle <circle_data>
-												// socket.emit('main_mission_list_client', row, 0, 0);
-												is_pushed = 1;//set this variable "pushed"
-											}else{
-												//push with circle <circle_data>
-												// socket.emit('main_mission_list_client', row, circle_data, 0);
+								res.on('row', function(row) {
+										if (relation_data[nickname] == null) { //true:这个item和self没关系，则push到“其他任务”里,完整的circle和relation数据
+											socket.emit('main_mission_list_client', row, circle_data, 1);
+										} else { //这个item和self有关系，push to finished or unfinished
+											if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
+												socket.emit('main_mission_list_client', row, circle_data['i2'], 0);
+											} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
+												is_pushed = 1;
+												socket.emit('main_mission_list_client', row, circle_data, 0);
 											};
-											//filter whether finished in client
 										};
+										relation_data = row;
 									})
 									.on('error', function(err) {
 										console.log('main_mission_list_server:发生异常错误:' + inspect(err));
 									})
-									.on('end', function(info) {
-										//										console.log('main_mission_list_server:完毕');
-									})
+									.on('end', function(info) {})
 							})
 							.on('end', function() {
-								//								console.log('main_mission_list_server:结果输出完毕');
+								if (!relation_data) { //true:不带item的circle
+									socket.emit('main_mission_list_client', 0, circle_data, 1);
+								};
 							});
 
-						//						select_itemdata(row, nickname, which_group);
+
 					})
 					.on('error', function(err) {
-//						console.log('main_mission_list_server:发生异常错误:' + inspect(err));
+						//						console.log('main_mission_list_server:发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
 						//						console.log('main_mission_list_server:推送完毕');
@@ -402,27 +403,9 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 				//								console.log('main_mission_list_server:结果输出完毕');
 			});
 
-		c.query('SELECT * FROM \`' + which_group + '_circle\`')
-			.on('result', function(res) {
-				res.on('row', function(row) {
-						//						console.log('main_mission_list_server:成功');
-						//						console.log(inspect(row));
-						socket.emit('main_mission_list_client', 0, row);
-					})
-					.on('error', function(err) {
-						console.log('发生异常错误:' + inspect(err));
-					})
-					.on('end', function(info) {
-						//						console.log('完毕');
-					})
-			})
-			.on('end', function() {
-				//				console.log('结果输出完毕');
-			});
-
 	}); //socket.on('main_mission_list_server') ending
 
-//对应修改点4结束
+	//对应修改点4结束
 
 	socket.on('main_circle_finish_server', function(flag, circleid, groupname) {
 		if (flag) { //将此circle设为已完成
@@ -465,8 +448,8 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 		};
 	});
 
-//对应修改点3
-	socket.on('main_change_responsibility_server', function(responsibility_username, itemname, groupname) {//在11.12的修改中，_circle 中的responsibility 变到_data
+	//对应修改点3
+	socket.on('main_change_responsibility_server', function(responsibility_username, itemname, groupname) { //在11.12的修改中，_circle 中的responsibility 变到_data
 		c.query('UPDATE \`' + groupname + '_data\` SET responsibility = ? WHERE item_name = ?', [responsibility_username, itemname])
 			.on('result', function(res) {
 				res.on('row', function(row) {})
@@ -853,7 +836,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 
 	socket.on('main_add_item_server', function(item_name, item_price, circle_number, item_copy_number, nickname, which_group, responsibility) {
 		c.query('SELECT COUNT(i2)=0 FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
-		// c.query('SELECT COUNT(i2)=0,responsibility FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
+			// c.query('SELECT COUNT(i2)=0,responsibility FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(i2)=0'] != 1) {
@@ -862,7 +845,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 								.on('result', function(res) {
 									res.on('row', function(row) {
 											if (row['COUNT(item_name)=0'] == 1) {
-												c.query('INSERT INTO \`' + which_group + '_data\` SET circle_id = ?,item_name = ?, item_price = ?,\`' + nickname + '\` = ? ,responsibility = ?', [circle_number, item_name, item_price, '{"bought":0,"target":' + item_copy_number + '}',responsibility])
+												c.query('INSERT INTO \`' + which_group + '_data\` SET circle_id = ?,item_name = ?, item_price = ?,\`' + nickname + '\` = ? ,responsibility = ?', [circle_number, item_name, item_price, '{"bought":0,"target":' + item_copy_number + '}', responsibility])
 													.on('result', function(res) {
 														res.on('row', function(row) {
 																//																console.log('main_add_item_server_insert:成功');
@@ -910,9 +893,9 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group) {//对应html里"修改点1"
+	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group) { //对应html里"修改点1"
 
-	// socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, nickname, which_group) {
+		// socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, nickname, which_group) {
 		c.query('SELECT COUNT(i2)=0  FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
 			.on('result', function(res) {
 				res.on('row', function(row) {
@@ -920,7 +903,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author]) //可能有对应上的错误
 
 							// c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,responsibility = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author]) //可能有对应上的错误
-								.on('result', function(res) {
+							.on('result', function(res) {
 									res.on('row', function(row) {
 											//											console.log('main_add_circle_server_insert:成功');
 										})
@@ -1020,7 +1003,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 
 	};
 
-//下面的这个函数弃用
+	//下面的这个函数弃用
 	function select_itemdata(dataobject, nickname, which_group) { //dataobject形如{i1:value,i2:value......in:value}
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_data\` WHERE circle_id = ?', [dataobject['i2']])
 			.on('result', function(res) {
@@ -1072,9 +1055,9 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 
 		c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
 				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 =?',
-				csvdata)//对应"修改点2"
+				csvdata) //对应"修改点2"
 
-			.on('result', function(res) {
+		.on('result', function(res) {
 				res.on('row', function(row) {
 						//						console.log('insert_circle:插入成功');
 						socket.emit('main_csv_submit_client', csvdata[1]); //插入成功,返回circle id
@@ -1092,7 +1075,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 			});
 	};
 
-//下面这个函数弃用
+	//下面这个函数弃用
 	function update_relation(nickname, itemid, buyobjectstring) { //nickname昵称对应宝物的所有者,itemid宝物唯一识别码,buyobjectstring是字符串形式的对象
 
 		c.query('SELECT COUNT(i2)=0 FROM relation WHERE i2 = ?', [itemid]) //检查关系表,在没有同样itemid的时候输出1
@@ -1160,7 +1143,7 @@ socket.on('main_mission_list_server', function(nickname, which_group) {
 	};
 
 
-//下面这个函数弃用
+	//下面这个函数弃用
 	function check_exist(tablename, columnname, condition) {
 		c.query('SELECT COUNT(' + columnname + ')=0 FROM ' + tablename + ' ' + condition)
 			.on('result', function(res) {
