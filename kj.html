@@ -248,15 +248,19 @@
 								var count_items = 0; //总件数计数器
 								$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
 								$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+
 								for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-									if (y != "circle_id" && y != "item_name" && y != "item_price" && window.op_details.otherinfo[circleid][x][y]) {
+									if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && window.op_details.otherinfo[circleid][x][y]) {
 										if (!username_temp[y]) {
 											$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
 											username_temp[y] = 1;
 										};
+										console.log(x + y);
 										var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
 										count_items += temp['target'];
-										$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>'); //stop
+										$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
+									} else if (y == "responsibility") {
+										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：'+window.op_details.otherinfo[circleid][x][y]+'\")\'><h1>' + window.op_details.otherinfo[circleid][x][y] + '</h1></li>'); //stop
 									};
 								};
 								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
@@ -427,9 +431,6 @@
 
 									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
 										window.op_details.otherinfo[circleinfo['i2']] = new Array();
-										console.log("1");
-									}else{
-										console.log("2");
 									};
 									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
 
