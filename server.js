@@ -291,67 +291,6 @@ socketio.listen(server).on('connection', function(socket) {
 
 	});
 
-
-	// 	socket.on('main_mission_list_server', function(nickname, which_group) {
-	// //		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
-	// 		c.query('SELECT * FROM \`' + which_group + '_data\` ')
-	// 			.on('result', function(res) {
-	// 				res.on('row', function(row) {
-	// 						console.log("data:" + inspect(row));
-	// 						var temp = row;
-	// 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [row['circle_id']])
-	// 							.on('result', function(res) {
-	// 								res.on('row', function(row) { //左边的这个row是circle表里某一排的值;temp则是对应此circle数据的itemdata&relation
-	// 										socket.emit('main_mission_list_client', temp, row); //row是data里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }						
-	// 										//										console.log('main_mission_list_server:成功');
-	// 									})
-	// 									.on('error', function(err) {
-	// 										console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-	// 									})
-	// 									.on('end', function(info) {
-	// 										//										console.log('main_mission_list_server:完毕');
-	// 									})
-	// 							})
-	// 							.on('end', function() {
-	// 								//								console.log('main_mission_list_server:结果输出完毕');
-	// 							});
-
-	// 						//						select_itemdata(row, nickname, which_group);
-	// 					})
-	// 					.on('error', function(err) {
-	// //						console.log('main_mission_list_server:发生异常错误:' + inspect(err));
-	// 					})
-	// 					.on('end', function(info) {
-	// 						//						console.log('main_mission_list_server:推送完毕');
-	// 					})
-	// 			})
-	// 			.on('end', function() {
-	// 				//								console.log('main_mission_list_server:结果输出完毕');
-	// 			});
-
-	// 		c.query('SELECT * FROM \`' + which_group + '_circle\`')
-	// 			.on('result', function(res) {
-	// 				res.on('row', function(row) {
-	// 						//						console.log('main_mission_list_server:成功');
-	// 						//						console.log(inspect(row));
-	// 						socket.emit('main_mission_list_client', 0, row);
-	// 					})
-	// 					.on('error', function(err) {
-	// 						console.log('发生异常错误:' + inspect(err));
-	// 					})
-	// 					.on('end', function(info) {
-	// 						//						console.log('完毕');
-	// 					})
-	// 			})
-	// 			.on('end', function() {
-	// 				//				console.log('结果输出完毕');
-	// 			});
-
-	// 	}); //socket.on('main_mission_list_server') ending
-
-	//11.12
-	//对应修改点4开始
-
 	socket.on('main_mission_list_server', function(nickname, which_group) {
 		c.query('SELECT * FROM \`' + which_group + '_circle\` ')
 			.on('result', function(res) {
@@ -366,22 +305,18 @@ socketio.listen(server).on('connection', function(socket) {
 								res.on('row', function(row) {
 										relation_data = row;
 										if (relation_data[nickname] == null) { //true:这个item和self没关系，则push到“其他任务”里,完整的circle和relation数据
-
+											var relation_data_temp = relation_data;//q是一个临时容器；它防止在查询的时候，relation_data的值被外部代码，异步改掉而出错；
 											c.query('SELECT COUNT(' + nickname + ')=0 FROM \`' + which_group + '_data\` WHERE circle_id = ?', [relation_data['circle_id']])
 												.on('result', function(res) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
 															if (row[temp] == '1') {
-//																console.log(inspect(relation_data));
-//																console.log(inspect(row));
-//																console.log('此circle不存在其他与我有关的item');
-																socket.emit('main_mission_list_client', relation_data, circle_data, 1);
+																socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 															} else {
-//																console.log('此circle存在其他与我有关的item');
 																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
-																	socket.emit('main_mission_list_client', relation_data, circle_data['i2'], 0);
+																	socket.emit('main_mission_list_client', relation_data_temp, circle_data['i2'], 0);
 																} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
-																	socket.emit('main_mission_list_client', relation_data, circle_data, 0);
+																	socket.emit('main_mission_list_client', relation_data_temp, circle_data, 0);
 																	is_pushed = 1;
 																};
 															};
@@ -431,8 +366,6 @@ socketio.listen(server).on('connection', function(socket) {
 
 	}); //socket.on('main_mission_list_server') ending
 
-	//对应修改点4结束
-
 	socket.on('main_circle_finish_server', function(flag, circleid, groupname) {
 		if (flag) { //将此circle设为已完成
 			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE i2 = ?', ['finished', circleid])
@@ -474,7 +407,6 @@ socketio.listen(server).on('connection', function(socket) {
 		};
 	});
 
-	//对应修改点3
 	socket.on('main_change_responsibility_server', function(responsibility_username, itemname, groupname) { //在11.12的修改中，_circle 中的responsibility 变到_data
 		c.query('UPDATE \`' + groupname + '_data\` SET responsibility = ? WHERE item_name = ?', [responsibility_username, itemname])
 			.on('result', function(res) {
@@ -489,21 +421,6 @@ socketio.listen(server).on('connection', function(socket) {
 			})
 			.on('end', function() {});
 	});
-
-	// socket.on('main_change_responsibility_server', function(responsibility_username, circleid, groupname) {//在11.12的修改的原版备份
-	// 	c.query('UPDATE \`' + groupname + '_circle\` SET responsibility = ? WHERE i2 = ?', [responsibility_username, circleid])
-	// 		.on('result', function(res) {
-	// 			res.on('row', function(row) {})
-	// 				.on('error', function(err) {
-	// 					console.log('发生异常错误:' + inspect(err));
-	// 					socket.emit("alert_client", 9, 0);
-	// 				})
-	// 				.on('end', function(info) {
-	// 					socket.emit("alert_client", 9, 1);
-	// 				})
-	// 		})
-	// 		.on('end', function() {});
-	// });
 
 
 	socket.on('main_edit_data_server', function(edit_data_string, edit_price_number, item_name, nickname, now_group) {
