@@ -41,14 +41,14 @@
 					console.log("已登录");
 				} else {
 					console.log("跳转到登录界面");
-					// window.location.assign("http://test.eshicon.org/login.html");
+					 window.location.assign("http://test.eshicon.org/login.html");
 				};
 
 				//输出活跃队伍名
 				if (localStorage.active_group) {
 					$("#mission_title").text(localStorage.active_group);
 				} else {
-					$("#mission_title").text("未选择活跃队伍");
+					$("#mission_title").text("未选队伍");
 				};
 
 				//定义标记
@@ -178,6 +178,7 @@
 
 					"otherinfo": new Object(), //存储对于circleid的relation;调用方式:window.op_details.otherinfo[circleid],为0则不存在item,不为0则存在item
 					"now_circleid": "",
+					"now_circledata": "",
 					"member": "",
 					"read": function(circleid) {
 						$("#circle_details_circledata").empty();
@@ -190,36 +191,16 @@
 
 						$("#circle_details").page();
 
-						$("#circle_details_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
 
-						for (var x in window.op_details.member) {
-							if (x != "item_name" && x != "item_price" && x != "circle_id") {
-								if (x == window.op_details.now_circledata['responsibility']) {
-									$("#circle_details_responsibility").append('<option value=\"' + x + '\" selected>' + x + '</option>');
-								} else {
-									$("#circle_details_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-								};
-							};
-						};
-
-						if (localStorage.active_group_power == "leader") {
-							$("#circle_details_responsibility").selectmenu("enable").selectmenu("refresh");
-						} else {
-							$("#circle_details_responsibility").selectmenu("disable").selectmenu("refresh");
-						};
 
 
 						$("#circle_details_circledata").listview("refresh");
 
-						if (localStorage.nickname == window.op_details.now_circledata['responsibility']) { //是负责人则true
-							$("#circle_details_set_finished").button("enable");
-							if (window.op_details.now_circledata['i27'] != "finished") {
-								$("#circle_details_set_finished").val("设为已完成").button("refresh");
-							} else {
-								$("#circle_details_set_finished").val("设为未完成").button("refresh");
-							};
+						$("#circle_details_set_finished").button("enable");
+						if (window.op_details.now_circledata['i27'] != "finished") {
+							$("#circle_details_set_finished").val("设为已完成").button("refresh");
 						} else {
-							$("#circle_details_set_finished").button("disable");
+							$("#circle_details_set_finished").val("设为未完成").button("refresh");
 						};
 
 						$.mobile.changePage("#circle_details");
@@ -248,19 +229,17 @@
 								var count_items = 0; //总件数计数器
 								$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
 								$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
-
 								for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
 									if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && window.op_details.otherinfo[circleid][x][y]) {
 										if (!username_temp[y]) {
 											$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
 											username_temp[y] = 1;
 										};
-										console.log(x + y);
 										var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
 										count_items += temp['target'];
 										$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
-									} else if (y == "responsibility") {
-										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：'+window.op_details.otherinfo[circleid][x][y]+'\")\'><h1>' + window.op_details.otherinfo[circleid][x][y] + '</h1></li>'); //stop
+									} else if (y == "responsibility") { //goal2:来个双击打开负责人！
+										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>'); //stop
 									};
 								};
 								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
@@ -406,6 +385,10 @@
 					//对应修改点4
 					socket.on("main_mission_list_client", function(otherinfo, circleinfo, is_othermission) { //otherinfo是relation数据，circleinfo是circle数据
 						//circleinfo有string和object两种类型。string说明已推送过此item的circle信息；object说明没有推送过
+
+						if (!window.op_details.member && otherinfo) {
+							window.op_details.member = otherinfo;
+						};
 
 						if (is_othermission == 1) { //进其他任务
 
@@ -948,30 +931,22 @@
 						var r = confirm("确认将circle" + window.op_details.now_circleid + "设为已完成?");
 						if (r) {
 							socket.emit("main_circle_finish_server", 1, window.op_details.now_circleid, localStorage.active_group);
+							$("#circle_details_set_finished").val("设为未完成").button("refresh");
+							//这里偷工减料了……为了赶时间，直接在emit之后改变按钮的value
 						};
 					} else {
 						var r = confirm("确认将circle" + window.op_details.now_circleid + "设为未完成?");
 						if (r) {
 							socket.emit("main_circle_finish_server", 0, window.op_details.now_circleid, localStorage.active_group);
+							$("#circle_details_set_finished").val("设为已完成").button("refresh");
 						};
 					};
 				});
 
-				// $("#circle_details_responsibility").change(function() {
-				// 	$("#circle_details_responsibility").selectmenu("refresh");
-				// 	socket.emit("main_change_responsibility_server", $("#circle_details_responsibility").val(), window.op_details.now_circleid, localStorage.active_group);
-				// });
-
-				//11.12修改原版备份
-
-				//修改点3开始
-				$("#item_select_responsibility").change(function() {
-					$("#item_select_responsibility").selectmenu("refresh");
-					socket.emit("main_change_responsibility_server", $("#item_select_responsibility").val(), window.op_details.now_itemname, localStorage.active_group);
+				$("#item_edit_responsibility").change(function() {
+					$("#item_edit_responsibility").selectmenu("refresh");
+					socket.emit("main_change_responsibility_server", $("#item_edit_responsibility").val(), window.op_details.now_itemname, localStorage.active_group);
 				});
-				//修改window.op_details.now_circleid为window.op_items.now_itemname
-				//修改点3结束
-
 
 				$("#items_edit_select_assure").click(function() {
 					if ($("#items_for_select").val() && $("#user_for_select").val()) {
@@ -986,7 +961,35 @@
 						$("#items_edit_target").val("");
 						$("#items_edit_bought").val("");
 
-						//goal1：在这里对 #item_select_responsibility 进行队伍中人员的append，可能在op_details里有成员表
+						$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
+
+						//goal1：在这里对 item_edit_responsibility 进行队伍中人员的append，可能在op_details里有成员表
+						if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
+							$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '</option>')
+							for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
+								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
+									console.log(x);
+									//									if (x != $("#item_edit_selected_responsibility").val()) {
+									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+									//									};
+								};
+							};
+						} else {
+							for (var x in window.op_details.member) {
+								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility") {
+									//									if (x != $("#item_edit_selected_responsibility").val()) {
+									console.log(x);
+									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+									//									};
+								};
+							};
+						};
+
+						if (localStorage.active_group_power == "leader") {
+							$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
+						} else {
+							$("#item_edit_responsibility").selectmenu("disable").selectmenu("refresh");
+						};
 
 						if (pureobj_info != null) {
 							$("#items_edit_target").val(pureobj_info['target']);
@@ -997,6 +1000,15 @@
 					} else {
 						alert("请选择item和user!");
 					};
+				});
+
+				$("#logout").click(function() { //stop1
+					var r = confirm("你确定要退出?");
+					if (r) {
+						window.location.assign("http://test.eshicon.org/login.html");
+						localStorage.clear();
+					};
+
 				});
 
 			}); //$(function) ending
@@ -1089,7 +1101,6 @@
 			<div data-role="header">
 				<h1>工具</h1>
 				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
-				<a href="http://test.eshicon.org/login.html" onclick="localStorage.clear()" data-role="button" data-icon="minus">退出当前帐号</a>
 
 			</div>
 
@@ -1103,12 +1114,13 @@
 				<br>
 				<a href="#calc_setting" data-role="button">结算</a>
 				<a href="#about" data-role="button" data-transition="slide">关于</a>
+				<a id="logout" data-role="button" data-theme="b">退出当前帐号</a>
 			</div>
 		</div>
 
 		<div data-role="page" id="select_group">
 			<div data-role="header">
-				<h1>队伍选择的时刻</h1>
+				<h1>队伍选择</h1>
 
 				<div data-role="button" class="ui-btn-left">
 					<a href="#tools" data-role="button" data-icon="back" data-direction="reverse" data-transition="slide">返回</a>
@@ -1187,7 +1199,7 @@
 				<input type="button" id="button_active_group" value="设为活跃" disabled>
 				<input type="button" id="button_join_group" value="加入此队伍" disabled>
 				<input type="button" id="button_exit_group" value="退出此队伍" disabled>
-				<input type="button" id="button_delete_group" value="解散此队伍" disabled>
+				<input type="button" id="button_delete_group" value="解散此队伍" data-theme="b" disabled>
 			</div>
 
 		</div>
@@ -1371,11 +1383,7 @@
 				<ul id="circle_details_circledata" data-role="listview" data-inset="true"></ul>
 				<ul id="circle_details_otherinfo" data-role="listview" data-inset="true"></ul>
 				<input type="button" id="circle_details_set_finished" value="设为已完成" disabled="" />
-				<!-- 				<select id="circle_details_responsibility" data-native-menu="false" disabled="">
-					<option value="">请选择负责人</option>
-				</select>
- -->
-				<input type="button" value="从队伍里永久删除此circle" />
+				<input type="button" value="从队伍里删除此circle" data-theme="b" />
 
 			</div>
 		</div>
@@ -1456,19 +1464,19 @@
 					<input type="text" id="items_edit_price" value="" placeholder="勿恶意更改价格">
 				</div>
 				<div data-role="fieldcontain">
-					<label for="items_edit_target">自身目标数:</label>
+					<label for="items_edit_target">目标数:</label>
 					<input type="text" id="items_edit_target" value="" placeholder="必填">
 				</div>
 				<div data-role="fieldcontain">
-					<label for="items_edit_bought">已经获得数:</label>
+					<label for="items_edit_bought">已得数:</label>
 					<input type="text" id="items_edit_bought" value="" placeholder="必填">
 				</div>
 
-				<select id="item_select_responsibility" data-native-menu="false">
+				<select id="item_edit_responsibility" data-native-menu="false">
 					<option value="">请选择负责人</option>
 				</select>
 
-				<input type="button" value="对所有人删除此item" />
+				<input type="button" value="删除此item" data-theme="b" />
 
 			</div>
 
@@ -1576,8 +1584,8 @@
 			</div>
 
 			<div data-role="content">
-				<center>ver 2.1</center>
-				<center>「升级版」</center>
+				<center>ver 3.1</center>
+				<!--<center>「升级版」</center>-->
 				<br>
 				<hr>
 				<br>
