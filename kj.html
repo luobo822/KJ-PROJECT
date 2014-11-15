@@ -41,7 +41,7 @@
 					console.log("已登录");
 				} else {
 					console.log("跳转到登录界面");
-					 window.location.assign("http://test.eshicon.org/login.html");
+					//					 window.location.assign("http://test.eshicon.org/login.html");
 				};
 
 				//输出活跃队伍名
@@ -167,7 +167,8 @@
 				//结算时的数据存储,绑定为全局对象
 				window.calc_data = new Object();
 				window.calc_data = {
-					"spend_count": 0,
+					"_date": "",
+					//					"spend_count": 0,
 					"income_count": 0,
 					"outcome_count": 0,
 				};
@@ -444,51 +445,73 @@
 					});
 					//修改点4结束
 					//输出结算结果
-					socket.on("main_calc_client", function(iteminfo, otherinfo) {
-						var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')');
-						// var names = new Array();
-						var pureobj_everyinfo = new Object();
-						if (window.calc_data.date == "233" || window.calc_data.date == iteminfo['i6']) {
-							for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
-								if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
-									pureobj_everyinfo[x] = eval('(' + otherinfo[x] + ')');
-									if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) {
-										$("#calc_result_details").page(); //防止找不到refresh方法
-										if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) {
-											console.log("用户" + x + "给自机的已完成的委托" + iteminfo['i2']);
-											//进income,确认价格和对方的入手数量
-											$("#calc_result_income").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + localStorage.nickname + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(对方入手数量):' + pureobj_everyinfo[x]['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-											$("#calc_result_income_simple").append('<li><div class="scroll">应从' + x + '拿到' + Number(iteminfo['i27']) * Number(pureobj_everyinfo[x]['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
-											$("#calc_result_income").listview("refresh");
-											$("#calc_result_income_simple").listview("refresh");
-											window.calc_data.income_count += Number(iteminfo['i27']) * Number(pureobj_everyinfo[x]['bought']);
-											$("#calc_result_income_count").text("应付小计:" + window.calc_data.income_count + "円");
+					socket.on("main_calc_client", function(circleinfo, otherinfo, sign) {
+						if (sign) { //all
 
-										} else if (pureobj_myinfo['whobuy'] == x && pureobj_everyinfo[x]['whobuy'] == x) {
-											// 扔进outcome,确认价格和自己的入手数量
-											console.log("自机让用户" + x + "买的已完成的委托" + iteminfo['i2']);
-											$("#calc_result_outcome").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(自身入手数量):' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-											$("#calc_result_outcome_simple").append('<li><div class=\"scroll\">应付给' + x + Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
-											$("#calc_result_outcome").listview("refresh");
-											$("#calc_result_outcome_simple").listview("refresh");
-											window.calc_data.outcome_count += Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']);
-											$("#calc_result_outcome_count").text("应付小计:" + window.calc_data.outcome_count + "円");
+							for (var x in otherinfo) {
+								if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id") {
+									
+
+									//									var tempObject = eval('(' + otherinfo[x] + ')');
+									//									window.calc_data.income_count += Number(otherinfo['item_price']) * Number(tempObject['bought']);
+									//									$("#calc_result_in_self").append("<li><div class=\"scroll\">" + "收" + x + Number(otherinfo['item_price']) * Number(tempObject['bought']) + "円</div></li>");
+								};
+							};
+
+
+						} else { //self
+							if (circleinfo['i27'] == "finished") {
+								if (window.calc_data._date == circleinfo['i6'] || window.calc_data._date == "233") { //日期筛选
+									if (otherinfo['responsibility'] != localStorage.nickname) {
+										var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')');
+										$("#calc_result_out_self").append("<li><div class=\"scroll\">" + "付给" + otherinfo['responsibility'] + Number(otherinfo['item_price']) * Number(pureobj_myinfo['bought']) + "円</div></li>");
+										window.calc_data.outcome_count += Number(otherinfo['item_price']) * Number(pureobj_myinfo['bought']);
+									} else {
+										for (var x in otherinfo) {
+											if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id") {
+												var tempObject = eval('(' + otherinfo[x] + ')');
+												window.calc_data.income_count += Number(otherinfo['item_price']) * Number(tempObject['bought']);
+												$("#calc_result_in_self").append("<li><div class=\"scroll\">" + "收" + x + Number(otherinfo['item_price']) * Number(tempObject['bought']) + "円</div></li>");
+											};
 										};
 									};
 								};
 							};
 
-							if (pureobj_myinfo['whobuy'] == localStorage.nickname) {
-								console.log("自机消费" + iteminfo['i2']);
-								$("#calc_result_spend").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(自身入手数量):' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
-								$("#calc_result_spend_simple").append('<li><div class="scroll">消费' + Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
-								$("#calc_result_spend").listview("refresh");
-								$("#calc_result_spend_simple").listview("refresh");
-								window.calc_data.spend_count += Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']);
-								$("#calc_result_spend_count").text("应付小计:" + window.calc_data.spend_count + "円");
-
-							};
-						}; // if 判断日期 ending
+						};
+						//						// var names = new Array();
+						//						var pureobj_everyinfo = new Object();
+						//						if (window.calc_data.date == "233" || window.calc_data.date == iteminfo['i6']) {
+						//							for (var x in otherinfo) { //筛出要收入和钱和要付出的钱进行处理
+						//								if (x != "i2" && x != "rowid" && otherinfo[x] && x != localStorage.nickname) { //有意义的用户名
+						//									pureobj_everyinfo[x] = eval('(' + otherinfo[x] + ')');
+						//									if (pureobj_everyinfo[x]['finish'] == 1 && pureobj_myinfo['finish'] == 1) {
+						//										$("#calc_result_details").page(); //防止找不到refresh方法
+						//										if (pureobj_myinfo['whobuy'] == localStorage.nickname && pureobj_everyinfo[x]['whobuy'] == localStorage.nickname) {
+						//											console.log("用户" + x + "给自机的已完成的委托" + iteminfo['i2']);
+						//											//进income,确认价格和对方的入手数量
+						//											$("#calc_result_income").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + localStorage.nickname + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(对方入手数量):' + pureobj_everyinfo[x]['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
+						//											$("#calc_result_income_simple").append('<li><div class="scroll">应从' + x + '拿到' + Number(iteminfo['i27']) * Number(pureobj_everyinfo[x]['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
+						//											$("#calc_result_income").listview("refresh");
+						//											$("#calc_result_income_simple").listview("refresh");
+						//											window.calc_data.income_count += Number(iteminfo['i27']) * Number(pureobj_everyinfo[x]['bought']);
+						//											$("#calc_result_income_count").text("应付小计:" + window.calc_data.income_count + "円");
+						//
+						//										} else if (pureobj_myinfo['whobuy'] == x && pureobj_everyinfo[x]['whobuy'] == x) {
+						//											// 扔进outcome,确认价格和自己的入手数量
+						//											console.log("自机让用户" + x + "买的已完成的委托" + iteminfo['i2']);
+						//											$("#calc_result_outcome").append('<li><div class="scroll">' + '「' + iteminfo['i14'] + '」' + '<p>' + iteminfo['i11'] + ' ID:' + iteminfo['i2'] + '</p>' + '<p>作者:' + iteminfo['i13'] + '</p>' + '<p>指定购买人:' + pureobj_myinfo['whobuy'] + '</p>' + '<p>目标数量:' + pureobj_myinfo['target'] + '</p>' + '<p>有效结算数量(自身入手数量):' + pureobj_myinfo['bought'] + '</p>' + '<p>价格(円):' + iteminfo['i27'] + '</p>' + '</div></li>');
+						//											$("#calc_result_outcome_simple").append('<li><div class=\"scroll\">应付给' + x + Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']) + '円,' + 'ID:' + iteminfo['i2'] + ',' + '「' + iteminfo['i14'] + '」' + '单价' + iteminfo['i27'] + '円,' + '共' + pureobj_myinfo['bought'] + '份' + '</div></li>');
+						//											$("#calc_result_outcome").listview("refresh");
+						//											$("#calc_result_outcome_simple").listview("refresh");
+						//											window.calc_data.outcome_count += Number(iteminfo['i27']) * Number(pureobj_myinfo['bought']);
+						//											$("#calc_result_outcome_count").text("应付小计:" + window.calc_data.outcome_count + "円");
+						//										};
+						//									};
+						//								};
+						//							};
+						//
+						//						}; // if 判断日期 ending
 
 					});
 					//队伍推送
@@ -720,34 +743,37 @@
 					};
 				});
 
-				//最终结算
-				$("#calc_start").click(function() {
-					window.calc_data.spend_count = 0;
-					window.calc_data.income_count = 0;
-					window.calc_data.outcome_count = 0; // 初始化三个count变量
+				//结算:自身
+				$("#calc_for_self").click(function() {
+					if (localStorage.active_group) {
+						var r = confirm("您确定要查看" + localStorage.active_group + "的自身结算吗？\n" + "结算的日期为" + $("#calc_when").val())
+						if (r) {
 
-					$("#calc_result_income_count").text("应收小计:0円");
-					$("#calc_result_spend_count").text("消费小计:0円");
-					$("#calc_result_outcome_count").text("应付小计:0円");
+							window.calc_data.income_count = 0;
+							window.calc_data.outcome_count = 0; // 初始化三个count变量
 
-					$("#calc_result_spend").empty().append("<li><div class=\"scroll\">" + "自身购买的宝物" + "</div></li>");
-					$("#calc_result_spend_simple").empty().append("<li><div class=\"scroll\">" + "自身消费的简明清单" + "</div></li>");
+							$("#calc_result_income_count").text("应收小计:0円");
+							$("#calc_result_spend_count").text("消费小计:0円");
+							$("#calc_result_outcome_count").text("应付小计:0円");
 
-					$("#calc_result_income").empty().append("<li><div class=\"scroll\">" + "收入情况-由自己代购的宝物" + "</div></li>");
-					$("#calc_result_income_simple").empty().append("<li><div class=\"scroll\">" + "简明收款指南" + "</div></li>");
+							$("#calc_result_in_self").empty().append("<li><div class=\"scroll\">" + "简明收款指南" + "</div></li>");
+							$("#calc_result_out_self").empty().append("<li><div class=\"scroll\">" + "简明付款指南" + "</div></li>");
 
-					$("#calc_result_outcome").empty().append("<li><div class=\"scroll\">" + "支出情况-由其他用户代购的宝物" + "</div></li>");
-					$("#calc_result_outcome_simple").empty().append("<li><div class=\"scroll\">" + "简明付款指南" + "</div></li>");
-					$("#calc_result").page();
-					$("#calc_result_spend_simple").listview("refresh");
-					$("#calc_result_income_simple").listview("refresh");
-					$("#calc_result_outcome_simple").listview("refresh");
+							$("#calc_result").page();
 
-					if ($("#calc_when") != "233") {
-						window.calc_data.date = $("#calc_when").val(); //暂时把结算的时间扔进去
+							$("#calc_result_in_self").listview("refresh");
+							$("#calc_result_out_self").listview("refresh");
+
+							//							if ($("#calc_when") != "233") {
+							window.calc_data._date = $("#calc_when").val(); //暂时把结算的时间扔进去
+							//							};
+
+							socket.emit("main_calc_server", localStorage.nickname, localStorage.active_group);
+							$.mobile.changePage("#calc_result");
+						};
+					} else {
+						alert("请选择活跃队伍！");
 					};
-					socket.emit("main_calc_server", localStorage.nickname);
-					$.mobile.changePage("#calc_result");
 				});
 				//代购详情跳转
 				$("#turn_to_calc_result_details").click(function() {
@@ -1491,50 +1517,65 @@
 			<div data-role="content">
 
 				<div data-role="fieldcontain">
-					<label for="calc_when">
-						<center>结算哪天的?</center>
-					</label>
+					<center>结算哪天的?</center>
 					<br>
 					<select name="calc_when" id="calc_when" data-native-menu="false">
-						<option value="金">8.15 (金)</option>
-						<option value="土">8.16 (土)</option>
-						<option value="日">8.17 (日)</option>
+						<option value="日">xxxx(日)</option>
+						<option value="月">xxxx (月)</option>
+						<option value="火">xxxx (火)</option>
 						<option value="233">全部三天</option>
 					</select>
+					<br />
+					<input type="button" value="所有用户的结算" id="calc_for_all_user" />
+					<input type="button" value="自己的结算" id="calc_for_self" />
 				</div>
-
-				<input type="button" id="calc_start" value="开始结算!">
 
 			</div>
 
 		</div>
 
-		<div data-role="page" id="calc_result">
+		<div data-role="page" id="calc_result_all_user">
 			<div data-role="header">
 				<h1>结算结果</h1>
+				<!--goal3-->
 				<a href="#tools" data-role="button" data-icon="back">返回</a>
-				<a id="turn_to_calc_result_details" href="#calc_result_details" data-role="button" data-icon="star">代购关系详情</a>
+				<!--<a id="turn_to_calc_result_details" href="#calc_result_details" data-role="button" data-icon="star">代购关系详情</a>-->
 			</div>
 
 			<div data-role="content">
 
-				<ul id="calc_result_spend_simple" data-inset="true" data-role="listview">
+				<ul id="calc_result_self_frame" data-inset="true" data-role="listview">
 					<li>
-						<div class="scroll">自身消费的简明清单</div>
+						<!--<div class="scroll">自身消费的简明清单</div>-->
 					</li>
 				</ul>
-				<ul id="calc_result_outcome_simple" data-inset="true" data-role="listview">
+
+			</div>
+		</div>
+
+		<div data-role="page" id="calc_result_self">
+			<div data-role="header">
+				<h1>结算结果</h1>
+				<a href="#tools" data-role="button" data-icon="back">返回</a>
+			</div>
+
+			<div data-role="content">
+
+				<ul id="calc_result_out_self" data-inset="true" data-role="listview">
 					<li>
 						<div class="scroll">简明付款指南</div>
 					</li>
 				</ul>
-				<ul id="calc_result_income_simple" data-inset="true" data-role="listview">
+
+				<ul id="calc_result_in_self" data-inset="true" data-role="listview">
 					<li>
 						<div class="scroll">简明收款指南</div>
 					</li>
 				</ul>
+
 			</div>
 		</div>
+
 
 		<div data-role="page" id="calc_result_details">
 			<div data-role="header">
