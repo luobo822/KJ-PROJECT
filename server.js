@@ -353,31 +353,58 @@ socketio.listen(server).on('connection', function(socket) {
 	//对应修改点4开始
 
 	socket.on('main_mission_list_server', function(nickname, which_group) {
-		//		console.log('main_mission_list_server:收到任务刷新请求,请求的发送用户是' + nickname);
-		var p = 1;
-		var q = 1;
 		c.query('SELECT * FROM \`' + which_group + '_circle\` ')
 			.on('result', function(res) {
 				res.on('row', function(row) {
+
 						var is_pushed = 0; //为0说明还没有推送过circle数据，为其他值就说明推送过circle数据了,对行circle数据新建一个
-						//						console.log("data:" + inspect(row));
 						var circle_data = row; //temp存储的是一行circle数据
 						var relation_data = "";
 
 						c.query('SELECT * FROM \`' + which_group + '_data\` WHERE circle_id = ?', [circle_data['i2']])
 							.on('result', function(res) {
 								res.on('row', function(row) {
+										relation_data = row;
 										if (relation_data[nickname] == null) { //true:这个item和self没关系，则push到“其他任务”里,完整的circle和relation数据
-											socket.emit('main_mission_list_client', row, circle_data, 1);
-										} else { //这个item和self有关系，push to finished or unfinished
+
+											c.query('SELECT COUNT(' + nickname + ')=0 FROM \`' + which_group + '_data\` WHERE circle_id = ?', [relation_data['circle_id']])
+												.on('result', function(res) {
+													res.on('row', function(row) {
+															var temp = "COUNT(" + nickname + ")=0";
+															if (row[temp] == '1') {
+//																console.log(inspect(relation_data));
+//																console.log(inspect(row));
+//																console.log('此circle不存在其他与我有关的item');
+																socket.emit('main_mission_list_client', relation_data, circle_data, 1);
+															} else {
+//																console.log('此circle存在其他与我有关的item');
+																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
+																	socket.emit('main_mission_list_client', relation_data, circle_data['i2'], 0);
+																} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
+																	socket.emit('main_mission_list_client', relation_data, circle_data, 0);
+																	is_pushed = 1;
+																};
+															};
+														})
+														.on('error', function(err) {
+															console.log('发生异常错误:' + inspect(err));
+														})
+														.on('end', function(info) {
+															//															console.log('完毕');
+														})
+												})
+												.on('end', function() {
+													//													console.log('结果输出完毕');
+												});
+
+										} else { //push to finished or unfinished
 											if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
-												socket.emit('main_mission_list_client', row, circle_data['i2'], 0);
+												socket.emit('main_mission_list_client', relation_data, circle_data['i2'], 0);
 											} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
+												socket.emit('main_mission_list_client', relation_data, circle_data, 0);
 												is_pushed = 1;
-												socket.emit('main_mission_list_client', row, circle_data, 0);
 											};
 										};
-										relation_data = row;
 									})
 									.on('error', function(err) {
 										console.log('main_mission_list_server:发生异常错误:' + inspect(err));
@@ -385,11 +412,10 @@ socketio.listen(server).on('connection', function(socket) {
 									.on('end', function(info) {})
 							})
 							.on('end', function() {
-								if (!relation_data) { //true:不带item的circle
-									socket.emit('main_mission_list_client', 0, circle_data, 1);
+								if (!relation_data) { //true:不带item的circle,进othermission
+									socket.emit('main_mission_list_client', "", circle_data, 1);
 								};
 							});
-
 
 					})
 					.on('error', function(err) {

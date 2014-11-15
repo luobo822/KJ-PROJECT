@@ -401,60 +401,62 @@
 					//任务推送
 					//对应修改点4
 					socket.on("main_mission_list_client", function(otherinfo, circleinfo, is_othermission) { //otherinfo是relation数据，circleinfo是circle数据
-						console.log(otherinfo);
-						console.log(circleinfo);
-						console.log(is_othermission);
-						console.log(typeof(is_othermission));
-//						if (is_othermission == 0) { //push to unfinished or finished，含有relation数据（一定与此用户相关）
-//							alert(circleinfo);
-//							alert(typeof(circleinfo));
-//
-//							if (!window.op_details.member) {
-//								window.op_details.member = otherinfo;
-//							};
-//
-//							var pureobj_myinfo = eval('(' + otherinfo[localStorage.nickname] + ')'); //转换之后,格式变成了pureobj_otherinfo={bought:0,target: 1} 其中,1/0都是number类型
-//							if (typeof(circleinfo) != "number") { //若是第一次推送，带circle数据,circleinfo类型应为object
-//								if (circleinfo['i27'] != "finished") {
-//									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
-//										window.op_details.otherinfo[circleinfo['i2']] = new Array();
-//									};
-//									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
-//									//									if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
-//									//									} else {
-//									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
-//										+ '<p>' + circleinfo['i11'] + ' </p><p>ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
-//
-//									$("#unfinished").listview("refresh");
-//									$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
-//									window.op_details[circleinfo['i2']] = circleinfo;
-//									//									};
-//								} else {
-//									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
-//										window.op_details.otherinfo[circleinfo['i2']] = new Array();
-//									};
-//									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
-//									//									if ($("#" + circleinfo['i2']).length > 0) { //存在此元素
-//									//									} else {
-//									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
-//										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
-//
-//									$("#finished").listview("refresh");
-//									$("#finished_count").text(Number($("#finished_count").text()) + 1);
-//									window.op_details[circleinfo['i2']] = circleinfo;
-//									//									};
-//								};
-//							} else { //不是第一次推送，不带circle数据,circleinfo为circleid,数字
-//
-//							};
-//
-//						} else { //is_othermission = 1,push to "other mission"
-//							$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
-//							$("#all_mission").listview("refresh");
-//							$("#all_count").text(Number($("#all_count").text()) + 1);
-//							window.op_details[circleinfo['i2']] = circleinfo;
-//							window.op_details.otherinfo[circleinfo['i2']] = 0; //为空则记作0
-//						};
+						//circleinfo有string和object两种类型。string说明已推送过此item的circle信息；object说明没有推送过
+
+						if (is_othermission == 1) { //进其他任务
+
+							$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+							$("#all_mission").listview("refresh");
+							$("#all_count").text(Number($("#all_count").text()) + 1);
+							window.op_details[circleinfo['i2']] = circleinfo;
+							if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+								window.op_details.otherinfo[circleinfo['i2']] = new Array();
+							};
+							window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+
+						} else { //进完成或未完成的任务
+
+							if (typeof(circleinfo) == "string") { //true:代表已经推送过了；circleinfo里是string形式的circleid
+								//																			window.op_details.otherinfo[circleinfo['i2']] = new Array();
+								//已经推送过就说明：window.op_details.otherinfo[circleinfo['i2']]已经是个数组了；不需要再初始化:winndow.op_details.otherinfo[circleinfo] = new Array();
+								window.op_details.otherinfo[circleinfo].push(otherinfo);
+
+							} else { //branch:代表没有推送过;circleinfo里是完整的object形式
+
+								if (circleinfo['i27'] == "finished") {
+
+									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+										window.op_details.otherinfo[circleinfo['i2']] = new Array();
+										console.log("1");
+									}else{
+										console.log("2");
+									};
+									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+
+									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
+										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+
+									$("#finished").listview("refresh");
+									$("#finished_count").text(Number($("#finished_count").text()) + 1);
+									window.op_details[circleinfo['i2']] = circleinfo;
+
+								} else {
+									if (!$.isArray(window.op_details.otherinfo[circleinfo['i2']])) { //若不是数组,则初始化为数组
+										window.op_details.otherinfo[circleinfo['i2']] = new Array();
+									};
+									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
+
+									$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
+										+ '<p>' + circleinfo['i11'] + ' </p><p>ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a>' + '</li>');
+
+									$("#unfinished").listview("refresh");
+									$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
+									window.op_details[circleinfo['i2']] = circleinfo;
+								};
+							};
+
+						};
+
 					});
 					//修改点4结束
 					//输出结算结果
@@ -704,6 +706,7 @@
 					};
 				}); //刷新与数据获取
 				$("#refresh_data").click(function() {
+					window.op_details.otherinfo = new Object();
 					if (localStorage.active_group) {
 						$("#unfinished").empty();
 						$("#finished").empty();
@@ -1378,7 +1381,7 @@
 
 		<div data-role="page" id="items">
 			<div data-role="header">
-				<h1>items</h1> 
+				<h1>items</h1>
 				<a href="#mission" data-role="button" data-icon="back">返回</a>
 			</div>
 

@@ -430,6 +430,36 @@ res被反复触发直到row全部被输出。
 对于node.js中的SQL来说，不需要外部库的带来的同步化。
 
 
+先筛出自己有Item的circle,再
+
+自己有item的circle应该进已完成未完成
+
+没有item的circle进其他任务！
+
+根据item筛circle,
+
+本地接受item信息，若不存在对应的circle，则query!
+
+filter otherinfo
+
+not ""://with item
+circleinfo is string ->to existed circle
+circleinfo is object ->create a new circle
+
+""://without item
+to othermission;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
