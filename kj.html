@@ -168,9 +168,7 @@
 				window.calc_data = new Object();
 				window.calc_data = {
 					"_date": "",
-					//					"spend_count": 0,
-					//					"income_count": 0,
-					//					"outcome_count": 0,
+					"all":0,//1为结算全部，0为结算self
 					"result": new Object()
 				};
 
@@ -446,7 +444,9 @@
 					});
 					//修改点4结束
 					//输出结算结果
-					socket.on("main_calc_client", function(otherinfo) { //circle info 是不必要的
+
+					//1119开始
+					socket.on("main_calc_client", function(otherinfo,is_could_ouput) { //circleinfo 是不必要的
 						for (var x in otherinfo) {
 							if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id") { //member		
 								if (typeof(window.calc_data.result[x]) == "undefined") {
@@ -472,7 +472,11 @@
 								};
 							};
 						};
+						if (is_could_ouput) {//true:calc数据已经接受完毕，可以输出结算结果！
+							//这里输出结算结果！
+						};
 					});
+					//1119结束
 					//队伍推送
 					socket.on("main_select_group_client", function(result) {
 						window.op_group.raw_all_group.push(result);
@@ -1498,14 +1502,12 @@
 				<h1>结算结果</h1>
 				<!--goal3-->
 				<a href="#tools" data-role="button" data-icon="back">返回</a>
-				<!--<a id="turn_to_calc_result_details" href="#calc_result_details" data-role="button" data-icon="star">代购关系详情</a>-->
 			</div>
 
 			<div data-role="content">
 
-				<ul id="calc_result_self_frame" data-inset="true" data-role="listview">
+				<ul id="calc_result_all_frame" data-inset="true" data-role="listview">
 					<li>
-						<!--<div class="scroll">自身消费的简明清单</div>-->
 					</li>
 				</ul>
 

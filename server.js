@@ -426,18 +426,29 @@ socketio.listen(server).on('connection', function(socket) {
 	});
 
 	socket.on('main_calc_server', function(nickname, which_group, when) {
+		//1119开始
+
+		c.query('SELECT LAST(item_name) FORM \`'+which_group+'\`_data')
+		 .on('result', function(res) {
+		   res.on('row', function(row) {
+		    // console.log(inspect(row['LAST(itemname)']));
+			var last_item_name = row['LAST(itemname)'];
+		    //取得了最后一行的itemname,then推送到client,若下边收到的itemname = 这里推送的itemname，说明calc数据的推送全部结束了！然后就可以愉悦的输出结果啦！
 		c.query('SELECT * FROM \`' + which_group + '_data\`')
 			.on('result', function(res) {
 				res.on('row', function(row) {
-
 						//查询是否已完成，日期是否正确
 						var tempItemdata = row;
 						c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [tempItemdata['circle_id']])
 							.on('result', function(res) {
 								res.on('row', function(row) {
 										if ((row['i6'] == when || when == '233') && row['i27'] == 'finished') { //233意味着全部日期都要
-											console.log(inspect(tempItemdata));
-											socket.emit('main_calc_client', tempItemdata);
+											// console.log(inspect(tempItemdata));
+											if (tempItemdata['item_name'] == last_item_name) {//true:说明这是最后一行。可以输出结算结果啦！
+											socket.emit('main_calc_client', tempItemdata,1);
+											} else{//branch:这说明这不是最后一行，不能输出结算结果
+											socket.emit('main_calc_client', tempItemdata,0);
+											};
 										};
 									})
 									.on('error', function(err) {
@@ -461,7 +472,21 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('end', function() {
 				//						      console.log('结果输出完毕');
 			});
+
+		   })
+		   .on('error', function(err) {
+		     console.log('发生异常错误:' + inspect(err));
+		   })
+		   .on('end', function(info) {
+		     // console.log('完毕');
+		   })
+		 })
+		 .on('end', function() {
+		   // console.log('结果输出完毕');
+		 });
 	}); //socket.on('main_calc_server') ending
+		 
+	//1119结束
 
 	socket.on('main_select_group_server', function(nickname) {
 		//		console.log('main_select_group_server:收到队伍推送请求,请求的发送用户是' + nickname);
