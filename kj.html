@@ -190,12 +190,14 @@
 
 						$("#circle_details").page();
 
-
-
-
 						$("#circle_details_circledata").listview("refresh");
 
 						$("#circle_details_set_finished").button("enable");
+//1126
+						if (window.op_details[circleid]['updater'] == localStorage.nickname || window.op_group.now_group_power == localStorage.nickname) {
+							$("#circle_delete").button("enable");
+						};
+
 						if (window.op_details.now_circledata['i27'] != "finished") {
 							$("#circle_details_set_finished").val("设为已完成").button("refresh");
 						} else {
@@ -476,6 +478,7 @@
 						};
 					});
 					//1119结束
+
 					//队伍推送
 					socket.on("main_select_group_client", function(result) {
 						window.op_group.raw_all_group.push(result);
@@ -651,7 +654,8 @@
 							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
-										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group); //修改点2
+										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group,localStorage.nickname);
+										//1126
 										break;
 
 									case "Header":
@@ -902,8 +906,7 @@
 					if (r) {
 						if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
 							if ($("#add_circle_number").val().length == 6) {
-								// socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.nickname, localStorage.active_group);
-								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.active_group); //"修改点1"
+								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.active_group,localStorage.nickname); //1116
 							} else {
 								alert("请确认サークルシリアル番号是否正确!");
 							};
@@ -1370,7 +1373,8 @@
 				<ul id="circle_details_circledata" data-role="listview" data-inset="true"></ul>
 				<ul id="circle_details_otherinfo" data-role="listview" data-inset="true"></ul>
 				<input type="button" id="circle_details_set_finished" value="设为已完成" disabled="" />
-				<input type="button" value="从队伍里删除此circle" data-theme="b" />
+				<input type="button" id="circle_delete" value="从队伍里删除此circle" data-theme="b" disabled="" />
+				<!-- 还没写反馈事件 -->
 
 			</div>
 		</div>
@@ -1463,7 +1467,8 @@
 					<option value="">请选择负责人</option>
 				</select>
 
-				<input type="button" value="删除此item" data-theme="b" />
+				<input type="button" id="item_delete" value="删除此item" data-theme="b" disabled="" />
+				<!-- haimeishijian -->
 
 			</div>
 

@@ -1,6 +1,5 @@
 var fs = require('fs');
 var http = require('http');
-var async = require("async");
 var inspect = require('util').inspect;
 var socketio = require('socket.io');
 var Client = require('mariasql');
@@ -238,7 +237,7 @@ socketio.listen(server).on('connection', function(socket) {
 		socket.broadcast.emit('message', msgdata);
 	});
 
-	socket.on('main_csv_submit_server', function(csvdata, which_group) { //csvdata是一个数组
+	socket.on('main_csv_submit_server', function(csvdata, which_group,nickname) { //csvdata是一个数组
 		//		console.log('main_csv_submit_server:收到提交的csv数组:\n', csvdata);
 		//		var is_success = -1;
 		c.query('SELECT COUNT(i2)=0 FROM \`' + which_group + '_circle\` WHERE i2 = ?', [csvdata[1]])
@@ -249,7 +248,7 @@ socketio.listen(server).on('connection', function(socket) {
 								//								console.log('main_csv_submit_server:circle没有重复:' + csvdata[1]);
 								// csvdata[27] = nickname;
 								//								console.log(csvdata[27]);
-								insert_circle(csvdata, which_group); //传csvdata[],11.12删除了csvdata 中的 nickname
+								insert_circle(csvdata, which_group,nickname); //传csvdata[],11.12删除了csvdata 中的 nickname
 								socket.emit('main_csv_submit_client', csvdata[1]);
 							} else {
 								//								console.log('main_csv_submit_server:circle重复了:' + csvdata[1]);
@@ -857,14 +856,14 @@ socketio.listen(server).on('connection', function(socket) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group) { //对应html里"修改点1"
+	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group,nickname) { //对应html里"修改点1"
 
 		// socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, nickname, which_group) {
 		c.query('SELECT COUNT(i2)=0  FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(i2)=0'] == 1) {
-							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author]) //可能有对应上的错误
+							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author,nickname])
 
 							// c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,responsibility = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author]) //可能有对应上的错误
 							.on('result', function(res) {
@@ -927,7 +926,7 @@ socketio.listen(server).on('connection', function(socket) {
 					})
 					.on('end', function(info) {
 						//						console.log('write_new_group_update:完毕');
-						c.query('CREATE TABLE IF NOT EXISTS \`' + new_group_data['group_name'] + '_circle\` ( i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text)CHARSET=utf8')
+						c.query('CREATE TABLE IF NOT EXISTS \`' + new_group_data['group_name'] + '_circle\` ( i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text,updater text)CHARSET=utf8')//1126
 							.on('result', function(res) {
 								res.on('row', function(row) {})
 									.on('error', function(err) {
@@ -1012,18 +1011,17 @@ socketio.listen(server).on('connection', function(socket) {
 			});
 	};
 
-	function insert_circle(csvdata, which_group) {
+	function insert_circle(csvdata, which_group,nickname) {
 		// c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
 		// 		'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 =?,responsibility = ?',
 		// 		csvdata)//对应"修改点2"
+		csvdata.updater = nickname;
 
 		c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
-				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 =?',
-				csvdata) //对应"修改点2"
-
+				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 =? ,updater = ?',
+				csvdata) //1116
 		.on('result', function(res) {
 				res.on('row', function(row) {
-						//						console.log('insert_circle:插入成功');
 						socket.emit('main_csv_submit_client', csvdata[1]); //插入成功,返回circle id
 					})
 					.on('error', function(err) {
