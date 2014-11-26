@@ -856,16 +856,12 @@ socketio.listen(server).on('connection', function(socket) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group,nickname) { //对应html里"修改点1"
-
-		// socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, nickname, which_group) {
+	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group,nickname) {
 		c.query('SELECT COUNT(i2)=0  FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(i2)=0'] == 1) {
 							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author,nickname])
-
-							// c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,responsibility = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author]) //可能有对应上的错误
 							.on('result', function(res) {
 									res.on('row', function(row) {
 											//											console.log('main_add_circle_server_insert:成功');
