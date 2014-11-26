@@ -505,6 +505,7 @@
 									console.log(window.calc_data.result[localStorage.nickname]['pay_to'][x]);
 								};
 							};
+							//这里不用跳转到calc_result
 						};
 					});
 					//1119结束
@@ -742,20 +743,26 @@
 				//结算:自身
 				$("#calc_start").click(function() {
 					if (localStorage.active_group) {
-						var r = confirm("您确定要查看" + localStorage.active_group + "的自身结算吗？\n" + "结算的日期为" + $("#calc_when").val());
+						var r = confirm("您确定要查看" + localStorage.active_group + "的结算吗？\n" + "结算的日期为" + $("#calc_when").val());
 						if (r) {
+							var q = confirm("输出所有人的结算？");
+							if (q) {
+								window.calc_data.is_all = 1;
+							}else{
+								window.calc_data.is_all = 0;
+							};
 
 							window.calc_data.income_count = 0;
 							window.calc_data.outcome_count = 0; // 初始化三个count变量
 
-							$("#calc_result_income_count").text("应收小计:0円");
-							$("#calc_result_spend_count").text("消费小计:0円");
-							$("#calc_result_outcome_count").text("应付小计:0円");
+							// $("#calc_result_income_count").text("应收小计:0円");
+							// $("#calc_result_spend_count").text("消费小计:0円");
+							// $("#calc_result_outcome_count").text("应付小计:0円");
 
-							$("#calc_result_in_self").empty().append("<li><div class=\"scroll\">" + "简明收款指南" + "</div></li>");
-							$("#calc_result_out_self").empty().append("<li><div class=\"scroll\">" + "简明付款指南" + "</div></li>");
+							// $("#calc_result_in_self").empty().append("<li><div class=\"scroll\">" + "简明收款指南" + "</div></li>");
+							// $("#calc_result_out_self").empty().append("<li><div class=\"scroll\">" + "简明付款指南" + "</div></li>");
 
-							window.calc_data._date = $("#calc_when").val(); //暂时把结算的时间扔进去
+							window.calc_data._date = $("#calc_when").val(); //把结算的时间扔进去
 
 							socket.emit("main_calc_server", localStorage.nickname, localStorage.active_group, $("#calc_when").val());
 
@@ -1568,7 +1575,9 @@
 					<br />
 
 					<!--<input type="button" value="所有用户的结算" id="calc_for_all_user" />-->
+
 					<input type="button" value="结算开始！" id="calc_start" />
+
 				</div>
 
 			</div>
@@ -1578,7 +1587,6 @@
 		<div data-role="page" id="calc_result_all_user">
 			<div data-role="header">
 				<h1>结算结果</h1>
-				<!--goal3-->
 				<a href="#tools" data-role="button" data-icon="back">返回</a>
 			</div>
 
@@ -1590,69 +1598,6 @@
 				</ul>
 
 			</div>
-		</div>
-
-		<div data-role="page" id="calc_result_self">
-			<div data-role="header">
-				<h1>结算结果</h1>
-				<a href="#tools" data-role="button" data-icon="back">返回</a>
-			</div>
-
-			<div data-role="content">
-
-				<ul id="calc_result_out_self" data-inset="true" data-role="listview">
-					<li>
-						<div class="scroll">简明付款指南</div>
-					</li>
-				</ul>
-
-				<ul id="calc_result_in_self" data-inset="true" data-role="listview">
-					<li>
-						<div class="scroll">简明收款指南</div>
-					</li>
-				</ul>
-
-			</div>
-		</div>
-
-
-		<div data-role="page" id="calc_result_details">
-			<div data-role="header">
-				<h1>代购关系详情</h1>
-				<a href="#calc_result" data-role="button" data-icon="back">返回</a>
-			</div>
-
-			<div data-role="content">
-				<ul id="calc_result_spend" data-inset="true" data-role="listview">
-					<li>
-						<div class="scroll">自身购买的宝物</div>
-					</li>
-				</ul>
-				<ul data-inset="true" data-role="listview">
-					<li id="calc_result_spend_count">消费小计</li>
-				</ul>
-
-				<ul id="calc_result_outcome" data-inset="true" data-role="listview">
-					<li>
-						<div class="scroll">支出情况-由其他用户代购的宝物</div>
-					</li>
-				</ul>
-				<ul data-inset="true" data-role="listview">
-					<li id="calc_result_outcome_count">应付小计</li>
-				</ul>
-
-				<ul id="calc_result_income" data-inset="true" data-role="listview">
-					<li>
-						<div class="scroll">收入情况-由自己代购的宝物</div>
-					</li>
-				</ul>
-				<ul data-inset="true" data-role="listview">
-					<li id="calc_result_income_count">应收小计</li>
-				</ul>
-
-
-			</div>
-
 		</div>
 
 		<div data-role="page" id="about">
