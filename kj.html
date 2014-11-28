@@ -384,7 +384,7 @@
 							$("#upload_result").append("<li><center>数据库已有此宝物的数据</center></li>");
 							same++;
 						} else {
-							$("#upload_result").append("<li><center>编号为" + result + "的Circle上传成功</center></li>");
+							$("#upload_result").append("<li><center>circle:" + result + "上传成功</center></li>");
 						};
 						$("#upload_result").listview("refresh");
 					});
@@ -454,8 +454,10 @@
 
 					//1119开始
 					socket.on("main_calc_client", function(otherinfo,is_could_ouput) { //circleinfo 是不必要的
+//item_price is string ,we need turn it to number
+//1128
 						for (var x in otherinfo) {
-							if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id") { //member		
+							if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id" && x!="rowid") { //member		
 								if (typeof(window.calc_data.result[x]) == "undefined") {
 									window.calc_data.result[x] = new Object();
 									window.calc_data.result[x]['pay_to'] = new Object();
@@ -1061,7 +1063,7 @@
 
 				$("#circle_delete").click(function(){
 					if (window.op_group.now_group_power == "leader") {
-						var r = confirm("你确定删除id为"+window.op_details.now_circleid+"的circle吗"?)
+						var r = confirm("你确定删除id为"+window.op_details.now_circleid+"的circle吗?");
 						if (r) {
 							socket.emit("main_circle_delete_server",localStorage.nickname);
 						};						
@@ -1073,7 +1075,7 @@
 
 				$("#item_delete").click(function(){
 					if (window.op_group.now_group_power == "leader") {//加入筛ietm responsibility
-						var r = confirm("你确定删除名为"++"的item吗"?)
+						var r = confirm("你确定删除名为！填充！的item吗?");
 						if (r) {
 							socket.emit("main_item_delete_server",localStorage.nickname,window.op_group.now_group);
 						};						
