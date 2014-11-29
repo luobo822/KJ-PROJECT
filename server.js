@@ -424,6 +424,72 @@ socketio.listen(server).on('connection', function(socket) {
 			});
 	});
 
+	socket.on('main_item_delete_server', function(itemname, which_group) {
+		var error = 0;
+		c.query('DELETE FROM \`' + which_group + '_data\` WHERE item_name =?', [itemname])
+			.on('result', function(res) {
+				res.on('row', function(row) {
+						//						console.log('成功');
+					})
+					.on('error', function(err) {
+						socket.emit('alert_client', 11, 0);
+						console.log('发生异常错误:' + inspect(err));
+						error = 1;
+					})
+					.on('end', function(info) {
+						//						console.log('完毕');
+					})
+			})
+			.on('end', function() {
+				//				console.log('结果输出完毕');
+			});
+		if (error == 0) { //无错
+			socket.emit('alert_client', 11, 1);
+		};
+	});
+
+	socket.on('main_circle_delete_server', function(circleid, which_group) {
+		var error = 0;
+		c.query('DELETE FROM \`' + which_group + '_circle\` WHERE i2 =?', [circleid])
+			.on('result', function(res) {
+				res.on('row', function(row) {
+						//						console.log('成功');
+					})
+					.on('error', function(err) {
+						//						socket.emit('alert_client', 11, 0);
+						console.log('发生异常错误:' + inspect(err));
+						error = 1;
+					})
+					.on('end', function(info) {
+						c.query('DELETE FROM \`' + which_group + '_data\` WHERE circle_id =?', [circleid])
+							.on('result', function(res) {
+								res.on('row', function(row) {
+										//						console.log('成功');
+									})
+									.on('error', function(err) {
+										socket.emit('alert_client', 11, 0);
+										console.log('发生异常错误:' + inspect(err));
+										error = 1;
+									})
+									.on('end', function(info) {
+										//						console.log('完毕');
+										if (error == 0) { //无错
+											socket.emit('alert_client', 11, 1);
+										};
+									})
+							})
+							.on('end', function() {
+								//				console.log('结果输出完毕');
+							});
+					})
+			})
+			.on('end', function() {
+				//				console.log('结果输出完毕');
+			});
+
+
+	});
+
 	socket.on('main_calc_server', function(nickname, which_group, when) {
 		//1119开始
 

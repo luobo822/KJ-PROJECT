@@ -167,7 +167,7 @@
 				window.calc_data = new Object();
 				window.calc_data = {
 					"_date": "",
-					"is_all":0,//1为结算全部，0为结算self
+					"is_all": 0, //1为结算全部，0为结算self
 					"result": new Object()
 				};
 
@@ -193,11 +193,11 @@
 						$("#circle_details_circledata").listview("refresh");
 
 						$("#circle_details_set_finished").button("enable");
-//1126
-						if (window.op_details[circleid]['updater'] == localStorage.nickname || window.op_group.now_group_power == localStorage.nickname) {
+
+						if (window.op_details[circleid]['updater'] == localStorage.nickname || localStorage.active_group_power == "leader") {
 							$("#circle_delete").button("enable");
-						}else{
-							$("#circle_delete").button("disable");							
+						} else {
+							$("#circle_delete").button("disable");
 						};
 
 						if (window.op_details.now_circledata['i27'] != "finished") {
@@ -215,6 +215,7 @@
 				window.op_items = {
 					"now_circleid": "", //存储item对应的circleid,与op_detail的不混用
 					"now_itemname": "", //存储item edit中对应的item name
+					"now_item_responsibility": "",
 					"clear_selectmemu": function() {
 						$("#items_edit").page();
 						$("#items_for_select").val("").selectmenu("refresh");
@@ -235,12 +236,12 @@
 								};
 								$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 								for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-									if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && window.op_details.otherinfo[circleid][x][y]) {
+									if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
 										if (!username_temp[y]) {
 											if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname) {
-											$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+												$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+											};
 											username_temp[y] = 1;
-											};//1126,总觉得还不能用，编辑时要检查权限
 										};
 										var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
 										count_items += temp['target'];
@@ -249,7 +250,7 @@
 										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>'); //stop
 									};
 								};
-								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>'); //stop
+								$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">共' + count_items + '份</div></li>');
 							};
 
 							$("#items").page();
@@ -453,11 +454,9 @@
 					//输出结算结果
 
 					//1119开始
-					socket.on("main_calc_client", function(otherinfo,is_could_ouput) { //circleinfo 是不必要的
-//item_price is string ,we need turn it to number
-//1128
+					socket.on("main_calc_client", function(otherinfo, is_could_ouput) { //circleinfo 是不必要的
 						for (var x in otherinfo) {
-							if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id" && x!="rowid") { //member		
+							if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid") { //member		
 								if (typeof(window.calc_data.result[x]) == "undefined") {
 									window.calc_data.result[x] = new Object();
 									window.calc_data.result[x]['pay_to'] = new Object();
@@ -469,6 +468,8 @@
 									window.calc_data.result[otherinfo['responsibility']]['get_from'] = new Object();
 								};
 								var tempObject = eval('(' + otherinfo[x] + ')');
+								//								console.log(Number(otherinfo['item_price']));
+
 								if (typeof(window.calc_data.result[x]['pay_to'][otherinfo['responsibility']]) != "number") {
 									window.calc_data.result[x]['pay_to'][otherinfo['responsibility']] = 0;
 								};
@@ -481,33 +482,58 @@
 								};
 							};
 						};
-						if (is_could_ouput) {//true:calc数据已经接受完毕，可以输出结算结果！
+						if (is_could_ouput) { //true:calc数据已经接受完毕，可以输出结算结果！
 							//这里输出结算结果！
-							if (window.calc_data.is_all == 1) {//true:display all
+							if (window.calc_data.is_all) { //true:display all
 								for (var x in window.calc_data.result) {
-								console.log(x+"的结算");
-								console.log(x+"付给:");
-									for (var y in window.calc_data.result[localStorage.nickname]['pay_to']) {//loop each money receiver
-										console.log(window.calc_data.result[localStorage.nickname]['pay_to'][y]);
-									};								
-								console.log(x+"拿钱:");
-									for (var z in window.calc_data.result[localStorage.nickname]['get_from']) {
-										console.log(window.calc_data.result[localStorage.nickname]['pay_to'][z]);
+
+									$("#calc_result_frame").append('<li data-role=\"list-divider\">' + x + '的结算(' + window.calc_data.result[x]['pay_to'][x] + '円)</li>');
+									//									$("#calc_result_frame").append('<li>' + x + '自身购买' + window.calc_data.result[x]['pay_to'][x] + '円</li>');
+									$("#calc_result_frame").append('<li><center>' + x + '付款:</center></li>');
+
+
+									for (var y in window.calc_data.result[x]['pay_to']) { //loop each money receiver
+										if (x != y && window.calc_data.result[x]['pay_to'][y]) {
+											$("#calc_result_frame").append('<li>' + x + '付给' + y + ' ' + window.calc_data.result[x]['pay_to'][y] + '円</li>');
+										};
+									};
+
+									$("#calc_result_frame").append('<li><center>' + x + '收款:</center></li>');
+
+									for (var z in window.calc_data.result[x]['get_from']) {
+										if (x != z && window.calc_data.result[x]['get_from'][z]) {
+											$("#calc_result_frame").append('<li>' + x + '从' + z + '收 ' + window.calc_data.result[x]['get_from'][z] + '円</li>');
+										};
 									};
 								};
 
-							} else{//branch:display self
-								console.log(localStorage.nickname+"的结算");
-								console.log(localStorage.nickname+"付给:");
-								for (var x in window.calc_data.result[localStorage.nickname]['pay_to']) {//loop each money receiver
+							} else { //branch:display self
+								$("#calc_result_frame").append('<li><center>你的付款:</center></li>');
+								var is_self_output = 0;
+								for (var x in window.calc_data.result[localStorage.nickname]['pay_to']) { //loop each money receiver
+									console.log(localStorage.nickname + "付给" + x);
 									console.log(window.calc_data.result[localStorage.nickname]['pay_to'][x]);
+
+									if (is_self_output == 0 && x != localStorage.nickname) {
+										$("#calc_result_frame").append('<li>' + localStorage.nickname + '付给' + x + ' ' + window.calc_data.result[localStorage.nickname]['pay_to'][x] + '円</li>');
+										is_self_output = 1;
+									};
+
 								};
-								console.log(localStorage.nickname+"拿钱:");
+								is_self_output = 0;
 								for (var x in window.calc_data.result[localStorage.nickname]['get_from']) {
-									console.log(window.calc_data.result[localStorage.nickname]['pay_to'][x]);
+									console.log(localStorage.nickname + "拿钱:");
+									if (is_self_output == 0 && x != localStorage.nickname) {
+										$("#calc_result_frame").append('<li>' + localStorage.nickname + '从' + y + '收' + window.calc_data.result[localStorage.nickname]['get_from'][x] + '円</li>');
+										is_self_output = 1;
+									};
+
+									console.log(window.calc_data.result[localStorage.nickname]['get_from'][x]);
 								};
 							};
 							//这里不用跳转到calc_result
+							$("#calc_result").page();
+							$("#calc_result_frame").listview("refresh");
 						};
 					});
 					//1119结束
@@ -590,6 +616,9 @@
 								case 10:
 									alert("编辑item成功!");
 									break;
+								case 11:
+									alert("删除成功!");
+									break;
 							}
 						} else if (type_number == 0) {
 							switch (text_number) {
@@ -630,6 +659,9 @@
 
 								case 10:
 									alert("编辑item失败!请刷新查看此item是否已被删除!");
+									break;
+								case 11:
+									alert("删除失败!原因未知！");
 									break;
 
 							};
@@ -687,7 +719,7 @@
 							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
-										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group,localStorage.nickname);
+										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname);
 										//1126
 										break;
 
@@ -750,7 +782,7 @@
 							var q = confirm("输出所有人的结算？");
 							if (q) {
 								window.calc_data.is_all = 1;
-							}else{
+							} else {
 								window.calc_data.is_all = 0;
 							};
 
@@ -940,7 +972,7 @@
 					if (r) {
 						if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
 							if ($("#add_circle_number").val().length == 6) {
-								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.active_group,localStorage.nickname); //1116
+								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.active_group, localStorage.nickname); //1116
 							} else {
 								alert("请确认サークルシリアル番号是否正确!");
 							};
@@ -976,7 +1008,9 @@
 					if ($("#items_for_select").val() && $("#user_for_select").val()) {
 						var pureobj_info = eval('(' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()][$("#user_for_select").val()] + ')');
 
-						window.op_items.now_itemname = $("#items_for_select").val(); //11.12
+						window.op_items.now_itemname = window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['item_name']; //11.12
+						window.op_items.now_item_responsibility = window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'];
+
 
 						$("#items_edit_name").val("").val(window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['item_name'])
 						$("#items_edit_username").val($("#user_for_select").val());
@@ -987,59 +1021,30 @@
 
 						$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
 
-						if (localStorage.active_group_power == "leader") {//if i am leader, i can control every item and relation
-							// window.op_group.now_group_power change
+						if (localStorage.active_group_power == "leader") { //if i am leader, i can control every item and relation
 
-						if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
-							$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '</option>')
-							for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
-								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
-									console.log(x);
-									//									if (x != $("#item_edit_selected_responsibility").val()) {
-									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-									//									};
+							if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
+								$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '</option>')
+								for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
+									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
+										//										console.log(x);
+										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+									};
+								};
+							} else {
+								for (var x in window.op_details.member) {
+									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
+										//										console.log(x);
+										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+									};
 								};
 							};
-						} else {
-							for (var x in window.op_details.member) {
-								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility") {
-									//									if (x != $("#item_edit_selected_responsibility").val()) {
-									console.log(x);
-									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-									//									};
-								};
-							};
-						};
-
-						$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
-
-
-						} else {//not leader
-
-							// if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
-							// 	for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
-							// 		if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
-							// 			console.log(x);
-							// 			$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-							// 		};
-							// 	};
-							// } else {
-							// 	for (var x in window.op_details.member) {
-							// 		if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "responsibility") {
-							// 			console.log(x);
-							// 			$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-							// 		};
-							// 	};
-							// };
-
-
+							$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
+							$("#item_delete").button("enable");
+						} else { //not leader
 							$("#item_edit_responsibility").selectmenu("disable").selectmenu("refresh");
-
+							$("#item_delete").button("disable");
 						};
-						
-						// if (localStorage.active_group_power == "leader") {
-						// } else {
-						// };
 
 						if (pureobj_info != null) {
 							$("#items_edit_target").val(pureobj_info['target']);
@@ -1061,28 +1066,40 @@
 
 				});
 
-				$("#circle_delete").click(function(){
-					if (window.op_group.now_group_power == "leader") {
-						var r = confirm("你确定删除id为"+window.op_details.now_circleid+"的circle吗?");
-						if (r) {
-							socket.emit("main_circle_delete_server",localStorage.nickname);
-						};						
-					} else{
+				$("#circle_delete").click(function() {
+					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.op_items.now_item_responsibility) {
+						var r = confirm("你确定删除id为" + window.op_details.now_circleid + "的circle吗?\n这会删除这个circle所包含的一切item");
+						var q = confirm("真的确定吗？");
+						if (r && q) {
+							socket.emit("main_circle_delete_server", window.op_details.now_circleid, localStorage.active_group);
+						};
+					} else {
 						alert("请确认你有权限删除此circle");
 					};
 
 				});
 
-				$("#item_delete").click(function(){
-					if (window.op_group.now_group_power == "leader") {//加入筛ietm responsibility
-						var r = confirm("你确定删除名为！填充！的item吗?");
-						if (r) {
-							socket.emit("main_item_delete_server",localStorage.nickname,window.op_group.now_group);
-						};						
-					} else{
+				$("#item_delete").click(function() {
+					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.op_items.now_item_responsibility) {
+						var r = confirm("你确定删除名为" + window.op_items.now_itemname + "的item吗?");
+						var q = confirm("真的确定吗？");
+
+						if (r && q) {
+							socket.emit("main_item_delete_server", window.op_items.now_itemname, localStorage.active_group);
+						};
+					} else {
 						alert("请确认你是否有权限删除此Item！\n你需要是目前活跃队伍的leader或是此item的负责人！");
 					};
 
+				});
+
+				$("#add_new_item_in_detail").click(function() {
+					$("#add_item").page();
+					$("#add_item_name").val("");
+					$("#add_item_price").val("");
+					$("#add_item_number").val(window.op_details.now_circleid);
+					$("#add_item_copy_num").val(1).slider("refresh");
+					$.mobile.changePage("#add_item");
 				});
 
 			}); //$(function) ending
@@ -1451,6 +1468,9 @@
 			<div data-role="header">
 				<h1>circle详情</h1>
 				<a href="#mission" data-role="button" data-icon="back" data-transition="fade">返回</a>
+				<div data-role="button" class="ui-btn-right">
+					<input type="button" id="add_new_item_in_detail" data-icon="plus" value="新增" />
+				</div>
 			</div>
 
 			<div data-role="content">
@@ -1551,7 +1571,6 @@
 				</select>
 
 				<input type="button" id="item_delete" value="删除此item" data-theme="b" disabled="" />
-				<!-- haimeishijian -->
 
 			</div>
 
@@ -1569,15 +1588,12 @@
 					<center>结算哪天的?</center>
 					<br>
 					<select name="calc_when" id="calc_when" data-native-menu="false">
-						<option value="金">xxxx(测试金)</option>
+						<option value="金">啥时候(测试金)</option>
 						<option value="月">xxxx (月)</option>
 						<option value="火">xxxx (火)</option>
 						<option value="233">全部三天</option>
 					</select>
 					<br />
-
-					<!--<input type="button" value="所有用户的结算" id="calc_for_all_user" />-->
-
 					<input type="button" value="结算开始！" id="calc_start" />
 
 				</div>
@@ -1586,7 +1602,7 @@
 
 		</div>
 
-		<div data-role="page" id="calc_result_all_user">
+		<div data-role="page" id="calc_result">
 			<div data-role="header">
 				<h1>结算结果</h1>
 				<a href="#tools" data-role="button" data-icon="back">返回</a>
@@ -1594,9 +1610,9 @@
 
 			<div data-role="content">
 
-				<ul id="calc_result_all_frame" data-inset="true" data-role="listview">
-					<li>
-					</li>
+				<ul id="calc_result_frame" data-inset="true" data-role="listview">
+					<!--<li>
+					</li>-->
 				</ul>
 
 			</div>
@@ -1614,7 +1630,7 @@
 				<center>ver 3.1</center>
 				<!--<center>「升级版」</center>-->
 				<br>
-				<hr>
+				<hr> 已知bug:若队伍中没有circle，则拉取任务后显示错乱。可以通过用户来添加一个circle解决。
 				<br>
 				<br>
 				<br>
