@@ -630,7 +630,8 @@ socketio.listen(server).on('connection', function(socket) {
 	socket.on('main_op_group_server', function(nickname, op_type, now_group, group_password, group_introduction, new_group_name) {
 		switch (op_type) {
 			case 1:
-				//				console.log("main_op_group_server_join:收到加入队伍请求:" + nickname + "将加入" + now_group);
+				console.log("main_op_group_server_join:收到加入队伍请求:" + nickname + "将加入" + now_group);
+				var error=0;
 				c.query('SELECT group_password FROM groups WHERE group_name = ?', [now_group])
 					.on('result', function(res) {
 						res.on('row', function(row) {
@@ -639,6 +640,7 @@ socketio.listen(server).on('connection', function(socket) {
 										.on('result', function(res) {
 											res.on('row', function(row) {})
 												.on('error', function(err) {
+													error = 1;
 													console.log('main_op_group_server_join_update:发生异常错误:' + inspect(err));
 												})
 												.on('end', function(info) {
@@ -651,11 +653,13 @@ socketio.listen(server).on('connection', function(socket) {
 													res.on('row', function(row) {})
 														.on('error', function(err) {
 															socket.emit('alert_client', 1, 0);
+															error = 1;
 															console.log('join_group_alter_data:发生异常错误:' + inspect(err));
 														})
 														.on('end', function(info) {
-															socket.emit('alert_client', 1, 1);
-															//															console.log('join_group_alter_data:完毕');
+															if (!error) {
+																socket.emit('alert_client', 1, 1);
+															};
 														})
 												})
 												.on('end', function() {
@@ -682,6 +686,7 @@ socketio.listen(server).on('connection', function(socket) {
 
 			case 2:
 				console.log("main_op_group_server_exit:收到退出队伍请求:" + nickname + "将退出" + now_group);
+				var error = 0;
 				c.query('UPDATE groups SET \`' + nickname + '\` = ? WHERE group_name = ?', [null, now_group])
 					.on('result', function(res) {
 						res.on('row', function(row) {
@@ -689,16 +694,18 @@ socketio.listen(server).on('connection', function(socket) {
 							})
 							.on('error', function(err) {
 								socket.emit('alert_client', 2, 0);
+								error = 1;
 								console.log('main_op_group_server_exit:发生异常错误:' + inspect(err));
 							})
 							.on('end', function(info) {
-								c.query('ALTER TABLE \`' + now_group + '_circle\` DROP \`' + nickname + '\`')
+								c.query('UPDATE \`' + now_group + '_data\` SET responsibility = ? WHERE responsibility = ?', [null, nickname])
 									.on('result', function(res) {
 										res.on('row', function(row) {
 												//												console.log('main_op_group_server_exit_drop:成功');
 											})
 											.on('error', function(err) {
 												socket.emit('alert_client', 2, 0);
+												error = 1;
 												console.log('main_op_group_server_exit_drop:发生异常错误:' + inspect(err));
 											})
 											.on('end', function(info) {
@@ -717,10 +724,13 @@ socketio.listen(server).on('connection', function(socket) {
 											})
 											.on('error', function(err) {
 												socket.emit('alert_client', 2, 0);
+												error = 1;
 												console.log('main_op_group_server_exit_drop:发生异常错误:' + inspect(err));
 											})
 											.on('end', function(info) {
-												socket.emit('alert_client', 2, 1);
+												if (!error) {
+													socket.emit('alert_client', 2, 1);
+												};
 												//												console.log('main_op_group_server_exit_drop:完毕');
 											})
 									})
@@ -737,13 +747,14 @@ socketio.listen(server).on('connection', function(socket) {
 				break;
 
 			case 3:
+				var error = 0;
 				console.log("main_op_group_server_delete:收到解散队伍请求:" + nickname + "将解散" + now_group);
 				c.query('SELECT \`' + nickname + '\` FROM groups WHERE group_name = ?', [now_group])
 					.on('result', function(res) {
 						res.on('row', function(row) {
-								if (row[nickname] == 'leader') {
-									//									console.log("此人是leader,允许解散");
-								};
+//								if (row[nickname] == 'leader') {
+//									//									console.log("此人是leader,允许解散");
+//								};
 								// console.log('main_op_group_server_delete_select:向客户端推送成功'+inspect(row));
 								c.query('DELETE FROM groups WHERE group_name = ?', [now_group])
 									.on('result', function(res) {
@@ -752,6 +763,7 @@ socketio.listen(server).on('connection', function(socket) {
 											})
 											.on('error', function(err) {
 												//												console.log("DELETE行出错");
+												error = 1;
 												socket.emit('alert_client', 3, 0);
 												console.log('main_op_group_server_delete:发生异常错误:' + inspect(err));
 											})
@@ -764,6 +776,7 @@ socketio.listen(server).on('connection', function(socket) {
 															})
 															.on('error', function(err) {
 																//																console.log("DROP出错")
+																error = 1;
 																socket.emit('alert_client', 3, 0);
 																console.log('main_op_group_server_delete_drop:删除表出错:' + inspect(err));
 															})
@@ -782,11 +795,11 @@ socketio.listen(server).on('connection', function(socket) {
 															})
 															.on('error', function(err) {
 																//																console.log("DROP出错")
+																error = 1;
 																socket.emit('alert_client', 3, 0);
 																console.log('main_op_group_server_delete_drop:删除表出错:' + inspect(err));
 															})
 															.on('end', function(info) {
-																socket.emit('alert_client', 3, 1);
 																//																console.log('main_op_group_server_delete_drop:删除表结束');
 															})
 													})
@@ -806,6 +819,9 @@ socketio.listen(server).on('connection', function(socket) {
 								console.log('main_op_group_server_delete_select:发生异常错误:' + inspect(err));
 							})
 							.on('end', function(info) {
+								if (!error) {
+									socket.emit('alert_client', 3, 1);
+								};
 								//								console.log('main_op_group_server_delete_select:推送完毕');
 							})
 					})
@@ -816,6 +832,7 @@ socketio.listen(server).on('connection', function(socket) {
 
 			case 4:
 				//				console.log("main_op_group_server_rewrite:收到队伍信息覆写请求");
+				var error = 0;
 				c.query('SELECT \`' + nickname + '\` FROM groups WHERE group_name = ?', [now_group])
 					.on('result', function(res) {
 						res.on('row', function(row) {
@@ -827,6 +844,7 @@ socketio.listen(server).on('connection', function(socket) {
 											res.on('row', function(row) {})
 												.on('error', function(err) {
 													socket.emit('alert_client', 4, 0);
+													error = 1;
 													console.log('main_op_group_server_update:发生异常错误:' + inspect(err));
 												})
 												.on('end', function(info) {
@@ -852,6 +870,7 @@ socketio.listen(server).on('connection', function(socket) {
 																res.on('row', function(row) {})
 																	.on('error', function(err) {
 																		socket.emit('alert_client', 4, 0);
+																		error = 1;
 																		console.log('main_op_group_server_rename:发生异常错误:' + inspect(err));
 																	})
 																	.on('end', function(info) {
@@ -863,7 +882,6 @@ socketio.listen(server).on('connection', function(socket) {
 															});
 
 													}; //  if ending
-													socket.emit('alert_client', 4, 1);
 												}) // previous end ending
 										}) // previous result ending
 										.on('end', function() {
@@ -874,9 +892,13 @@ socketio.listen(server).on('connection', function(socket) {
 							})
 							.on('error', function(err) {
 								socket.emit('alert_client', 4, 0);
+								error = 1;
 								console.log('main_op_group_server_rewrite_select:发生异常错误:' + inspect(err));
 							})
 							.on('end', function(info) {
+								if (!error) {
+									socket.emit('alert_client', 4, 1);
+								};
 								//								console.log('main_op_group_server_rewrite_select:完毕');
 							})
 					})
