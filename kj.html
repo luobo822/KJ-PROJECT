@@ -400,7 +400,7 @@
 
 						if (is_othermission == 1) { //进其他任务
 
-							$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '<p>负责人:' + circleinfo['responsibility'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+							$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
 							$("#all_mission").listview("refresh");
 							$("#all_count").text(Number($("#all_count").text()) + 1);
 							window.op_details[circleinfo['i2']] = circleinfo;
@@ -567,11 +567,11 @@
 						$("#select_group").page();
 						$("#recived_group").listview("refresh");
 
-						if (!is_turning) {
-							$.mobile.changePage("#select_group");
-							is_turning = 1;
-							// console.log(is_turning);
-						};
+						//						if (!is_turning) {
+						//							$.mobile.changePage("#select_group");
+						//							is_turning = 1;
+						//							// console.log(is_turning);
+						//						};
 
 					}); //socket.on("main_select_group_client") ending
 
@@ -580,14 +580,17 @@
 							switch (text_number) {
 								case 1:
 									alert("加入此队伍成功!");
+									$("#select_group_refresh").trigger("click"); //队伍刷新
 									break;
 
 								case 2:
 									alert("退出此队伍成功!");
+									$("#select_group_refresh").trigger("click"); //队伍刷新
 									break;
 
 								case 3:
 									alert("解散此队伍成功!");
+									$("#select_group_refresh").trigger("click"); //队伍刷新
 									break;
 
 								case 4:
@@ -824,6 +827,7 @@
 					window.op_group["all_group"] = [];
 					window.op_group["my_group"] = [];
 					socket.emit("main_select_group_server", localStorage.nickname);
+					$.mobile.changePage("#select_group");
 				});
 
 				$("#turn_to_manage_group").click(function() {
@@ -843,6 +847,7 @@
 					window.op_group["all_group"] = [];
 					window.op_group["my_group"] = [];
 					socket.emit("main_select_group_server", localStorage.nickname);
+					$.mobile.changePage("#select_group");
 				});
 
 				$("#button_join_group").click(function() {
@@ -1145,7 +1150,7 @@
 				</div>
 
 				<div data-role="collapsible">
-					<h4>队伍全部circle<span id="all_count" class="ui-li-count">0</span></h4>
+					<h4>无关的circle<span id="all_count" class="ui-li-count">0</span></h4>
 					<ul id="all_mission" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在全部任务中搜索..."></ul>
 				</div>
 
@@ -1279,7 +1284,7 @@
 
 				<div data-role="fieldcontain">
 					<label for="group_details_change_group_password">密码:</label>
-					<input type="text" id="group_details_change_group_password" value="" placeholder="输入/变更密码" readonly>
+					<input type="password" id="group_details_change_group_password" value="" placeholder="输入/变更密码" readonly>
 				</div>
 
 				<div data-role="fieldcontain">
@@ -1359,7 +1364,7 @@
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="add_item_place_number">サークルシリアル番号</label>
+					<label for="add_item_number">サークルシリアル番号</label>
 					<input type="text" id="add_item_number" value="" placeholder="circle的序列号">
 				</div>
 
@@ -1421,18 +1426,31 @@
 
 				<div data-role="fieldcontain">
 					<label for="add_circle_name">サークル名</label>
-					<input type="text" id="add_circle_name" value="" placeholder="circle的名字">
+					<input type="text" id="add_circle_name" value="">
 				</div>
 
-				<div data-role="fieldcontain">
+				<!--<div data-role="fieldcontain">
 					<label for="add_circle_number">サークルシリアル番号</label>
 					<input type="text" id="add_circle_number" value="" placeholder="circle序列号">
+				</div>-->
+
+
+				<!--<fieldset data-role="fieldcontain">-->
+				<div data-role="fieldcontain">
+					<label for="add_circle_space_set">スペース配置</label>
+					<select id="add_circle_space_set" name="" data-native-menu="false">
+						<option value="0">a</option>
+						<option value="1">b</option>
+					</select>
 				</div>
+				<!--</fieldset>-->
+
+
 
 
 				<div data-role="fieldcontain">
 					<label for="add_circle_rank">カットインデックス</label>
-					<input type="text" id="add_circle_rank" value="" placeholder="摊位优先级">
+					<input type="text" id="add_circle_rank" value="" placeholder="">
 				</div>
 
 				<div data-role="fieldcontain">
@@ -1599,6 +1617,8 @@
 					<br>
 					<select name="calc_when" id="calc_when" data-native-menu="false">
 						<option value="金">啥时候(测试金)</option>
+						<!--mikoto-->
+						<!--在正式使用的时候，把上边这个value里的“金”这个换成“日”-->
 						<option value="月">xxxx (月)</option>
 						<option value="火">xxxx (火)</option>
 						<option value="233">全部三天</option>
