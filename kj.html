@@ -905,6 +905,13 @@
 						$("#add_item_price").val("");
 						$("#add_item_number").val("");
 						$("#add_item_copy_num").val(1).slider("refresh");
+						
+						if (localStorage.active_group_power == "leader") {
+							
+						}else{
+							
+						};
+						
 						$.mobile.changePage("#add_item");
 					} else {
 						alert("请选择活跃队伍!");
@@ -930,6 +937,9 @@
 							} else {
 								alert("请确认circle id是否正确!");
 							};
+						} else if (Number($("#add_item_price").val()) > 0) {
+							alert("价格不能为0、不能为字符！");
+
 						} else {
 							alert("请填写所有的信息!");
 						};
