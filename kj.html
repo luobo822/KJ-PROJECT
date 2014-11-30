@@ -910,13 +910,13 @@
 						$("#add_item_price").val("");
 						$("#add_item_number").val("");
 						$("#add_item_copy_num").val(1).slider("refresh");
-						
+
 						if (localStorage.active_group_power == "leader") {
-							
-						}else{
-							
+							$("#add_item_responsibility").removeAttr("readonly");
+						} else {
+							$("#add_item_responsibility").attr("readonly", true);
 						};
-						
+
 						$.mobile.changePage("#add_item");
 					} else {
 						alert("请选择活跃队伍!");
@@ -1375,7 +1375,7 @@
 
 				<div data-role="fieldcontain">
 					<label for="add_item_responsibility">item负责人</label>
-					<input type="text" id="add_item_responsibility">
+					<input type="text" id="add_item_responsibility" readonly="">
 				</div>
 
 
