@@ -936,15 +936,12 @@
 				$("#add_item_upload").click(function() {
 					var r = confirm("确认为" + localStorage.active_group + "添加item?");
 					if (r) {
-						if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_number").val() && $("#add_item_copy_num").val() && $("#add_item_responsibility").val()) {
-							if ($("#add_item_number").val().length == 6) {
+						if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_number").val() && $("#add_item_copy_num").val()) {
+							if (!isNaN(Number($("#add_item_price").val())) && Number($("#add_item_price").val()) > 0) {
 								socket.emit("main_add_item_server", $("#add_item_name").val(), $("#add_item_price").val(), $("#add_item_number").val(), $("#add_item_copy_num").val(), localStorage.nickname, localStorage.active_group, $("#add_item_responsibility").val());
 							} else {
-								alert("请确认circle id是否正确!");
+								alert("价格不能小于或等于零，且不含任何非数字字符!");
 							};
-						} else if (Number($("#add_item_price").val()) > 0) {
-							alert("价格不能为0、不能为字符！");
-
 						} else {
 							alert("请填写所有的信息!");
 						};
@@ -1480,10 +1477,9 @@
 					</label>
 					<input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
 				</form>
-				<center><a href="https://github.com/suica/KJ-PROJECT/wiki/%E5%A6%82%E4%BD%95%E5%AF%BC%E5%85%A5CSV%EF%BC%9F">务必要看!详细的上传帮助!(好像有点过时了,10-5书)</a>
-				</center>
 				<center>～上传之前请转换为UTF-8编码上传,否则产生乱码!～</center>
-				<center>～请不要修改CSV文件的内容,直接上传即可～</center>
+				<center>～请不要修改CSV文件的内容,直接上传即可!～</center>
+				<center>上传格式以本页面要求为准</center>
 				<center>～建议使用chrome for windows～</center>
 
 				<br>
