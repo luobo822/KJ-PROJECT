@@ -1,6 +1,6 @@
 var inspect = require('util').inspect;
 var Client = require('mariasql');
-
+var socketio = require('socket.io');
 var c = new Client();
 
 c.connect({
@@ -37,5 +37,9 @@ var b = 'baka';
  .on('end', function() {
    console.log('Done with all results');
  });
+
+
+socketio.listen(server).on('connection', function(socket) {})
+
 
 c.end();
