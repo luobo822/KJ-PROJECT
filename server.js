@@ -37,9 +37,7 @@ c.on('connect', function() {
 
 
 socketio.listen(server).on('connection', function(socket) {
-
 	//requset
-
 	socket.on('request_read_server', function() {
 		//		console.log('requset_read_server:收到要求数据库推送请求');
 		c.query('SELECT * FROM request')
@@ -58,7 +56,6 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('end', function() {
 				//				console.log('requset_read_server:结果输出完毕');
 			});
-
 	});
 
 	socket.on('request_write_server', function(text) {
@@ -81,9 +78,7 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('end', function() {
 				//				console.log('requset_write_server:结果输出完毕');
 			});
-
 	});
-
 
 	//reg
 
@@ -122,16 +117,13 @@ socketio.listen(server).on('connection', function(socket) {
 		c.query('SELECT COUNT(nickname)=0 FROM user WHERE nickname = ?', [nickname]) //检查数据库,在没有重名的时候输出1
 			.on('result', function(res) {
 				res.on('row', function(row) {
-						//						console.log('reg_check_nickname_server:查到的结果是:' + inspect(row));
-						for (x in row) {
-							is_checked = row[x];
-							if (row[x] == 1) {
-								//								console.log('reg_check_nickname_server:昵称没有重复' + nickname);
-							} else {
-								//								console.log('reg_check_nickname_server:昵称重复了:' + nickname);
-							};
+							is_checked = row['COUNT(nickname)=0'];
+							// if (row['COUNT(nickname)=0'] == 1) {
+							// 	//								console.log('reg_check_nickname_server:昵称没有重复' + nickname);
+							// } else {
+							// 	//								console.log('reg_check_nickname_server:昵称重复了:' + nickname);
+							// };
 							socket.emit('reg_check_nickname_client', is_checked); //重名向客户端发送0,未重名发送1
-						};
 					})
 					.on('error', function(err) {
 						console.log('reg_check_nickname_server:查找重名发生异常错误:' + inspect(err));
@@ -237,36 +229,28 @@ socketio.listen(server).on('connection', function(socket) {
 		socket.broadcast.emit('message', msgdata);
 	});
 
-	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname) { //csvdata是一个数组
-		//		console.log('main_csv_submit_server:收到提交的csv数组:\n', csvdata);
-		//		var is_success = -1;
-		c.query('SELECT COUNT(i2)=0 FROM \`' + which_group + '_circle\` WHERE i2 = ?', [csvdata[1]])
+	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname,cirlce_id) { //csvdata是一个数组
+		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
-						for (var temp in row) {
-							if (row[temp] == 1) { //which_group_circle表里没有此circle
-								//								console.log('main_csv_submit_server:circle没有重复:' + csvdata[1]);
-								// csvdata[27] = nickname;
-								//								console.log(csvdata[27]);
+							if (row['COUNT(circle_id)=0'] == 1) { //which_group_circle表里没有此circle,不重复
 								insert_circle(csvdata, which_group, nickname); //传csvdata[],11.12删除了csvdata 中的 nickname
-								socket.emit('main_csv_submit_client', csvdata[1]);
+								//1203
+								socket.emit('main_csv_submit_client', circle_id);
 							} else {
-								//								console.log('main_csv_submit_server:circle重复了:' + csvdata[1]);
 								socket.emit('main_csv_submit_client', 0);
 							};
-							//update_relation(nickname, csvdata[0][1], '{\"bought\":0,\"target\":1,\"finish\":0,\"whobuy\":\"' + nickname + '\"}'); //变成对象的形式nickname:1//update_relation_nickname(nickname,itemid,buyobjectstring)
-						};
 					})
 					.on('error', function(err) {
-						//						console.log('main_csv_submit_server:发生异常错误:' + inspect(err));
+						console.log('main_csv_submit_server:发生异常错误:' + inspect(err));
 						socket.emit('main_csv_submit_client', -1);
 					})
 					.on('end', function(info) {
-						//						console.log('main_csv_submit_server:检查完毕');
+						//
 					});
 			})
 			.on('end', function() {
-				//				console.log('main_csv_submit_server:所有结果输出完毕');
+				//
 			});
 
 	});
@@ -280,7 +264,7 @@ socketio.listen(server).on('connection', function(socket) {
 						var circle_data = row; //temp存储的是一行circle数据
 						var relation_data = "";
 
-						c.query('SELECT * FROM \`' + which_group + '_data\` WHERE circle_id = ?', [circle_data['i2']])
+						c.query('SELECT * FROM \`' + which_group + '_data\` WHERE circle_id = ?', [circle_data['circle_id']])
 							.on('result', function(res) {
 								res.on('row', function(row) {
 										relation_data = row;
@@ -294,7 +278,7 @@ socketio.listen(server).on('connection', function(socket) {
 																socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 															} else {
 																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
-																	socket.emit('main_mission_list_client', relation_data_temp, circle_data['i2'], 0);
+																	socket.emit('main_mission_list_client', relation_data_temp, circle_data['circle_id'], 0);
 																} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
 																	socket.emit('main_mission_list_client', relation_data_temp, circle_data, 0);
 																	is_pushed = 1;
@@ -314,7 +298,7 @@ socketio.listen(server).on('connection', function(socket) {
 
 										} else { //push to finished or unfinished
 											if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
-												socket.emit('main_mission_list_client', relation_data, circle_data['i2'], 0);
+												socket.emit('main_mission_list_client', relation_data, circle_data['circle_id'], 0);
 											} else { //未推送过circle数据,推送完整的circle数据和完整的relation数据
 												socket.emit('main_mission_list_client', relation_data, circle_data, 0);
 												is_pushed = 1;
@@ -346,9 +330,9 @@ socketio.listen(server).on('connection', function(socket) {
 
 	}); //socket.on('main_mission_list_server') ending
 
-	socket.on('main_circle_finish_server', function(flag, circleid, groupname) {
+	socket.on('main_circle_finish_server', function(flag, circle_id, groupname) {
 		if (flag) { //将此circle设为已完成
-			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE i2 = ?', ['finished', circleid])
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE cirlce_id = ?', ['finished', circle_id])
 				.on('result', function(res) {
 					res.on('row', function(row) {
 							//			       console.log('main_circle_finish_server:成功');
@@ -366,7 +350,7 @@ socketio.listen(server).on('connection', function(socket) {
 					//			      console.log('结果输出完毕');
 				});
 		} else {
-			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE i2 = ?', ['', circleid])
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE cirlce_id = ?', ['', circle_id])
 				.on('result', function(res) {
 					res.on('row', function(row) {
 							//			       console.log('main_circle_finish_server:成功');
@@ -448,9 +432,9 @@ socketio.listen(server).on('connection', function(socket) {
 		};
 	});
 
-	socket.on('main_circle_delete_server', function(circleid, which_group) {
+	socket.on('main_circle_delete_server', function(circle_id, which_group) {
 		var error = 0;
-		c.query('DELETE FROM \`' + which_group + '_circle\` WHERE i2 =?', [circleid])
+		c.query('DELETE FROM \`' + which_group + '_circle\` WHERE circle_id =?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						//						console.log('成功');
@@ -461,7 +445,7 @@ socketio.listen(server).on('connection', function(socket) {
 						error = 1;
 					})
 					.on('end', function(info) {
-						c.query('DELETE FROM \`' + which_group + '_data\` WHERE circle_id =?', [circleid])
+						c.query('DELETE FROM \`' + which_group + '_data\` WHERE circle_id =?', [circle_id])
 							.on('result', function(res) {
 								res.on('row', function(row) {
 										//						console.log('成功');
@@ -510,7 +494,7 @@ socketio.listen(server).on('connection', function(socket) {
 												res.on('row', function(row) {
 														//查询是否已完成，日期是否正确
 														var tempItemdata = row;
-														c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE i2 = ?', [tempItemdata['circle_id']])
+														c.query('SELECT * FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [tempItemdata['circle_id']])
 															.on('result', function(res) {
 																res.on('row', function(row) {
 																		if ((row['i6'] == when || when == '233') && row['i27'] == 'finished') { //233意味着全部日期都要
@@ -909,12 +893,11 @@ socketio.listen(server).on('connection', function(socket) {
 		}; //  switch ending
 	}); //	socket.on('main_op_group_server') ending
 
-	socket.on('main_add_item_server', function(item_name, item_price, circle_number, item_copy_number, nickname, which_group, responsibility) {
-		c.query('SELECT COUNT(i2)=0 FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
-			// c.query('SELECT COUNT(i2)=0,responsibility FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
+	socket.on('main_add_item_server', function(item_name, item_price, circle_id, item_copy_number, nickname, which_group, responsibility) {
+		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
-						if (row['COUNT(i2)=0'] != 1) {
+						if (row['COUNT(circle_id)=0'] != 1) {
 							// var responsibility = row['responsibility'];
 							c.query('SELECT COUNT(item_name)=0 FROM \`' + which_group + '_data\` WHERE item_name = ?', [item_name])
 								.on('result', function(res) {
@@ -968,12 +951,12 @@ socketio.listen(server).on('connection', function(socket) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_number, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group, nickname) {
-		c.query('SELECT COUNT(i2)=0  FROM \`' + which_group + '_circle\` WHERE i2 = ?', [circle_number])
+	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_id, circle_block_name, circle_space_number, circle_name, circle_rank, circle_author, which_group, nickname) {
+		c.query('SELECT COUNT(circle_id)=0  FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
-						if (row['COUNT(i2)=0'] == 1) {
-							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_number, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, nickname])
+						if (row['COUNT(circle_id)=0'] == 1) {
+							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, circle_id = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_id, circle_rank, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, nickname])
 								.on('result', function(res) {
 									res.on('row', function(row) {
 											//											console.log('main_add_circle_server_insert:成功');
@@ -1035,7 +1018,7 @@ socketio.listen(server).on('connection', function(socket) {
 					})
 					.on('end', function(info) {
 						//						console.log('write_new_group_update:完毕');
-						c.query('CREATE TABLE IF NOT EXISTS \`' + new_group_data['group_name'] + '_circle\` (rowid int NOT NULL AUTO_INCREMENT,i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text,updater text,PRIMARY KEY (rowid))CHARSET=utf8') //1126
+						c.query('CREATE TABLE IF NOT EXISTS \`' + new_group_data['group_name'] + '_circle\` (rowid int NOT NULL AUTO_INCREMENT,i1 text ,i2 text ,i3 text ,i4 text ,i5 text ,i6 text ,i7 text ,i8 text ,i9 text ,i10 text ,i11 text ,i12 text ,i13 text ,i14 text ,i15 text ,i16 text ,i17 text ,i18 text ,i19 text ,i20 text ,i21 text ,i22 text ,i23 text ,i24 text ,i25 text ,i26 text ,i27 text,updater text,circle_id text,PRIMARY KEY (rowid))CHARSET=utf8') //1126
 							.on('result', function(res) {
 								res.on('row', function(row) {})
 									.on('error', function(err) {
@@ -1076,31 +1059,31 @@ socketio.listen(server).on('connection', function(socket) {
 	};
 
 
-	function select_itemdata_for_calc(dataobject) { //STOP
+	// function select_itemdata_for_calc(dataobject) { //STOP
 
-		c.query('SELECT * FROM itemdata WHERE i2 = ?', [dataobject['i2']])
-			.on('result', function(res) {
-				res.on('row', function(row) {
-						console.log('测试' + inspect(row) + 'dataobject:' + inspect(dataobject));
-						socket.emit('main_calc_client', row, dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
-					})
-					.on('error', function(err) {
-						console.log('发生异常错误:' + inspect(err));
-					})
-					.on('end', function(info) {
-						//						console.log('完毕');
-					})
-			})
-			.on('end', function() {
-				//				console.log('结果输出完毕');
-			});
-	};
+	// 	c.query('SELECT * FROM itemdata WHERE i2 = ?', [dataobject['i2']])
+	// 		.on('result', function(res) {
+	// 			res.on('row', function(row) {
+	// 					console.log('测试' + inspect(row) + 'dataobject:' + inspect(dataobject));
+	// 					socket.emit('main_calc_client', row, dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
+	// 				})
+	// 				.on('error', function(err) {
+	// 					console.log('发生异常错误:' + inspect(err));
+	// 				})
+	// 				.on('end', function(info) {
+	// 					//						console.log('完毕');
+	// 				})
+	// 		})
+	// 		.on('end', function() {
+	// 			//				console.log('结果输出完毕');
+	// 		});
+	// };
 
 	function insert_circle(csvdata, which_group, nickname) { //csvdata 为数组
 		csvdata.push(nickname); //push入nickname
 		var error = 0;
 		c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
-				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 = ? ,updater = ?',
+				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 = ? ,updater = ?,circle_id = ?',
 				csvdata) //1116
 			.on('result', function(res) {
 				res.on('row', function(row) {})

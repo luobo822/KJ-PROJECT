@@ -426,7 +426,7 @@
 									window.op_details.otherinfo[circleinfo['i2']].push(otherinfo);
 
 									$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(' + circleinfo['i2'] + ')" id=\"' + circleinfo['i2'] + '\">' + circleinfo['i14'] //标题自动变大
-										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + '-' + circleinfo['i7'] + '-' + circleinfo['i8'] + '-' + circleinfo['i9'] + '-' + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
+										+ '<p>' + circleinfo['i11'] + ' ID:' + circleinfo['i2'] + '</p>' + '<p>作者:' + circleinfo'i13'] + '</p>' + '<p>摊位:' + circleinfo['i6'] + circleinfo['i7'] + circleinfo['i8'] + circleinfo['i9'] + circleinfo['i22'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p>' + '</p>' + '</p></a><a onclick=\"window.op_items.read(' + circleinfo['i2'] + ')\">' + '</a></li>');
 
 									$("#finished").listview("refresh");
 									$("#finished_count").text(Number($("#finished_count").text()) + 1);
@@ -722,8 +722,25 @@
 							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
-										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname);
-										//1126
+										// if (window.csvdata[pointer].length != xx && window.csvdata[pointer].length != xx) {
+										//1203-1
+										//判断csv长度是否合法。若不合法，则报错。
+										if (window.csvdata[pointer][21] == "0") {//也可能是number
+											window.csvdata[pointer][21]="a";
+										} else if(window.csvdata[pointer][21] == "1"){
+											window.csvdata[pointer][21]="b";
+										};
+										//i6 i7 i8 i9 i22
+										if (Number(window.csvdata[pointer][8]) < 10) {
+											window.csvdata[pointer][8] = "0"+window.csvdata[pointer][8];
+										};
+
+										var circle_id = window.csvdata[pointer][5]+window.csvdata[pointer][6]+window.csvdata[pointer][7]+window.csvdata[pointer][8]+window.csvdata[pointer][21];
+
+										socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname,circle_id);	
+										// }else{
+											// $("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有意外逗号" + window.csvdata[pointer][0] + "</div></li>");
+										// };
 										break;
 
 									case "Header":
@@ -733,7 +750,7 @@
 										break;
 
 									default:
-										console.log(pointer);
+										// console.log(pointer);
 										if (pointer + 1 == window.csvdata.length && window.csvdata[pointer].length == 1) { //	行尾空格,不报错.
 										} else {
 											$("#upload_result").append("<li><div class=\"scroll\">错误:" + window.csvdata[pointer] + "</div></li>");
@@ -982,12 +999,16 @@
 				$("#add_circle_upload").click(function() {
 					var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
 					if (r) {
-						if ($("#add_circle_which_day").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && 　$("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_number").val() && $("#add_circle_rank").val() && $("#add_circle_author").val()) {
-							if ($("#add_circle_number").val().length == 6) {
-								socket.emit("main_add_circle_server", $("#add_circle_which_day").val(), $("#add_circle_area").val(), $("#add_circle_number").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_rank").val(), $("#add_circle_author").val(), localStorage.active_group, localStorage.nickname); //1116
-							} else {
-								alert("请确认サークルシリアル番号是否正确!");
-							};
+						if ($("#add_circle_cut_index").val() && $("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() &&  $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
+
+							if (Number($("#add_circle_number").val()) < 10) {//补齐0
+								$("#add_circle_number").val("0"+$("#add_circle_number").val());
+							};//现在就不写限制输入字母了
+
+							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
+							//1203-4
+							socket.emit("main_add_circle_server", $("#add_circle_cut_index").val() , $("#add_circle_date").val(), $("#add_circle_area").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_author").val(),$("#add_circle_space_set").val(), localStorage.active_group, localStorage.nickname,circle_id); //1116
+
 						} else {
 							alert("请填写所有的信息!");
 						};
@@ -1393,17 +1414,25 @@
 			</div>
 
 			<div data-role="content">
+				
+				<div data-role="fieldcontain">
+					<!-- i5 -->
+					<label for="add_circle_cut_index">カットインデックス</label>
+					<input type="text" id="add_circle_cut_index" value="" placeholder="">
+				</div>
 
 				<fieldset data-role="fieldcontain">
-					<label for="add_circle_which_day">参加曜日</label>
-					<select id="add_circle_which_day" data-native-menu="false">
-						<option value="日">第一天 日曜日</option>
-						<option value="月">第二天 月曜日</option>
-						<option value="火">第三天 火曜日</option>
+					<!-- i6 -->
+					<label for="add_circle_date">参加曜日</label>
+					<select id="add_circle_date" data-native-menu="false">
+						<option value="日">第一日 日曜日</option>
+						<option value="月">第二日 月曜日</option>
+						<option value="火">第三日 火曜日</option>
 					</select>
 				</fieldset>
 
 				<fieldset data-role="fieldcontain">
+					<!-- i7 -->
 					<label for="add_circle_area">配置地区</label>
 					<select id="add_circle_area" data-native-menu="false">
 						<option value="東">東</option>
@@ -1412,48 +1441,40 @@
 				</fieldset>
 
 				<div data-role="fieldcontain">
+					<!-- i8 -->
 					<label for="add_circle_block_name">ブロック名</label>
 					<input type="text" id="add_circle_block_name" value="" placeholder="A~Z/ア~ロ/あ～れ">
 				</div>
 
 				<div data-role="fieldcontain">
+					<!-- i9 -->
 					<label for="add_circle_space_number">スペース番号</label>
-					<input type="text" id="add_circle_space_number" value="" placeholder="space序号">
+					<input type="text" id="add_circle_space_number" value="" placeholder="">
 				</div>
 
 				<div data-role="fieldcontain">
+					<!-- i11 -->
 					<label for="add_circle_name">サークル名</label>
 					<input type="text" id="add_circle_name" value="">
 				</div>
 
-				<!--<div data-role="fieldcontain">
-					<label for="add_circle_number">サークルシリアル番号</label>
-					<input type="text" id="add_circle_number" value="" placeholder="circle序列号">
-				</div>-->
-
-
-				<!--<fieldset data-role="fieldcontain">-->
 				<div data-role="fieldcontain">
+					<!-- i13 -->
+					<label for="add_circle_author">執筆者名</label>
+					<input type="text" id="add_circle_author" value="" placeholder="">
+				</div>
+
+				<div data-role="fieldcontain">
+					<!-- i22 -->
 					<label for="add_circle_space_set">スペース配置</label>
 					<select id="add_circle_space_set" name="" data-native-menu="false">
-						<option value="0">a</option>
-						<option value="1">b</option>
+						<option value="a">a</option>
+						<option value="b">b</option>
 					</select>
 				</div>
-				<!--</fieldset>-->
 
 
 
-
-				<div data-role="fieldcontain">
-					<label for="add_circle_rank">カットインデックス</label>
-					<input type="text" id="add_circle_rank" value="" placeholder="">
-				</div>
-
-				<div data-role="fieldcontain">
-					<label for="add_circle_author">執筆者名</label>
-					<input type="text" id="add_circle_author" value="" placeholder="执笔者的名字">
-				</div>
 				<input type="button" id="add_circle_upload" value="上传信息" />
 
 			</div>
