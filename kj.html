@@ -1004,8 +1004,8 @@
 					if (r) {
 						if ($("#add_circle_cut_index").val() && $("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() &&  $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
 
-							if (Number($("#add_circle_number").val()) < 10) {//补齐0
-								$("#add_circle_number").val("0"+$("#add_circle_number").val());
+							if (Number($("#add_circle_number").val()) < 10 && window.csvdata[pointer][8].length == 1) {//补齐0
+									$("#add_circle_number").val("0"+$("#add_circle_number").val());
 							};//现在就不写限制输入字母了
 
 							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
@@ -1135,6 +1135,11 @@
 					$("#add_item_price").val("");
 					$("#add_item_circle_id").val(window.op_details.now_circleid);
 					$("#add_item_copy_num").val(1).slider("refresh");
+					if (localStorage.active_group_power == "leader") {
+						$("#add_item_responsibility").removeAttr("readonly");
+					} else {
+						$("#add_item_responsibility").attr("readonly", true);
+					};
 					$.mobile.changePage("#add_item");
 				});
 
