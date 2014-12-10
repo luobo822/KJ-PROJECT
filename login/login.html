@@ -51,6 +51,7 @@
 //        console.log("输出logindata",logindata);
           if (logindata.flag == 1) {
             $("#login_submit").tooltip("destroy");
+             localStorage.clear();
              localStorage.setItem("id",logindata.id);
              localStorage.setItem("username",logindata.username);
              localStorage.setItem("nickname",logindata.nickname);

@@ -229,17 +229,19 @@ socketio.listen(server).on('connection', function(socket) {
 		socket.broadcast.emit('message', msgdata);
 	});
 
-	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname,cirlce_id) { //csvdata是一个数组
+	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname,circle_id) { //csvdata是一个数组
+		//console.log(circle_id);
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
-							if (row['COUNT(circle_id)=0'] == 1) { //which_group_circle表里没有此circle,不重复
-								insert_circle(csvdata, which_group, nickname); //传csvdata[],11.12删除了csvdata 中的 nickname
-								//1203
-								socket.emit('main_csv_submit_client', circle_id);
-							} else {
-								socket.emit('main_csv_submit_client', 0);
-							};
+						console.log(inspect(row));
+						if (row['COUNT(circle_id)=0'] == 1) { //which_group_circle表里没有此circle,不重复
+							insert_circle(csvdata, which_group, nickname,circle_id); //传csvdata[],11.12删除了csvdata 中的 nickname
+							//1203
+							//socket.emit('main_csv_submit_client', circle_id);
+						} else {
+							socket.emit('main_csv_submit_client', 0);
+						};
 					})
 					.on('error', function(err) {
 						console.log('main_csv_submit_server:发生异常错误:' + inspect(err));
@@ -332,7 +334,7 @@ socketio.listen(server).on('connection', function(socket) {
 
 	socket.on('main_circle_finish_server', function(flag, circle_id, groupname) {
 		if (flag) { //将此circle设为已完成
-			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE cirlce_id = ?', ['finished', circle_id])
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE circle_id = ?', ['finished', circle_id])
 				.on('result', function(res) {
 					res.on('row', function(row) {
 							//			       console.log('main_circle_finish_server:成功');
@@ -350,7 +352,7 @@ socketio.listen(server).on('connection', function(socket) {
 					//			      console.log('结果输出完毕');
 				});
 		} else {
-			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE cirlce_id = ?', ['', circle_id])
+			c.query('UPDATE \`' + groupname + '_circle\` SET i27 = ? WHERE circle_id = ?', ['', circle_id])
 				.on('result', function(res) {
 					res.on('row', function(row) {
 							//			       console.log('main_circle_finish_server:成功');
@@ -894,27 +896,29 @@ socketio.listen(server).on('connection', function(socket) {
 	}); //	socket.on('main_op_group_server') ending
 
 	socket.on('main_add_item_server', function(item_name, item_price, circle_id, item_copy_number, nickname, which_group, responsibility) {
+		var error = 0;
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(circle_id)=0'] != 1) {
-							// var responsibility = row['responsibility'];
 							c.query('SELECT COUNT(item_name)=0 FROM \`' + which_group + '_data\` WHERE item_name = ?', [item_name])
 								.on('result', function(res) {
 									res.on('row', function(row) {
 											if (row['COUNT(item_name)=0'] == 1) {
-												c.query('INSERT INTO \`' + which_group + '_data\` SET circle_id = ?,item_name = ?, item_price = ?,\`' + nickname + '\` = ? ,responsibility = ?', [circle_number, item_name, item_price, '{"bought":0,"target":' + item_copy_number + '}', responsibility])
+												c.query('INSERT INTO \`' + which_group + '_data\` SET circle_id = ?,item_name = ?, item_price = ?,\`' + nickname + '\` = ? ,responsibility = ?', [circle_id, item_name, item_price, '{"bought":0,"target":' + item_copy_number + '}', responsibility])
 													.on('result', function(res) {
 														res.on('row', function(row) {
 																//																console.log('main_add_item_server_insert:成功');
 															})
 															.on('error', function(err) {
 																socket.emit('alert_client', 6, 0);
+																error = 1;
 																console.log('main_add_item_server_insert:发生异常错误:' + inspect(err));
 															})
 															.on('end', function(info) {
-																socket.emit('alert_client', 6, 1);
-																//																console.log('main_add_item_server_insert:完毕');
+																if (!error) { 
+																	socket.emit('alert_client', 6, 1);
+																};
 															})
 													})
 													.on('end', function() {
@@ -926,6 +930,7 @@ socketio.listen(server).on('connection', function(socket) {
 											//											console.log('main_add_item_server_check:成功');
 										})
 										.on('error', function(err) {
+											error = 1;
 											console.log('main_add_item_server_check:发生异常错误:' + inspect(err));
 										})
 										.on('end', function(info) {
@@ -940,6 +945,8 @@ socketio.listen(server).on('connection', function(socket) {
 						};
 					})
 					.on('error', function(err) {
+						socket.emit('alert_client', 6, 0);
+						error = 1;
 						console.log('main_add_item_server:发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
@@ -1079,8 +1086,9 @@ socketio.listen(server).on('connection', function(socket) {
 	// 		});
 	// };
 
-	function insert_circle(csvdata, which_group, nickname) { //csvdata 为数组
+	function insert_circle(csvdata, which_group, nickname,circle_id) { //csvdata 为数组
 		csvdata.push(nickname); //push入nickname
+		csvdata.push(circle_id);
 		var error = 0;
 		c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
 				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 = ? ,updater = ?,circle_id = ?',
@@ -1088,16 +1096,14 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('result', function(res) {
 				res.on('row', function(row) {})
 					.on('error', function(err) {
-
 						socket.emit('main_csv_submit_client', -1); //发生错误,返回-1.
 						error = 1;
 						console.log('insert_circle:发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
 						if (!error) {
-							socket.emit('main_csv_submit_client', csvdata[1]); //插入成功,返回circle id
+							socket.emit('main_csv_submit_client', circle_id); //插入成功,返回circle id
 						};
-						//						console.log('insert_circle:完毕');
 					})
 			})
 			.on('end', function() {
