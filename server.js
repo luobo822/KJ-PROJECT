@@ -234,11 +234,9 @@ socketio.listen(server).on('connection', function(socket) {
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
-						console.log(inspect(row));
 						if (row['COUNT(circle_id)=0'] == 1) { //which_group_circle表里没有此circle,不重复
 							insert_circle(csvdata, which_group, nickname,circle_id); //传csvdata[],11.12删除了csvdata 中的 nickname
 							//1203
-							//socket.emit('main_csv_submit_client', circle_id);
 						} else {
 							socket.emit('main_csv_submit_client', 0);
 						};

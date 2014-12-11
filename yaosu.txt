@@ -450,7 +450,7 @@ circleinfo is object ->create a new circle
 to othermission;
 
 1.新建队伍之后，要刷新队伍；
-2.添加circle 时space number 不能自动补0
+2.添加circle 时space number 不能自动补0////解决
 
  var str = "Ｄ";           
  if (str >= "Ａ" && str <= "Ｚ")   

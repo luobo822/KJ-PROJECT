@@ -727,7 +727,7 @@
 										//判断csv长度是否合法。若不合法，则报错。
 										
 										//1203-1
-											if (window.csvdata[pointer][21] == "0") {//也可能是number
+											if (window.csvdata[pointer][21] == "0") {
 												window.csvdata[pointer][21]="a";
 											} else if(window.csvdata[pointer][21] == "1"){
 												window.csvdata[pointer][21]="b";
@@ -737,7 +737,12 @@
 												window.csvdata[pointer][8] = "0" + window.csvdata[pointer][8];
 											};
 
-											var circle_id = window.csvdata[pointer][5]+window.csvdata[pointer][6]+window.csvdata[pointer][7]+window.csvdata[pointer][8]+window.csvdata[pointer][21];
+											 if (window.csvdata[pointer][7] >= "Ａ" && window.csvdata[pointer][7] <= "Ｚ")   
+											  {
+											window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
+											  };
+
+											var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
 											
 											socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname,circle_id);	
 										}else{
@@ -971,14 +976,15 @@
 				$("#turn_to_add_circle").click(function() {
 					if (localStorage.active_group) {
 						$("#add_circle").page();
-						$("#add_circle_which_day").val("日").selectmenu("refresh");
+						$("#add_circle_cut_index").val("");
+						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
 						$("#add_circle_space_number").val("");
 						$("#add_circle_name").val("");
 						$("#add_circle_number").val("");
-						$("#add_circle_rank").val("");
 						$("#add_circle_author").val("");
+						$("#add_circle_space_set").val("a").selectmenu("refresh");
 						$.mobile.changePage("#add_circle");
 					} else {
 						alert("请选择活跃队伍!");
@@ -988,14 +994,16 @@
 				$("#add_circle_reset").click(function() {
 					var r = confirm("确认重置这个表单?");
 					if (r) {
-						$("#add_circle_which_day").val("日").selectmenu("refresh");
+						$("#add_circle_cut_index").val("");
+						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
 						$("#add_circle_space_number").val("");
 						$("#add_circle_name").val("");
 						$("#add_circle_number").val("");
-						$("#add_circle_rank").val("");
 						$("#add_circle_author").val("");
+						$("#add_circle_space_set").val("a").selectmenu("refresh");
+
 					};
 				});
 
@@ -1004,9 +1012,16 @@
 					if (r) {
 						if ($("#add_circle_cut_index").val() && $("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() &&  $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
 
-							if (Number($("#add_circle_number").val()) < 10 && window.csvdata[pointer][8].length == 1) {//补齐0
-									$("#add_circle_number").val("0"+$("#add_circle_number").val());
-							};//现在就不写限制输入字母了
+							if (Number($("#add_circle_space_number").val()) < 10 && $("#add_circle_space_number").val().length == 1) {//补齐0
+									$("#add_circle_space_number").val("0"+$("#add_circle_space_number").val());
+							};
+
+
+							 if ($("#add_circle_block_name").val() >= "Ａ" && $("#add_circle_block_name").val() <= "Ｚ")   
+								  {
+									$("#add_circle_block_name").val(String.fromCharCode($("#add_circle_block_name").val().charCodeAt(0) - 65248));    
+									//把全角字符的unicode编码转换为对应半角字符的unicode码
+  									};
 
 							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
 							//1203-4
@@ -1527,7 +1542,7 @@
 				<ul id="circle_details_circledata" data-role="listview" data-inset="true"></ul>
 				<ul id="circle_details_otherinfo" data-role="listview" data-inset="true"></ul>
 
-				<input type="button" id="add_new_item_in_detail" value="新增" />
+				<input type="button" id="add_new_item_in_detail" value="新增此circle的item" />
 				<input type="button" id="circle_details_set_finished" value="设为已完成" disabled="" />
 				<input type="button" id="circle_delete" value="从队伍里删除此circle" data-theme="b" disabcircle_id />
 
