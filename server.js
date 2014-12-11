@@ -80,7 +80,7 @@ socketio.listen(server).on('connection', function(socket) {
 			});
 	});
 
-	//reg
+	// reg
 
 	socket.on('reg_check_username_server', function(uzndata) {
 		//		console.log('reg_check_username_server:收到需检查的用户名:', uzndata);
@@ -386,7 +386,6 @@ socketio.listen(server).on('connection', function(socket) {
 			.on('end', function() {});
 	});
 
-
 	socket.on('main_edit_data_server', function(edit_data_string, edit_price_number, item_name, nickname, which_group) {
 		//		console.log('main_edit_data_server:收到关系表编辑请求,请求的发送用户是' + nickname);
 		c.query('UPDATE \`' + which_group + '_data\` SET \`' + nickname + '\`= ?,item_price = ? WHERE item_name = ?', [edit_data_string, edit_price_number, item_name])
@@ -558,8 +557,6 @@ socketio.listen(server).on('connection', function(socket) {
 				// console.log('结果输出完毕');
 			});
 	}); //socket.on('main_calc_server') ending
-
-	//1119结束
 
 	socket.on('main_select_group_server', function(nickname) {
 		//		console.log('main_select_group_server:收到队伍推送请求,请求的发送用户是' + nickname);
@@ -1063,27 +1060,6 @@ socketio.listen(server).on('connection', function(socket) {
 
 	};
 
-
-	// function select_itemdata_for_calc(dataobject) { //STOP
-
-	// 	c.query('SELECT * FROM itemdata WHERE i2 = ?', [dataobject['i2']])
-	// 		.on('result', function(res) {
-	// 			res.on('row', function(row) {
-	// 					console.log('测试' + inspect(row) + 'dataobject:' + inspect(dataobject));
-	// 					socket.emit('main_calc_client', row, dataobject); //row是itemdata里的一列值组成的对象;dataobject={ i2: itemid, nickname: '{nickname:1,finish:0}' }
-	// 				})
-	// 				.on('error', function(err) {
-	// 					console.log('发生异常错误:' + inspect(err));
-	// 				})
-	// 				.on('end', function(info) {
-	// 					//						console.log('完毕');
-	// 				})
-	// 		})
-	// 		.on('end', function() {
-	// 			//				console.log('结果输出完毕');
-	// 		});
-	// };
-
 	function insert_circle(csvdata, which_group, nickname,circle_id) { //csvdata 为数组
 		csvdata.push(nickname); //push入nickname
 		csvdata.push(circle_id);
@@ -1111,7 +1087,6 @@ socketio.listen(server).on('connection', function(socket) {
 
 
 }); //socket.listen ending
-
 
 //SQL模板
 
