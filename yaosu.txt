@@ -452,7 +452,13 @@ to othermission;
 1.新建队伍之后，要刷新队伍；
 2.添加circle 时space number 不能自动补0
 
-
+ var str = "Ｄ";           
+ if (str >= "Ａ" && str <= "Ｚ")   
+//unicode编码范围是所有的英文字母以及各种字符
+  {
+var result = String.fromCharCode(str.charCodeAt(0) - 65248);    
+//把全角字符的unicode编码转换为对应半角字符的unicode码
+  };console.log(result); 
 
 
 
