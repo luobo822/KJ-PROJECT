@@ -449,7 +449,6 @@ circleinfo is object ->create a new circle
 ""://without item
 to othermission;
 
-1.新建队伍之后，要刷新队伍；
 2.添加circle 时space number 不能自动补0////解决
 
  var str = "Ｄ";           
@@ -460,8 +459,10 @@ var result = String.fromCharCode(str.charCodeAt(0) - 65248);
 //把全角字符的unicode编码转换为对应半角字符的unicode码
   };console.log(result); 
 
-
-
+1.已完成的任务打不开; solved
+2.编辑Item的权限不对; solved
+3.新建队伍之后，要刷新队伍； solved
+4.无item时，会出现很多circle; 
 
 
 

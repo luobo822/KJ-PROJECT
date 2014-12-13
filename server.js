@@ -117,13 +117,13 @@ socketio.listen(server).on('connection', function(socket) {
 		c.query('SELECT COUNT(nickname)=0 FROM user WHERE nickname = ?', [nickname]) //检查数据库,在没有重名的时候输出1
 			.on('result', function(res) {
 				res.on('row', function(row) {
-							is_checked = row['COUNT(nickname)=0'];
-							// if (row['COUNT(nickname)=0'] == 1) {
-							// 	//								console.log('reg_check_nickname_server:昵称没有重复' + nickname);
-							// } else {
-							// 	//								console.log('reg_check_nickname_server:昵称重复了:' + nickname);
-							// };
-							socket.emit('reg_check_nickname_client', is_checked); //重名向客户端发送0,未重名发送1
+						is_checked = row['COUNT(nickname)=0'];
+						// if (row['COUNT(nickname)=0'] == 1) {
+						// 	//								console.log('reg_check_nickname_server:昵称没有重复' + nickname);
+						// } else {
+						// 	//								console.log('reg_check_nickname_server:昵称重复了:' + nickname);
+						// };
+						socket.emit('reg_check_nickname_client', is_checked); //重名向客户端发送0,未重名发送1
 					})
 					.on('error', function(err) {
 						console.log('reg_check_nickname_server:查找重名发生异常错误:' + inspect(err));
@@ -229,13 +229,13 @@ socketio.listen(server).on('connection', function(socket) {
 		socket.broadcast.emit('message', msgdata);
 	});
 
-	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname,circle_id) { //csvdata是一个数组
+	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname, circle_id) { //csvdata是一个数组
 		//console.log(circle_id);
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(circle_id)=0'] == 1) { //which_group_circle表里没有此circle,不重复
-							insert_circle(csvdata, which_group, nickname,circle_id); //传csvdata[],11.12删除了csvdata 中的 nickname
+							insert_circle(csvdata, which_group, nickname, circle_id); //传csvdata[],11.12删除了csvdata 中的 nickname
 							//1203
 						} else {
 							socket.emit('main_csv_submit_client', 0);
@@ -585,6 +585,7 @@ socketio.listen(server).on('connection', function(socket) {
 
 	socket.on('main_manage_group_add_server', function(new_group_data, nickname) {
 		//		console.log('main_manage_group_add_server:收到新队伍创建请求,请求的发送用户是' + nickname);
+		//		var error =0;
 		c.query('SELECT COUNT(group_name)=0 FROM groups WHERE group_name = ?', [new_group_data['group_name']])
 			.on('result', function(res) {
 				res.on('row', function(row) {
@@ -905,8 +906,7 @@ socketio.listen(server).on('connection', function(socket) {
 											if (row['COUNT(item_name)=0'] == 1) {
 												c.query('INSERT INTO \`' + which_group + '_data\` SET circle_id = ?,item_name = ?, item_price = ?,\`' + nickname + '\` = ? ,responsibility = ?', [circle_id, item_name, item_price, '{"bought":0,"target":' + item_copy_number + '}', responsibility])
 													.on('result', function(res) {
-														res.on('row', function(row) {
-															})
+														res.on('row', function(row) {})
 															.on('error', function(err) {
 																error = 1;
 																console.log('main_add_item_server_insert:发生异常错误:' + inspect(err));
@@ -914,7 +914,7 @@ socketio.listen(server).on('connection', function(socket) {
 															.on('end', function(info) {
 																if (!error) {
 																	socket.emit('alert_client', 6, 1);
-																}else{ 
+																} else {
 																	socket.emit('alert_client', 6, 0);
 																};
 															})
@@ -956,7 +956,7 @@ socketio.listen(server).on('connection', function(socket) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_cut_index,circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, circle_space_set,which_group, nickname,circle_id) {
+	socket.on('main_add_circle_server', function(circle_cut_index, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, circle_space_set, which_group, nickname, circle_id) {
 		c.query('SELECT COUNT(circle_id)=0  FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
@@ -997,11 +997,13 @@ socketio.listen(server).on('connection', function(socket) {
 	/////////////////////////function_part//////////////////////////
 
 	function write_new_group(new_group_data, nickname) {
+		var error = 0;
 		c.query('INSERT INTO groups SET group_name = ?,group_password = ?,group_introduction = ?', [new_group_data['group_name'], new_group_data['group_password'], new_group_data['group_introduction']])
 			.on('result', function(res) {
 				res.on('row', function(row) {})
 					.on('error', function(err) {
-						socket.emit('alert_client', 5, 0);
+
+						error = 1;
 						console.log('write_new_group:发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
@@ -1018,7 +1020,7 @@ socketio.listen(server).on('connection', function(socket) {
 						// socket.emit('main_manage_group_add_client',1);
 					})
 					.on('error', function(err) {
-						socket.emit('alert_client', 5, 0);
+						error = 1;
 						console.log('write_new_group_update:发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
@@ -1027,7 +1029,7 @@ socketio.listen(server).on('connection', function(socket) {
 							.on('result', function(res) {
 								res.on('row', function(row) {})
 									.on('error', function(err) {
-										socket.emit('alert_client', 5, 0);
+										error = 1;
 										console.log('write_new_group_create_circle:发生异常错误:' + inspect(err));
 									})
 									.on('end', function(info) {
@@ -1044,12 +1046,16 @@ socketio.listen(server).on('connection', function(socket) {
 										//										console.log('write_new_group_create_data:成功');
 									})
 									.on('error', function(err) {
-										socket.emit('alert_client', 5, 0);
+										error = 1;
 										console.log('write_new_group_create_data:发生异常错误:' + inspect(err));
 									})
 									.on('end', function(info) {
 										//										console.log('write_new_group_create_data:完毕');
-										socket.emit('alert_client', 5, 1);
+										if (!error) {
+											socket.emit('alert_client', 5, 1);
+										} else {
+											socket.emit('alert_client', 5, 0);
+										};
 									})
 							})
 							.on('end', function() {
@@ -1084,7 +1090,7 @@ socketio.listen(server).on('connection', function(socket) {
 	// 		});
 	// };
 
-	function insert_circle(csvdata, which_group, nickname,circle_id) { //csvdata 为数组
+	function insert_circle(csvdata, which_group, nickname, circle_id) { //csvdata 为数组
 		csvdata.push(nickname); //push入nickname
 		csvdata.push(circle_id);
 		var error = 0;
@@ -1111,7 +1117,6 @@ socketio.listen(server).on('connection', function(socket) {
 
 
 }); //socket.listen ending
-
 
 //SQL模板
 

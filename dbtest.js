@@ -20,26 +20,27 @@ c.on('connect', function() {
    console.log('数据库连接关闭');
  });
 
-var a = '`'+"test1213123"+'`';
-var b = 'baka';
- c.query('UPDATE test SET '+b+'= '+a+' WHERE rowid = ?',[3])
- .on('result', function(res) {
-   res.on('row', function(row) {
-     console.log(inspect(row));
-   })
-   .on('error', function(err) {
-     console.log('Result error: ' + inspect(err));
-   })
-   .on('end', function(info) {
-     console.log('Result finished successfully');
-   });
- })
- .on('end', function() {
-   console.log('Done with all results');
- });
+//var a = '`'+"test1213123"+'`';
+//var b = 'baka';
+// c.query('UPDATE test SET '+b+'= '+a+' WHERE rowid = ?',[3])
+// .on('result', function(res) {
+// res.on('row', function(row) {
+//   console.log(inspect(row));
+// })
+// .on('error', function(err) {
+//   console.log('Result error: ' + inspect(err));
+// })
+// .on('end', function(info) {
+//   console.log('Result finished successfully');
+// });
+// })
+// .on('end', function() {
+// console.log('Done with all results');
+// });
 
 
-socketio.listen(server).on('connection', function(socket) {})
+
+
 
 
 c.end();
