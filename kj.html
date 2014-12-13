@@ -27,9 +27,9 @@
 		<script>
 			"use strict"
 
-//			$(document).on("pageshow", "#select_group", function() {
-//				is_turning = 0;
-//			});
+			 //			$(document).on("pageshow", "#select_group", function() {
+			 //				is_turning = 0;
+			 //			});
 
 			function get_venues(block_name, space_number) { //blockname 为string ,space number为number
 				if (block_name == "A") {
@@ -285,7 +285,7 @@
 							if (window.op_details.otherinfo[circleid][0]) { //不为空
 								for (var x in window.op_details.otherinfo[circleid]) {
 									var count_items = 0; //总件数计数器
-									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname] != "") {
+									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
 										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
 									};
 									$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
@@ -327,7 +327,7 @@
 							window.op_items.now_itemname = window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['item_name']; //11.12
 							window.op_items.now_item_responsibility = window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'];
 
-							console.log(window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]); //iteminfo对象
+							//							console.log(window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]); //iteminfo对象
 
 							if (window.op_details.otherinfo[window.op_items.now_circleid][number_in_array][localStorage.nickname] !== null) {
 								//转换为对象
@@ -347,7 +347,7 @@
 							$("#items_edit_bought").val("");
 							$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
 							$("#items_edit").page();
-							if (localStorage.active_group_power == "leader") { //if i am leader, i can control every item and relation
+							if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'] == localStorage.nickname) { //if i am leader, i can control every item and relation
 								if (window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]) {
 									$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'] + '</option>')
 									for (var x in window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]) {
@@ -364,9 +364,11 @@
 										};
 									};
 								};
+								$("#items_edit_price").removeAttr("readonly");
 								$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
 								$("#item_delete").button("enable");
 							} else { //not leader
+								$("#items_edit_price").attr("readonly", true);
 								$("#item_edit_responsibility").selectmenu("disable").selectmenu("refresh");
 								$("#item_delete").button("disable");
 							};
@@ -513,7 +515,7 @@
 
 					if (is_othermission == 1) { //进其他任务
 
-						$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
+						$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
 						$("#all_mission").listview("refresh");
 						$("#all_count").text(Number($("#all_count").text()) + 1);
 						window.op_details[circleinfo['circle_id']] = circleinfo;
@@ -538,7 +540,7 @@
 								};
 								window.op_details.otherinfo[circleinfo['circle_id']].push(otherinfo);
 
-								$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
+								$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
 
 								$("#finished").listview("refresh");
 								$("#finished_count").text(Number($("#finished_count").text()) + 1);
@@ -550,7 +552,7 @@
 								};
 								window.op_details.otherinfo[circleinfo['circle_id']].push(otherinfo);
 
-								$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i14'] + '<p>' + circleinfo['i11'] + ' </p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p>' + '<a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a>' + '</li>');
+								$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + ' </p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p>' + '<a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a>' + '</li>');
 
 								$("#unfinished").listview("refresh");
 								$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
@@ -1082,7 +1084,7 @@
 				$("#turn_to_add_circle").click(function() {
 					if (localStorage.active_group) {
 						$("#add_circle").page();
-						$("#add_circle_cut_index").val("");
+						//						$("#add_circle_cut_index").val("");
 						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
@@ -1100,7 +1102,7 @@
 				$("#add_circle_reset").click(function() {
 					var r = confirm("确认重置这个表单?");
 					if (r) {
-						$("#add_circle_cut_index").val("");
+						//						$("#add_circle_cut_index").val("");
 						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
@@ -1116,7 +1118,7 @@
 				$("#add_circle_upload").click(function() {
 					var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
 					if (r) {
-						if ($("#add_circle_cut_index").val() && $("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
+						if ($("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
 
 							if (Number($("#add_circle_space_number").val()) < 10 && $("#add_circle_space_number").val().length == 1) { //补齐0
 								$("#add_circle_space_number").val("0" + $("#add_circle_space_number").val());
@@ -1128,9 +1130,9 @@
 								//把全角字符的unicode编码转换为对应半角字符的unicode码
 							};
 
-							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + get_venues($("#add_circle_block_name").val(),Number($("#add_circle_space_number").val()))+ $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
+							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + get_venues($("#add_circle_block_name").val(), Number($("#add_circle_space_number").val())) + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
 							//1203-4
-							socket.emit("main_add_circle_server", $("#add_circle_cut_index").val(), $("#add_circle_date").val(), $("#add_circle_area").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_author").val(), $("#add_circle_space_set").val(), localStorage.active_group, localStorage.nickname, circle_id); //1116
+							socket.emit("main_add_circle_server", $("#add_circle_date").val(), $("#add_circle_area").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_author").val(), $("#add_circle_space_set").val(), localStorage.active_group, localStorage.nickname, circle_id); //1116
 
 						} else {
 							alert("请填写所有的信息!");
@@ -1223,7 +1225,7 @@
 				});
 
 				$("#circle_delete").click(function() {
-					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.op_items.now_item_responsibility) {
+					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.op_details.now_circledata['updater']) {
 						var r = confirm("你确定删除id为" + window.op_details.now_circleid + "的circle吗?\n这会删除这个circle所包含的一切item");
 						var q = confirm("真的确定吗？");
 						if (r && q) {
@@ -1552,11 +1554,11 @@
 
 			<div data-role="content">
 
-				<div data-role="fieldcontain">
-					<!-- i5 -->
-					<label for="add_circle_cut_index">カットインデックス</label>
+				<!--<div data-role="fieldcontain">-->
+				<!-- i5 -->
+				<!--<label for="add_circle_cut_index">カットインデックス</label>
 					<input type="text" id="add_circle_cut_index" value="" placeholder="">
-				</div>
+				</div>-->
 
 				<fieldset data-role="fieldcontain">
 					<!-- i6 -->
@@ -1737,7 +1739,7 @@
 				</div>
 				<div data-role="fieldcontain">
 					<label for="items_edit_price">价格:円</label>
-					<input type="text" id="items_edit_price" value="" placeholder="勿恶意更改价格">
+					<input type="text" id="items_edit_price" value="" placeholder="勿恶意更改价格" readonly="">
 				</div>
 				<div data-role="fieldcontain">
 					<label for="items_edit_target">目标数:</label>
@@ -1770,12 +1772,13 @@
 					<center>结算哪天的?</center>
 					<br>
 					<select name="calc_when" id="calc_when" data-native-menu="false">
-						<option value="金">啥时候(测试金)</option>
 						<!--mikoto-->
 						<!--在正式使用的时候，把上边这个value里的“金”这个换成“日”-->
-						<option value="月">xxxx (月)</option>
-						<option value="火">xxxx (火)</option>
+						<option value="日">第一日 日</option>
+						<option value="月">第二日 月</option>
+						<option value="火">第三日 火</option>
 						<option value="233">全部三天</option>
+						<option value="金">测试用：金</option>
 					</select>
 					<br />
 					<input type="button" value="结算开始！" id="calc_start" />

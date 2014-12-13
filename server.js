@@ -274,7 +274,7 @@ socketio.listen(server).on('connection', function(socket) {
 												.on('result', function(res) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
-															if (row[temp] == '1') {//加入已推送检测
+															if (row[temp] == '1') {
 																socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 															} else {
 																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
@@ -956,12 +956,12 @@ socketio.listen(server).on('connection', function(socket) {
 			}); //	query ending
 	}); //	socket.on('main_add_item_server') ending
 
-	socket.on('main_add_circle_server', function(circle_cut_index, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, circle_space_set, which_group, nickname, circle_id) {
+	socket.on('main_add_circle_server', function(circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, circle_space_set, which_group, nickname, circle_id) {
 		c.query('SELECT COUNT(circle_id)=0  FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
 						if (row['COUNT(circle_id)=0'] == 1) {
-							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, circle_id = ? , i5 = ?,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_id, circle_cut_index, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, nickname])
+							c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, circle_id = ? ,i6 = ?,i7 = ?,i8= ?,i9 = ?, i11 = ?, i13 = ?,updater = ?', ['Circle', circle_id, circle_date, circle_area, circle_block_name, circle_space_number, circle_name, circle_author, nickname])
 								.on('result', function(res) {
 									res.on('row', function(row) {
 											//											console.log('main_add_circle_server_insert:成功');
