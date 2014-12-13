@@ -274,7 +274,7 @@ socketio.listen(server).on('connection', function(socket) {
 												.on('result', function(res) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
-															if (row[temp] == '1') {
+															if (row[temp] == '1') {//加入已推送检测
 																socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 															} else {
 																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
