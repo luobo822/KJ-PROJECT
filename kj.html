@@ -27,9 +27,59 @@
 		<script>
 			"use strict"
 
-			$(document).on("pageshow", "#select_group", function() {
-				is_turning = 0;
-			});
+//			$(document).on("pageshow", "#select_group", function() {
+//				is_turning = 0;
+//			});
+
+			function get_venues(block_name, space_number) { //blockname 为string ,space number为number
+				if (block_name == "A") {
+					if (space_number >= 1 && space_number <= 36) {
+						//東1
+						return 1;
+					} else if (space_number >= 37 && space_number <= 52) {
+						//東2
+						return 2;
+					} else if (space_number >= 53 && space_number <= 88) {
+						//東3
+						return 3;
+					};
+				} else if (block_name >= "B" && block_name <= "L") {
+					//東1
+					return 1;
+				} else if (block_name >= "M" && block_name <= "Z") {
+					//東2
+					return 2;
+				} else if (block_name >= "ア" && block_name <= "サ") {
+					//東3
+					return 3;
+				} else if (block_name == "シ") {
+					if (space_number >= 1 && space_number <= 36) {
+						//東4
+						return 4;
+					} else if (space_number >= 37 && space_number <= 52) {
+						//東5							
+						return 5;
+					} else if (space_number >= 53 && space_number <= 88) {
+						//東6
+						return 6;
+					};
+				} else if (block_name >= "ス" && block_name <= "ヌ") {
+					//東6
+					return 6;
+				} else if (block_name >= "ネ" && block_name <= "ミ") {
+					//東5
+					return 5;
+				} else if (block_name >= "ム" && block_name <= "ロ") {
+					//東4
+					return 4;
+				} else if (block_name >= "あ" && block_name <= "な") {
+					//西2
+					return 2;
+				} else if (block_name >= "に" && block_name <= "れ") {
+					//西1
+					return 1;
+				};
+			};
 
 			$(function() {
 
@@ -58,109 +108,110 @@
 				window.csvdata;
 				window.csvdata = new Array();
 
+
 				//读取pervious页面的#hash
 
-				function get_anchor() { //后退的场合
-
-					switch (location.hash) {
-						case "#tools":
-							return "#mission";
-							break;
-
-						case "#message":
-							return "#message";
-							break;
-
-						case "#input_csv":
-							return "#input_csv"; //不翻页
-							break;
-
-						case "#calc_setting":
-							return "#tools";
-							break;
-
-						case "#about":
-							return "#tools";
-							break;
-
-						case "":
-							return "#mission";
-							break;
-
-						default: //未在此定义的页面都不翻页
-							return location.hash;
-							break;
-					}; //switch ending
-
-				};
+				//				function get_anchor() { //后退的场合
+				//
+				//					switch (location.hash) {
+				//						case "#tools":
+				//							return "#mission";
+				//							break;
+				//
+				//						case "#message":
+				//							return "#message";
+				//							break;
+				//
+				//						case "#input_csv":
+				//							return "#input_csv"; //不翻页
+				//							break;
+				//
+				//						case "#calc_setting":
+				//							return "#tools";
+				//							break;
+				//
+				//						case "#about":
+				//							return "#tools";
+				//							break;
+				//
+				//						case "":
+				//							return "#mission";
+				//							break;
+				//
+				//						default: //未在此定义的页面都不翻页
+				//							return location.hash;
+				//							break;
+				//					}; //switch ending
+				//
+				//				};
 
 				//手势前进 && 后退
 
-				document.addEventListener("touchstart", handleTouchEvent, false);
-				document.addEventListener("touchend", handleTouchEvent, false);
-				document.addEventListener("touchmove", handleTouchEvent, false);
+				//				document.addEventListener("touchstart", handleTouchEvent, false);
+				//				document.addEventListener("touchend", handleTouchEvent, false);
+				//				document.addEventListener("touchmove", handleTouchEvent, false);
+				//
+				//				var pre = new Array();
+				//				var end = new Array();
+				//				var delta = new Array(); //对于这三个数组,[0]->x,[1]->y
+				//				window.is_turning = 0;
+				//
+				//
+				//				$("#shift_to_message").on("swipeleft", function() { //特别为#mission的导航栏添加滑动翻页功能
+				//					$.mobile.changePage("#message", {
+				//						transition: "slide",
+				//						reverse: false,
+				//						changeHash: true
+				//					});
+				//				});
+				//
+				//				$("#shift_to_mission").on("swiperight", function() { //特别为#mission的导航栏添加滑动翻页功能
+				//					$.mobile.changePage("#mission", {
+				//						transition: "slide",
+				//						reverse: true,
+				//						changeHash: true
+				//					});
+				//				});
 
-				var pre = new Array();
-				var end = new Array();
-				var delta = new Array(); //对于这三个数组,[0]->x,[1]->y
-				window.is_turning = 0;
+				//				function turnpage() {
+				//
+				//					if (delta[0] > 10 && Math.abs(delta[1] < 10)) {
+				//						is_turning = 1;
+				//
+				//						$.mobile.changePage(get_anchor(), {
+				//							transition: "slide",
+				//							reverse: true,
+				//							changeHash: true
+				//						});
+				//					};
+				//
+				//				}; //function turnpage() ending
 
-
-				$("#shift_to_message").on("swipeleft", function() { //特别为#mission的导航栏添加滑动翻页功能
-					$.mobile.changePage("#message", {
-						transition: "slide",
-						reverse: false,
-						changeHash: true
-					});
-				});
-
-				$("#shift_to_mission").on("swiperight", function() { //特别为#mission的导航栏添加滑动翻页功能
-					$.mobile.changePage("#mission", {
-						transition: "slide",
-						reverse: true,
-						changeHash: true
-					});
-				});
-
-				function turnpage() {
-
-					if (delta[0] > 10 && Math.abs(delta[1] < 10)) {
-						is_turning = 1;
-
-						$.mobile.changePage(get_anchor(), {
-							transition: "slide",
-							reverse: true,
-							changeHash: true
-						});
-					};
-
-				}; //function turnpage() ending
-
-				function handleTouchEvent(event) {
-
-					if (event.touches.length == 1) {
-
-						switch (event.type) {
-							case "touchstart":
-								is_turning = 0;
-								pre[0] = event.touches[0].clientX;
-								pre[1] = event.touches[0].clientY;
-								break;
-							case "touchend":
-								break;
-							case "touchmove":
-								// event.preventDefault(); //阻止滚动
-								end[0] = event.changedTouches[0].clientX;
-								end[1] = event.changedTouches[0].clientY;
-								if (is_turning == 0) { //若页面非正在跳转,则计算delta,翻页
-									delta[0] = -(pre[0] - end[0]);
-									delta[1] = pre[1] - end[1];
-									turnpage();
-								}; //if ending
-								break;
-						}; //switch ening
-					}; //if ending
-				}; //handleTouchEvent() ending
+				//				function handleTouchEvent(event) {
+				//
+				//					if (event.touches.length == 1) {
+				//
+				//						switch (event.type) {
+				//							case "touchstart":
+				//								is_turning = 0;
+				//								pre[0] = event.touches[0].clientX;
+				//								pre[1] = event.touches[0].clientY;
+				//								break;
+				//							case "touchend":
+				//								break;
+				//							case "touchmove":
+				//								// event.preventDefault(); //阻止滚动
+				//								end[0] = event.changedTouches[0].clientX;
+				//								end[1] = event.changedTouches[0].clientY;
+				//								if (is_turning == 0) { //若页面非正在跳转,则计算delta,翻页
+				//									delta[0] = -(pre[0] - end[0]);
+				//									delta[1] = pre[1] - end[1];
+				//									turnpage();
+				//								}; //if ending
+				//								break;
+				//						}; //switch ening
+				//					}; //if ending
+				//				}; //handleTouchEvent() ending
 
 
 				//结算时的数据存储,绑定为全局对象
@@ -797,7 +848,7 @@
 												window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
 											};
 
-											var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
+											var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
 
 											socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
 										} else {
@@ -1077,7 +1128,7 @@
 								//把全角字符的unicode编码转换为对应半角字符的unicode码
 							};
 
-							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
+							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + get_venues($("#add_circle_block_name").val(),Number($("#add_circle_space_number").val()))+ $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
 							//1203-4
 							socket.emit("main_add_circle_server", $("#add_circle_cut_index").val(), $("#add_circle_date").val(), $("#add_circle_area").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_author").val(), $("#add_circle_space_set").val(), localStorage.active_group, localStorage.nickname, circle_id); //1116
 
