@@ -275,7 +275,10 @@ socketio.listen(server).on('connection', function(socket) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
 															if (row[temp] == '1') {
-																socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
+																if (is_pushed == 0) {
+																	socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
+																	is_pushed = 1;
+																};
 															} else {
 																if (is_pushed == 1) { //true:已推送过circle数据,只推送circleid和完整的relation
 																	socket.emit('main_mission_list_client', relation_data_temp, circle_data['circle_id'], 0);

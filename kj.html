@@ -831,30 +831,33 @@
 							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
-										// if (window.csvdata[pointer].length == 22 || window.csvdata[pointer].length == 27) {
-										if (true) {
+										if (window.csvdata[pointer].length == 22 || window.csvdata[pointer].length == 27) {
 											//判断csv长度是否合法。若不合法，则报错。
-
 											//1203-1
-											if (window.csvdata[pointer][21] == "0") {
-												window.csvdata[pointer][21] = "a";
-											} else if (window.csvdata[pointer][21] == "1") {
-												window.csvdata[pointer][21] = "b";
-											};
-											//i6 i7 i8 i9 i22
-											if ((Number(window.csvdata[pointer][8]) < 10) && window.csvdata[pointer][8].length == 1) {
-												window.csvdata[pointer][8] = "0" + window.csvdata[pointer][8];
+											if (window.csvdata[pointer][5] != "×" && window.csvdata[pointer][6] != "×" && window.csvdata[pointer][7] != "×") {
+												if (window.csvdata[pointer][21] == "0") {
+													window.csvdata[pointer][21] = "a";
+												} else if (window.csvdata[pointer][21] == "1") {
+													window.csvdata[pointer][21] = "b";
+												};
+												//i6 i7 i8 i9 i22
+												if ((Number(window.csvdata[pointer][8]) < 10) && window.csvdata[pointer][8].length == 1) {
+													window.csvdata[pointer][8] = "0" + window.csvdata[pointer][8];
+												};
+
+												if (window.csvdata[pointer][7] >= "Ａ" && window.csvdata[pointer][7] <= "Ｚ") {
+													window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
+												};
+
+												var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
+
+												socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
+											} else {
+												$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有“×”号" + window.csvdata[pointer] + "</div></li>");
 											};
 
-											if (window.csvdata[pointer][7] >= "Ａ" && window.csvdata[pointer][7] <= "Ｚ") {
-												window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
-											};
-
-											var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
-
-											socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
 										} else {
-											$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有意外逗号;或csv文件字段数不为22或27" + window.csvdata[pointer][0] + "</div></li>");
+											$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有意外逗号;或csv文件字段数不为22或27" + window.csvdata[pointer] + "</div></li>");
 										};
 										break;
 
@@ -1218,8 +1221,13 @@
 				$("#logout").click(function() {
 					var r = confirm("你确定要退出?");
 					if (r) {
-						window.location.assign("http://test.eshicon.org/login.html");
+						var active_group = localStorage.active_group;
+						var active_group_power = localStorage.active_group_power;
 						localStorage.clear();
+						localStorage.active_group = active_group;
+						localStorage.active_group_power = active_group_power;
+						window.location.assign("http://test.eshicon.org/login.html");
+
 					};
 
 				});
@@ -1503,7 +1511,7 @@
 		<div data-role="page" id="add_item">
 			<div data-role="header">
 				<h1>登录新的宝物</h1>
-				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="add_item_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
@@ -1546,7 +1554,7 @@
 		<div data-role="page" id="add_circle">
 			<div data-role="header">
 				<h1>登录新摊位</h1>
-				<a href="#tools" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="add_circle_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
