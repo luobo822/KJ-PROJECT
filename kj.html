@@ -22,6 +22,12 @@
 				overflow: auto;
 				/*这个的作用是让溢出的<li><div></div></li>能够滑动,不至于在手机上看不全消息*/
 			}
+			.XL {
+				font-size: 125%;
+			}
+			.L {
+				font-size: 110%;
+			}
 		</style>
 
 		<script>
@@ -93,12 +99,6 @@
 					//					 window.location.assign("http://test.eshicon.org/login.html");
 				};
 
-				//输出活跃队伍名
-				if (localStorage.active_group) {
-					$("#mission_title").text(localStorage.active_group);
-				} else {
-					$("#mission_title").text("未选队伍");
-				};
 
 				//定义标记
 				var is_connected = 0; //是否连接消息服务器
@@ -108,6 +108,28 @@
 				window.csvdata;
 				window.csvdata = new Array();
 
+				var socket = io.connect("http://157.7.138.169:2333");
+
+				socket.emit("main_check_group_server", localStorage.nickname, localStorage.active_group);
+
+				socket.on("main_check_group_client", function(flag, power, is_lock) { //data:string
+					console.log(power);
+					console.log(is_lock);
+					if (flag == 1) {
+						localStorage.active_group_power = power;
+						localStorage.active_group_item_lock = is_lock;
+						if (is_lock) {
+							$("#mission_title").text(localStorage.active_group + "(锁)");
+						} else {
+							$("#mission_title").text(localStorage.active_group);
+						}
+					} else {
+						localStorage.removeItem("active_group");
+						localStorage.removeItem("active_group_power");
+						localStorage.removeItem("active_group_item_lock");
+						$("#mission_title").text("未选队伍");
+					};
+				});
 
 				//读取pervious页面的#hash
 
@@ -230,6 +252,13 @@
 					"now_circleid": "",
 					"now_circledata": "",
 					"member": "",
+					"update_note": function(texts) {
+						var n = prompt("请输入附注：", texts);
+						if (n) {
+							socket.emit("main_update_note_server", window.op_details.now_circleid, n, localStorage.active_group);
+							$("#note_in_details").text("附注:" + n);
+						};
+					},
 					"read": function(circleid) {
 						//						console.log(circleid);
 
@@ -237,9 +266,17 @@
 						window.op_details.now_circleid = circleid;
 						window.op_details.now_circledata = window.op_details[circleid];
 
-						for (var x in window.op_details[circleid]) {
-							$("#circle_details_circledata").append("<li><div class=\"scroll\">" + x + ":" + window.op_details.now_circledata[x] + "</div></li>");
-						};
+						//window.op_details[circleid] 为circle里的一行,obj类型
+
+						$("#circle_details_circledata").append("<li><div class=\"XL\">" + window.op_details.now_circledata['i11'] + "</div></li>").append("<li><div class=\"L\">" + window.op_details.now_circledata['circle_id'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位名称：" + window.op_details.now_circledata['i11'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位读法：" + window.op_details.now_circledata['i12'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位作者：" + window.op_details.now_circledata['i13'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">颁布物名：" + window.op_details.now_circledata['i14'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">补足说明：" + window.op_details.now_circledata['i17'] + "</div></li>");
+						$("#circle_details_circledata").append('<li><a target="_blank" href=\"' + window.op_details.now_circledata['i15'] + '\">主页链接：' + window.op_details.now_circledata['i15'] + "</a></li>");
+						$("#circle_details_circledata").append('<li><div id=\"note_in_details\" onclick=\"window.op_details.update_note(\'' + window.op_details.now_circledata['i18'] + '\')\" class=\"scroll\">附注：' + window.op_details.now_circledata['i18'] + '</div></li>');
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">上传用户：" + window.op_details.now_circledata['updater'] + "</div></li>");
 
 						$("#circle_details").page();
 
@@ -286,9 +323,8 @@
 								for (var x in window.op_details.otherinfo[circleid]) {
 									var count_items = 0; //总件数计数器
 									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
+										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]['item_name'] + '</option>');
 									};
-									$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 									for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
 										if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
 											if (!username_temp[y]) {
@@ -302,12 +338,13 @@
 											$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
 										} else if (y == "responsibility") {
 											if (window.op_details.otherinfo[circleid][x][y] == "") {
-												$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
+												$("#items_list").prepend('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
 											} else {
-												$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
+												$("#items_list").prepend('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
 											};
 										};
 									};
+									$("#items_list").prepend('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 									$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
 								};
 							} else {
@@ -332,6 +369,7 @@
 							if (window.op_details.otherinfo[window.op_items.now_circleid][number_in_array][localStorage.nickname] !== null) {
 								//转换为对象
 								var Obj_my_itemdata = eval('(' + window.op_details.otherinfo[window.op_items.now_circleid][number_in_array][localStorage.nickname] + ')');
+								//								console.log(Obj_my_itemdata);
 								$("#items_edit_target").val(Obj_my_itemdata['target']);
 								$("#items_edit_bought").val(Obj_my_itemdata['bought']);
 							} else { //为null
@@ -343,8 +381,6 @@
 							$("#items_edit_name").val("").val(window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['item_name']);
 							$("#items_edit_username").val(localStorage.nickname);
 							$("#items_edit_price").val("").val(window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['item_price']);
-							$("#items_edit_target").val("");
-							$("#items_edit_bought").val("");
 							$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
 							$("#items_edit").page();
 							if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'] == localStorage.nickname) { //if i am leader, i can control every item and relation
@@ -401,6 +437,7 @@
 					details: function(group_name) {
 						window.op_group.now_group = group_name;
 						$("#group_members").empty().append("<li><center><h1>队伍成员</h1></center></li>");
+
 						for (var i in window.op_group.raw_all_group) {
 							if (window.op_group.raw_all_group[i]["group_name"] == group_name) {
 								$("#group_details_change_group_name").val(group_name);
@@ -410,6 +447,13 @@
 								$("#group_details").page();
 
 								window.op_group.now_group_power = window.op_group.raw_all_group[i][localStorage.nickname];
+								window.op_group.now_group_item_lock = window.op_group.raw_all_group[i]['group_item_lock'];
+
+								if (window.op_group.now_group_item_lock == "locked") {
+									$("#button_group_item_lock").val("解锁item").button("refresh");
+								} else {
+									$("#button_group_item_lock").val("锁定item").button("refresh");
+								};
 
 								switch (window.op_group.raw_all_group[i][localStorage.nickname]) {
 
@@ -419,9 +463,11 @@
 										$("#group_details_change_group_introduction").removeAttr("readonly");
 										$("#group_details_save").button("enable");
 										$("#button_active_group").button("enable");
+										$("#button_group_item_lock").button("enable");
 										$("#button_join_group").button("disable");
 										$("#button_exit_group").button("disable");
 										$("#button_delete_group").button("enable");
+
 										break;
 
 									case "member":
@@ -430,6 +476,7 @@
 										$("#group_details_change_group_introduction").attr("readonly", true);
 										$("#group_details_save").button("disable");
 										$("#button_active_group").button("enable");
+										$("#button_group_item_lock").button("disable");
 										$("#button_join_group").button("disable");
 										$("#button_exit_group").button("enable");
 										$("#button_delete_group").button("disable");
@@ -441,25 +488,29 @@
 										$("#group_details_change_group_introduction").attr("readonly", true);
 										$("#group_details_save").button("disable");
 										$("#button_active_group").button("disable");
+										$("#button_group_item_lock").button("disable");
 										$("#button_join_group").button("enable");
 										$("#button_exit_group").button("disable");
 										$("#button_delete_group").button("disable");
 										break;
 								};
 							};
+
 							if (window.op_group.raw_all_group[i]["group_name"] == window.op_group.now_group) {
 								for (var x in window.op_group.raw_all_group[i]) {
-									if (x != "group_introduction" && x != "group_name" && window.op_group.raw_all_group[i][x] != null) {
+									if (x != "group_introduction" && x != "group_name" && x != "group_item_lock" && window.op_group.raw_all_group[i][x] != null) {
 										if (window.op_group.raw_all_group[i][x] == "leader") {
 											$("#group_members").prepend("<li><div class=\"scroll\"><center>" + x + "</center></div></li>");
-											$("#group_members").prepend("<li><center><h1>队长</h1></center></li>");
 										} else if (window.op_group.raw_all_group[i][x] == "member") {
-											$("#group_members").append("<li><div class=\"scroll\"><center>" + x + "</center></li>");
+											$("#group_members").append("<li><div onclick=\"window.op_group.power_up(\'" + x + "\',\'" + window.op_group.raw_all_group[i]["group_name"] + "\')\" class=\"scroll\"><center>" + x + "</center></li>");
 										};
 									};
 								};
 							};
 						};
+						$("#group_members").prepend("<li><center><h1>队长</h1></center></li>");
+
+
 
 						if (window.op_group.now_group == localStorage.active_group) {
 							$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
@@ -469,11 +520,18 @@
 						$("#group_members").listview("refresh");
 						$.mobile.changePage("#group_details");
 					},
-
+					"power_up": function(username, which_group) {
+						if (localStorage.active_group == which_group && localStorage.active_group_power == "leader") {
+							var r = confirm("你确定要将" + username + "的权限提升为队长？");
+							if (r) {
+								socket.emit("main_op_group_powerup", username, which_group);
+							};
+						};
+					}
 				};
 				//通讯机能
 
-				var socket = io.connect("http://157.7.138.169:2333");
+
 
 				socket.on("connect", function() {
 
@@ -717,10 +775,12 @@
 
 							case 6:
 								alert("item添加成功!");
+								$("#add_item_reset").trigger("click");
 								break;
 
 							case 7:
 								alert("circle添加成功!");
+								$("#add_circle_reset").trigger("click");
 								break;
 
 							case 8:
@@ -736,6 +796,24 @@
 							case 11:
 								alert("删除成功!");
 								break;
+
+							case 12:
+								alert("拉取队伍成员出现了异常错误……请重新登录后再试！"); //这个两边都是错误，故意为之
+								break;
+
+							case 13:
+								alert("note更新成功!");
+								break;
+							case 14:
+								alert("提权成功!");
+								$("#turn_to_select_group").trigger("click");
+								break;
+							case 15:
+								alert("锁定/解锁成功!");
+								$("#turn_to_select_group").trigger("click");
+								break;
+
+
 						}
 					} else if (type_number == 0) {
 						switch (text_number) {
@@ -781,6 +859,32 @@
 								alert("删除失败!原因未知！");
 								break;
 
+							case 12:
+								alert("拉取队伍成员出现了异常错误……请重新登录后再试！");
+								break;
+
+							case 13:
+								alert("note更新出现错误！……你输入了奇怪的字符？");
+								break;
+							case 14:
+								alert("提权失败!请确认该用户是否是member权限或者是否是队伍成员!");
+								//								$("#turn_to_select_group").trigger("click");
+								break;
+							case 15:
+								alert("锁定/解锁失败!");
+								$("#turn_to_select_group").trigger("click");
+								break;
+
+						};
+					};
+				});
+
+				socket.on("main_list_member_client", function(memberinfo) { //memberinfo 即为groups中的一行;obj类型
+					for (var x in memberinfo) {
+						if (x != "group_name" && x != "group_introduction" && x != "group_password" && x != "group_item_lock") {
+							if (memberinfo[x]) { //x在队伍里
+								$("#add_item_responsibility").append('<option value=\"' + x + '\">' + x + '</option>').selectmenu("refresh");
+							};
 						};
 					};
 				});
@@ -831,7 +935,7 @@
 							for (var pointer = 0; pointer < window.csvdata.length; pointer++) {
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
-										if (window.csvdata[pointer].length == 22 || window.csvdata[pointer].length == 27) {
+										if (window.csvdata[pointer].length == 29 || window.csvdata[pointer].length == 27) {
 											//判断csv长度是否合法。若不合法，则报错。
 											//1203-1
 											if (window.csvdata[pointer][5] != "×" && window.csvdata[pointer][6] != "×" && window.csvdata[pointer][7] != "×") {
@@ -857,6 +961,7 @@
 											};
 
 										} else {
+											console.log(window.csvdata[pointer].length);
 											$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有意外逗号;或csv文件字段数不为22或27" + window.csvdata[pointer] + "</div></li>");
 										};
 										break;
@@ -986,6 +1091,26 @@
 					$.mobile.changePage("#select_group");
 				});
 
+				$("#button_group_item_lock").click(function() {
+					if ($("#button_group_item_lock").val() == "锁定item") {
+						//锁定
+						socket.emit("main_op_group_lock_server", window.op_group.now_group, 0);
+						if (localStorage.active_group == window.op_group.now_group) {
+							localStorage.active_group_item_lock = "locked";
+							$("#mission_title").text(localStorage.active_group + "(锁)");
+						};
+						$("#button_group_item_lock").val("解锁item").button("refresh");
+					} else {
+						//解锁
+						if (localStorage.active_group == window.op_group.now_group) {
+							localStorage.active_group_item_lock = "";
+							$("#mission_title").text(localStorage.active_group);
+						};
+						socket.emit("main_op_group_lock_server", window.op_group.now_group, 1);
+						$("#button_group_item_lock").val("锁定item").button("refresh");
+					};
+				});
+
 				$("#button_join_group").click(function() {
 					if ($("#group_details_change_group_password").val()) {
 						socket.emit("main_op_group_server", localStorage.nickname, 1, window.op_group.now_group, $("#group_details_change_group_password").val(), "");
@@ -1000,6 +1125,8 @@
 					if (r) {
 						if (localStorage.active_group == window.op_group.now_group) {
 							localStorage.active_group = "";
+							localStorage.active_group_power = "";
+							localStorage.active_group_item_lock = "";
 							$("#mission_title").text("未选择活跃队伍");
 						};
 						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "", "", "");
@@ -1012,6 +1139,12 @@
 						var r2 = confirm("真的要解散此队伍吗?所有的数据都会被永久删除!");
 						if (r2) {
 							socket.emit("main_op_group_server", localStorage.nickname, 3, window.op_group.now_group, "", "", "");
+							if (localStorage.active_group == window.op_group.now_group) {
+								localStorage.active_group = "";
+								localStorage.active_group_power = "";
+								localStorage.active_group_item_lock = "";
+								$("#mission_title").text("未选择活跃队伍");
+							};
 						};
 					};
 				});
@@ -1034,26 +1167,40 @@
 				$("#button_active_group").click(function() {
 					localStorage.active_group = window.op_group.now_group;
 					localStorage.active_group_power = window.op_group.now_group_power;
-					$("#mission_title").text(localStorage.active_group);
+					localStorage.active_group_item_lock = window.op_group.now_group_item_lock;
+
+					if (localStorage.active_group_item_lock) {
+						$("#mission_title").text(localStorage.active_group + "(锁)");
+					} else {
+						$("#mission_title").text(localStorage.active_group);
+					};
+
 					alert("成功设置\"" + localStorage.active_group + "\"为活跃队伍");
 					$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 				});
 
 				$("#turn_to_add_item").click(function() {
 					if (localStorage.active_group) {
-						$("#add_item").page();
-						$("#add_item_name").val("");
-						$("#add_item_price").val("");
-						$("#add_item_number").val("");
-						$("#add_item_copy_num").val(1).slider("refresh");
+						if (localStorage.active_group_item_lock != "locked" || localStorage.active_group_power == "leader") {
+							$("#add_item").page();
+							$("#add_item_responsibility").empty().append('<option value=\"\">请选择负责人</option>').selectmenu("refresh");
+							if (localStorage.active_group_power == "leader") {
+								$("#add_item_responsibility").selectmenu("enable").selectmenu("refresh");
+								socket.emit("main_list_member_server", localStorage.active_group);
+							} else {
+								$("#add_item_responsibility").selectmenu("disable").selectmenu("refresh");
+							};
 
-						if (localStorage.active_group_power == "leader") {
-							$("#add_item_responsibility").removeAttr("readonly");
+							$("#add_item_circle_id").val(window.op_details.now_circleid);
+							$("#add_item_name").val("");
+							$("#add_item_price").val("");
+							$("#add_item_number").val("");
+							$("#add_item_copy_num").val(1).slider("refresh");
+							$.mobile.changePage("#add_item");
 						} else {
-							$("#add_item_responsibility").attr("readonly", true);
+							alert("队长锁定了item的编辑.")
 						};
 
-						$.mobile.changePage("#add_item");
 					} else {
 						alert("请选择活跃队伍!");
 					};
@@ -1073,10 +1220,10 @@
 					var r = confirm("确认为" + localStorage.active_group + "添加item?");
 					if (r) {
 						if ($("#add_item_name").val() && $("#add_item_price").val() && $("#add_item_circle_id").val() && $("#add_item_copy_num").val()) {
-							if (!isNaN(Number($("#add_item_price").val())) && Number($("#add_item_price").val()) > 0) {
+							if (!isNaN(Number($("#add_item_price").val())) && Number($("#add_item_price").val()) >= 0) {
 								socket.emit("main_add_item_server", $("#add_item_name").val(), $("#add_item_price").val(), $("#add_item_circle_id").val(), $("#add_item_copy_num").val(), localStorage.nickname, localStorage.active_group, $("#add_item_responsibility").val());
 							} else {
-								alert("价格不能小于或等于零，且不含任何非数字字符!");
+								alert("价格不能小于，且不含任何非数字字符!");
 							};
 						} else {
 							alert("请填写所有的信息!");
@@ -1185,10 +1332,13 @@
 						if (localStorage.active_group_power == "leader") { //if i am leader, i can control every item and relation
 
 							if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
-								$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '</option>')
+								if (window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility']) { //如果有负责人，输出；没有就不输出
+									$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] + '</option>')
+								};
 								for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
 									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
 										//										console.log(x);
+										console.log("1" + x);
 										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
 									};
 								};
@@ -1196,6 +1346,7 @@
 								for (var x in window.op_details.member) {
 									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
 										//										console.log(x);
+										console.log("1" + x);
 										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
 									};
 								};
@@ -1260,28 +1411,13 @@
 				});
 
 				$("#add_new_item_in_detail").click(function() {
-					$("#add_item").page();
-					$("#add_item_name").val("");
-					$("#add_item_price").val("");
-					$("#add_item_circle_id").val(window.op_details.now_circleid);
-					$("#add_item_copy_num").val(1).slider("refresh");
-					if (localStorage.active_group_power == "leader") {
-						$("#add_item_responsibility").removeAttr("readonly");
-					} else {
-						$("#add_item_responsibility").attr("readonly", true);
-					};
-					$.mobile.changePage("#add_item");
+					$("#turn_to_add_item").trigger("click");
 				});
 
 				$("#add_new_item_in_itemlist").click(function() {
 					window.op_details.now_circleid = window.op_items.now_circleid;
 					$("#add_new_item_in_detail").trigger("click");
 				});
-
-				//				$(".join_item").click(function() {
-				//				alert(1);
-				//				});
-
 			}); //$(function) ending
 		</script>
 
@@ -1468,6 +1604,7 @@
 
 
 				<input type="button" id="button_active_group" value="设为活跃" disabled>
+				<input type="button" id="button_group_item_lock" value="锁定item" / disabled>
 				<input type="button" id="button_join_group" value="加入此队伍" disabled>
 				<input type="button" id="button_exit_group" value="退出此队伍" disabled>
 				<input type="button" id="button_delete_group" value="解散此队伍" data-theme="b" disabled>
@@ -1531,6 +1668,7 @@
 				<div data-role="fieldcontain">
 					<label for="add_item_circle_id">摊位地址</label>
 					<input type="text" id="add_item_circle_id" value="" placeholder="如：日东6シ01a">
+
 				</div>
 
 				<div data-role="fieldcontain">
@@ -1539,8 +1677,9 @@
 				</div>
 
 				<div data-role="fieldcontain">
-					<label for="add_item_responsibility">item负责人</label>
-					<input type="text" id="add_item_responsibility" readonly="">
+					<select id="add_item_responsibility" data-native-menu="false" disabled="">
+						<option value="">选择负责人</option>
+					</select>
 				</div>
 
 

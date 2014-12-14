@@ -3,7 +3,7 @@
 
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1，user-scalable=no">
 
 		<title>要求</title>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
@@ -27,6 +27,7 @@
 			var socket = io.connect("http://157.7.138.169:2333");
 
 			socket.on("connect", function() {
+				$("#request_result").empty().listview("refresh");
 				socket.emit("request_read_server", 1);
 			}); //socket.on("connect") ending
 
@@ -34,16 +35,11 @@
 				$("#request_result").append($("<li><div class=\"scroll\">" + result["time"] + "<br><br>" + result["text"] + "</div></li>"));
 				$("#request_result").listview("refresh");
 			}); //掉线
-			
-			socket.on("disconnect", function() {
-				//                $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
-				//                $("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器
-				console.log("disconnect!");
-			}); //socket.on("disconnect", function() ending
 
-			//			socket.on('reconnect', function() {
-			//				console.log("reconnect!");
-			//			});
+			socket.on("disconnect", function() {
+				console.log("disconnect!");
+				$("#request_result").append($("<li><div class=\"scroll\">失去连接辣</div></li>"));
+			}); //socket.on("disconnect", function() ending
 
 			$("#send").click(function() {
 				var _text = $("#text").val();

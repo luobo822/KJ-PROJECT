@@ -224,6 +224,31 @@ socketio.listen(server).on('connection', function(socket) {
 
 	//main
 
+	socket.on('main_check_group_server', function(nickname, which_group) {
+		var error = 0;
+		c.query('SELECT \`' + nickname + '\`,\`group_item_lock\` FROM groups WHERE group_name =?', [which_group])
+			.on('result', function(res) {
+				res.on('row', function(row) {
+						error = 2;
+						//		       console.log('成功');
+						socket.emit('main_check_group_client', 1, row[nickname],row['group_item_lock']);
+					})
+					.on('error', function(err) {
+						console.log('发生异常错误:' + inspect(err));
+						socket.emit('main_check_group_client', 0);
+					})
+					.on('end', function(info) {
+						if (error == 0) {
+							socket.emit('main_check_group_client', -1);
+						};
+						//		        console.log('完毕');
+					})
+			})
+			.on('end', function() {
+				//		      console.log('结果输出完毕');
+			});
+	});
+
 	socket.on('main_message_server', function(msgdata) {
 		//		console.log('main_message_server:收到消息:', msgdata);
 		socket.broadcast.emit('message', msgdata);
@@ -896,6 +921,123 @@ socketio.listen(server).on('connection', function(socket) {
 				break;
 		}; //  switch ending
 	}); //	socket.on('main_op_group_server') ending
+
+	socket.on('main_op_group_powerup', function(username, which_group) {
+		var error = 0;
+		c.query('UPDATE groups SET ' + username + ' = ? WHERE group_name = ?', ['leader', which_group])
+			.on('result', function(res) {
+				res.on('row', function(row) {})
+					.on('error', function(err) {
+						error = 1;
+						console.log('发生异常错误:' + inspect(err));
+					})
+					.on('end', function(info) {
+						if (!error) {
+							socket.emit('alert_client', 14, 1);
+						} else {
+							socket.emit('alert_client', 14, 0);
+						};
+					})
+			})
+			.on('end', function() {
+				//				console.log('结果输出完毕');
+			});
+	});
+
+	socket.on('main_list_member_server', function(which_group) {
+		var error = 0;
+		c.query('SELECT * FROM groups WHERE group_name = ?', [which_group])
+			.on('result', function(res) {
+				res.on('row', function(row) {
+						error = 2;
+						socket.emit('main_list_member_client', row);
+					})
+					.on('error', function(err) {
+						error = 1;
+						console.log('发生异常错误:' + inspect(err));
+					})
+					.on('end', function(info) {
+						if (error == 1) {
+							socket.emit("alert_client", 12, 0);
+						} else if (error == 0) { //这说明符合条件的是空集
+							socket.emit("alert_client", 12, 1);
+						}
+					})
+			})
+			.on('end', function() {
+				//		      console.log('结果输出完毕');
+			});
+
+	});
+
+	socket.on('main_update_note_server', function(circle_id, texts, which_group) {
+		var error = 0;
+		c.query('UPDATE \`' + which_group + '_circle\` SET i18 = ? WHERE circle_id = ?', [texts, circle_id])
+			.on('result', function(res) {
+				res.on('row', function(row) {})
+					.on('error', function(err) {
+						socket.emit("alert_client", 13, 0);
+						error = 1;
+						console.log('发生异常错误:' + inspect(err));
+					})
+					.on('end', function(info) {
+						if (!error) {
+							socket.emit("alert_client", 13, 1);
+						};
+						//						console.log('完毕');
+					})
+			})
+			.on('end', function() {
+				//				console.log('结果输出完毕');
+			});
+	});
+
+	socket.on('main_op_group_lock_server', function(which_group, flag) {
+		var error = 0;
+		console.log(which_group);
+		console.log(flag);
+		if (flag == 1) {
+			//解锁
+			c.query('UPDATE groups SET group_item_lock = ? WHERE group_name = ?', ['', which_group])
+				.on('result', function(res) {
+					res.on('row', function(row) {})
+						.on('error', function(err) {
+							error = 1;
+							console.log('发生异常错误:' + inspect(err));
+						})
+						.on('end', function(info) {
+							if (!error) {
+								socket.emit('alert_client', 15, 1);
+							} else {
+								socket.emit('alert_client', 15, 0);
+							};
+						})
+				})
+				.on('end', function() {
+					//			      console.log('结果输出完毕');
+				});
+		} else {
+			//锁定
+			c.query('UPDATE groups SET group_item_lock = ? WHERE group_name = ?', ['locked', which_group])
+				.on('result', function(res) {
+					res.on('row', function(row) {})
+						.on('error', function(err) {
+							error = 1;
+							console.log('发生异常错误:' + inspect(err));
+						})
+						.on('end', function(info) {
+							if (!error) {
+								socket.emit('alert_client', 15, 1);
+							} else {
+								socket.emit('alert_client', 15, 0);
+							};
+						})
+				})
+				.on('end', function() {
+					//			      console.log('结果输出完毕');
+				});
+		}
+	});
 
 	socket.on('main_add_item_server', function(item_name, item_price, circle_id, item_copy_number, nickname, which_group, responsibility) {
 		var error = 0;
