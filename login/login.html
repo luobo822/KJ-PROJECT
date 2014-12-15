@@ -1,159 +1,176 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<title>KJ PROJECT C87 &rsaquo; 登录</title>
 
-    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js" ></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css">
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
 
-    <script>
-    "use strict"
+		<script>
+			"use strict"
 
-      $(function(){
+			$(function() {
 
-//检测是否登录/跳转
+				//检测是否登录/跳转
 
-        if (localStorage.id != "0") {
-          console.log("已登录");
-          // window.location.assign("http://test.eshicon.org/kj.html");
-        };
+				if (localStorage.id != "0") {
+					console.log("已登录");
+					// window.location.assign("http://test.eshicon.org/kj.html");
+				};
 
-//激活页面上所有的tooltip
+				//激活页面上所有的tooltip
 
-      $("[data-toggle='tooltip']").tooltip();
+				$("[data-toggle='tooltip']").tooltip();
 
-//网页载入时强制focus到用户名框
+				//网页载入时强制focus到用户名框
 
-			$("#user_name").focus();
+				$("#user_name").focus();
 
-//定义标记
+				//定义标记
 
-      var is_connected = 0;
+				var is_connected = 0;
 
-//登录机能
+				//登录机能
 
-      var socket = io.connect("http://157.7.138.169:2333");
+				var socket = io.connect("http://157.7.138.169:2333");
 
-      socket.on("connect", function () {
+				socket.on("connect", function() {
 
-        is_connected = 1; //已连接
+					is_connected = 1; //已连接
 
-        socket.on("login_client", function(logindata){
-//        console.log("输出logindata",logindata);
-          if (logindata.flag == 1) {
-            $("#login_submit").tooltip("destroy");
-             localStorage.clear();
-             localStorage.setItem("id",logindata.id);
-             localStorage.setItem("username",logindata.username);
-             localStorage.setItem("nickname",logindata.nickname);
-//           console.log("登录成功!");
-             window.location.assign("http://test.eshicon.org/kj.html");
-          }else if (logindata.flag == 0) {
-            $("#login_submit").attr("data-original-title","密码或用户名错误");
-            $("#login_submit").tooltip("show");
-          }else if (logindata.flag == -1) {
-            $("#login_submit").attr("data-original-title","服务器异变!请向suica报告错误!");
-            $("#login_submit").tooltip("show");
-          };
-        });
+					socket.on("login_client", function(logindata) {
+						//        console.log("输出logindata",logindata);
+						if (logindata.flag == 1) {
+							$("#login_submit").tooltip("destroy");
 
-        socket.on("disconnect", function() {
-          alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
-          is_connected = 0; //未连接
-        });
+							var active_group = localStorage.active_group;
+							var active_group_power = localStorage.active_group_power;
 
-      }); //socket.on("connect", function () {}) ending
+							localStorage.clear();
+							localStorage.id = logindata.id;
+							localStorage.username = logindata.username;
+							localStorage.nickname = logindata.nickname;
 
-//用户名框是否为空的检测
+							if (active_group) {
+								localStorage.active_group = active_group;
+							};
 
+							if (active_group_power) {
+								localStorage.active_group_power = active_group_power;
+							};
 
-        $("#user_name").blur(function(){
-          if ($("#user_name").val() == "") {
-              $("#user_name").tooltip('show');
-              $("#user_name").attr("data-original-title","用户名不能为空");
-              $("#user_name").focus();
-          }else{
-              $("#user_name").tooltip('destroy');
-          }; //if ending
-        }); //$("#user_name").blur() ending
+							window.location.assign("http://test.eshicon.org/kj.html");
+						} else if (logindata.flag == 0) {
+							$("#login_submit").attr("data-original-title", "密码或用户名错误");
+							$("#login_submit").tooltip("show");
+						} else if (logindata.flag == -1) {
+							$("#login_submit").attr("data-original-title", "服务器异变!请向suica报告错误!");
+							$("#login_submit").tooltip("show");
+						};
+					});
 
+					socket.on("disconnect", function() {
+						alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
+						is_connected = 0; //未连接
+					});
 
-//密码框是否为空的检测
+				}); //socket.on("connect", function () {}) ending
 
-        $("#user_password").blur(function(){
-          if ($("#user_password").val() == "") {
-              $("#user_password").tooltip('show');
-              $("#user_password").attr("data-original-title","密码不能为空");
-              $("#user_password").focus();
-          }else{
-              $("#user_password").tooltip('destroy');
-          }; //if ending
-        }); //$("#user_password").blur() ending
+				//用户名框是否为空的检测
 
 
-//定义login_submit按钮
+				$("#user_name").blur(function() {
+					if ($("#user_name").val() == "") {
+						$("#user_name").tooltip('show');
+						$("#user_name").attr("data-original-title", "用户名不能为空");
+						$("#user_name").focus();
+					} else {
+						$("#user_name").tooltip('destroy');
+					}; //if ending
+				}); //$("#user_name").blur() ending
 
-        $("#login_submit").click(function(){
-          console.log("is_connected:"+is_connected);
-          if (is_connected == 1) {
-          var clientdata = new Object();
-          clientdata = {
-            id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
-            username:$("#user_name").val()
-          };
-          socket.emit("login_server",clientdata);
-          }else {
-            $("#login_submit").attr("data-original-title","无法连接服务器,请稍后注册!");
-            $("#login_submit").tooltip("show");
-          };
-        });
 
-      }); //$(function(){}) ending
+				//密码框是否为空的检测
 
-    </script>
+				$("#user_password").blur(function() {
+					if ($("#user_password").val() == "") {
+						$("#user_password").tooltip('show');
+						$("#user_password").attr("data-original-title", "密码不能为空");
+						$("#user_password").focus();
+					} else {
+						$("#user_password").tooltip('destroy');
+					}; //if ending
+				}); //$("#user_password").blur() ending
+
+
+				//定义login_submit按钮
+
+				$("#login_submit").click(function() {
+					console.log("is_connected:" + is_connected);
+					if (is_connected == 1) {
+						var clientdata = new Object();
+						clientdata = {
+							id: $.md5($.md5($("#user_password").val()) + $("#user_name").val()),
+							username: $("#user_name").val()
+						};
+						socket.emit("login_server", clientdata);
+					} else {
+						$("#login_submit").attr("data-original-title", "无法连接服务器,请稍后注册!");
+						$("#login_submit").tooltip("show");
+					};
+				});
+
+			}); //$(function(){}) ending
+		</script>
 
 	</head>
 
 	<body class="login login-action-login wp-core-ui  locale-zh-cn">
 		<div id="login">
 			<h1><a href="" title="基于萌与爱">KJ PROJECT</a></h1>
-  		<p class="message register">为协同作战登录</p>
+			<p class="message register">为协同作战登录</p>
 
 			<form name="loginform" id="loginform" action="" method="">
 				<p>
-					<label for="user_name"><br/>
-  					<input type="text" name="uzn" id="user_name" class="input" value="" size="20" data-toggle="tooltip" title="输入你的用户名" data-placement="top" />
-          </label>
+					<label for="user_name">
+						<br/>
+						<input type="text" name="uzn" id="user_name" class="input" value="" size="20" data-toggle="tooltip" title="输入你的用户名" data-placement="top" />
+					</label>
 				</p>
 
 				<p>
-					<label for="user_password"><br/>
-  					<input type="password" name="pwd" id="user_password" class="input" value="" size="20" data-toggle="tooltip" data-original-title="输入你的密码" data-placement="top" />
-          </label>
+					<label for="user_password">
+						<br/>
+						<input type="password" name="pwd" id="user_password" class="input" value="" size="20" data-toggle="tooltip" data-original-title="输入你的密码" data-placement="top" />
+					</label>
 				</p>
 
-				<br><br>
+				<br>
+				<br>
 
 				<p class="submit">
-					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" data-toggle="tooltip" title="登录!" data-placement="top"/>
+					<input type="button" id="login_submit" class="btn btn-block btn-lg btn-info" value="登录" data-toggle="tooltip" title="登录!" data-placement="top" />
 				</p>
 			</form>
 
 			<p id="nav" align="center">
-        <a href="http://test.eshicon.org/register.html">注册</a>
-        <br><br>
-      <a href="https://github.com/suica/KJ-PROJECT/wiki/%E9%9A%90%E7%A7%81%E5%8D%8F%E8%AE%AE">隐私协议</a>
+				<a href="http://test.eshicon.org/register.html">注册</a>
+				<br>
+				<br>
+				<a href="https://github.com/suica/KJ-PROJECT/wiki/%E9%9A%90%E7%A7%81%E5%8D%8F%E8%AE%AE">隐私协议</a>
 			</p>
 
 		</div>
 	</body>
+
 </html>

@@ -1,72 +1,72 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>要求</title>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1，user-scalable=no">
 
-    <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-    <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
+		<title>要求</title>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
 
-    <link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+		<link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
 
-    <style>
-        div.scroll{
-          overflow:auto;  /*这个的作用是让溢出的<li><div></div></li>能够滑动,不至于在手机上看不全消息*/
-        }
-    </style>
+		<style>
+			div.scroll {
+				overflow: auto;
+				/*这个的作用是让溢出的<li><div></div></li>能够滑动,不至于在手机上看不全消息*/
+			}
+		</style>
 
-  </head>
+	</head>
 
-<script>
+	<script>
+		$(function() {
 
-    $(function(){
+			var socket = io.connect("http://157.7.138.169:2333");
 
-        var socket = io.connect("http://157.7.138.169:2333");
+			socket.on("connect", function() {
+				$("#request_result").empty().listview("refresh");
+				socket.emit("request_read_server", 1);
+			}); //socket.on("connect") ending
 
-              socket.on("connect", function() {
+			socket.on("request_read_client", function(result) {
+				$("#request_result").append($("<li><div class=\"scroll\">" + result["time"] + "<br><br>" + result["text"] + "</div></li>"));
+				$("#request_result").listview("refresh");
+			}); //掉线
 
-                socket.emit("request_read_server",1);
+			socket.on("disconnect", function() {
+				console.log("disconnect!");
+				$("#request_result").append($("<li><div class=\"scroll\">失去连接辣</div></li>"));
+			}); //socket.on("disconnect", function() ending
 
-                socket.on("request_read_client",function(result){
-                    $("#request_result").append($("<li><div class=\"scroll\">"+result["time"]+"<br><br>"+result["text"]+"</div></li>"));
-                    $("#request_result").listview("refresh");
+			$("#send").click(function() {
+				var _text = $("#text").val();
+				if (_text != "") {
+					$("#text").val("");
+					socket.emit("request_write_server", _text);
+					var d = new Date();
+					$("#request_result").append($("<li><div class=\"scroll\">" + d.toString() + "<br><br>" + _text + "</div></li>"));
+					$("#request_result").listview("refresh");
+				};
+			});
+		});
+	</script>
 
-                });
-//掉线
-                socket.on("disconnect", function() {
-                  $("#recived_message").append("<br><hr><br><li>连接异常关闭</li>");
-                  $("#connect_flag").empty().append("消息(连接已断开)"); //这里以后加上一个消息计数器
-                }); //socket.on("disconnect", function() ending
+	<body>
+		<br>
+		<ul data-role="listview" data-inset="true">
+			<li>
+				<center>
+					<h1>说出你对会场程序的要求吧！</h1>
+				</center>
+			</li>
+		</ul>
+		<br>
+		<ul id="request_result" data-role="listview" data-inset="true"></ul>
+		<textarea rows="10" cols="30" id="text"></textarea>
+		<input type="button" id="send" value="发送">
+	</body>
 
-              }); //socket.on("connect") ending
-
-              $("#send").click(function(){
-                var _text = $("#text").val();
-                if (_text != "") {
-                    $("#text").val("");
-                    socket.emit("request_write_server",_text);
-                    var d = new Date();
-                    $("#request_result").append($("<li><div class=\"scroll\">"+d.toString()+"<br><br>"+_text+"</div></li>"));
-                    $("#request_result").listview("refresh");
-                };
-              });
-    });
-</script>
-    <body>
-    <br>
-    <ul data-role="listview" data-inset="true">
-      <li>
-        <center>
-          <h1>说出你对会场程序的要求吧！</h1>
-        </center>
-      </li>
-    </ul>
-    <br>
-    <ul id="request_result" data-role="listview" data-inset="true"></ul>
-    <textarea rows="10" cols="30" id="text"></textarea>
-    <input type="button" id="send" value="发送">
-    </body>
 </html>

@@ -449,7 +449,6 @@ circleinfo is object ->create a new circle
 ""://without item
 to othermission;
 
-1.新建队伍之后，要刷新队伍；
 2.添加circle 时space number 不能自动补0////解决
 
  var str = "Ｄ";           
@@ -460,8 +459,28 @@ var result = String.fromCharCode(str.charCodeAt(0) - 65248);
 //把全角字符的unicode编码转换为对应半角字符的unicode码
   };console.log(result); 
 
+1.已完成的任务打不开; solved
+2.编辑Item的权限不对; solved
+3.新建队伍之后，要刷新队伍； solved
+4.无item时，会出现很多circle;  solved
 
 
+i11	 (最大的字体，标题)
+circle_id	(稍微小一点字体，算副标题的感觉)
+
+(以下均为为普通大小字体)
+摊位名称：i11	(再显示一遍)
+摊位读法：i12
+摊位作者：i13
+颁布物名：i14
+补足说明：i17
+主页链接：i15
+附注：i18	(这一项，最好能直接在查看界面就可以编辑，权限可以开放给队伍内的任何人)
+
+(以下为小字体，弄成灰色斜体也行，总之就是不重要内容了，其实干脆略去也行……)
+上传用户：updater
+
+n = Dialogs.prompt(message, defaultinput)
 
 
 
