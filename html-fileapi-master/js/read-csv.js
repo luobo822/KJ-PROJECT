@@ -54,7 +54,7 @@ function processData(csv) {
 		}
 		lines.push(lines2);
 	}
-	console.log(lines);
+	// console.log(lines);
 	get_result(lines);
 }
 
