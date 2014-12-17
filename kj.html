@@ -305,8 +305,9 @@
 					"now_circleid": "", //存储item对应的circleid,与op_detail的不混用
 					"now_itemname": "", //存储item edit中对应的item name
 					"now_item_responsibility": "",
+					"to":1,//1为返回到items_edit_select,2返回到tools
 					"clear_selectmemu": function() {
-						$("#items_edit").page();
+						$("#items_edit_select").page();
 						$("#items_for_select").val("").selectmenu("refresh");
 						$("#user_for_select").val("").selectmenu("refresh");
 					},
@@ -1360,7 +1361,6 @@
 							$("#items_edit_target").val(pureobj_info['target']);
 							$("#items_edit_bought").val(pureobj_info['bought']);
 						};
-
 						$.mobile.changePage("#items_edit");
 					} else {
 						alert("请选择item和user!");
@@ -1647,7 +1647,7 @@
 		<div data-role="page" id="add_item">
 			<div data-role="header">
 				<h1>登录新的宝物</h1>
-				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<a onclick="history.back()" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="add_item_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
@@ -1692,20 +1692,14 @@
 		<div data-role="page" id="add_circle">
 			<div data-role="header">
 				<h1>登录新摊位</h1>
-				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
+				<a onclick="history.back()" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="add_circle_reset" value="重置" data-role="button" data-icon="alert" class="ui-btn-right">
 				</div>
 			</div>
 
 			<div data-role="content">
-
-				<!--<div data-role="fieldcontain">-->
-				<!-- i5 -->
-				<!--<label for="add_circle_cut_index">カットインデックス</label>
-					<input type="text" id="add_circle_cut_index" value="" placeholder="">
-				</div>-->
-
+			
 				<fieldset data-role="fieldcontain">
 					<!-- i6 -->
 					<label for="add_circle_date">参加曜日</label>
@@ -1867,7 +1861,7 @@
 		<div data-role="page" id="items_edit">
 			<div data-role="header">
 				<h1>编辑</h1>
-				<a href="#items_edit_select" data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu()">返回</a>
+				<a data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu()">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="items_edit_save" value="保存" data-icon="alert">
 				</div>
