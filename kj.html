@@ -9,8 +9,9 @@
 
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
-		<!-- // <script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script> -->
+		<!-- // <script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script> -->
+		<script src="jqm143.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
 		<script src="html-fileapi-master/js/read-csv.js"></script>
 
 
@@ -34,10 +35,6 @@
 
 		<script>
 			"use strict"
-
-			 //			$(document).on("pageshow", "#select_group", function() {
-			 //				is_turning = 0;
-			 //			});
 
 			function get_venues(block_name, space_number) { //blockname 为string ,space number为number
 				if (block_name == "A") {
@@ -956,8 +953,6 @@
 
 												var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
 
-												// console.log(window.csvdata[pointer]);
-
 												socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
 											} else {
 												$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有“×”号" + window.csvdata[pointer] + "</div></li>");
@@ -1421,6 +1416,7 @@
 					window.op_details.now_circleid = window.op_items.now_circleid;
 					$("#add_new_item_in_detail").trigger("click");
 				});
+
 			}); //$(function) ending
 		</script>
 

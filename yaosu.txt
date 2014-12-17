@@ -482,7 +482,13 @@ circle_id	(稍微小一点字体，算副标题的感觉)
 
 n = Dialogs.prompt(message, defaultinput)
 
-
+$.widget( "mobile.filterable", {
+  options: {
+        filterCallback: "1",
+    
+  }
+  }
+  )
 
 
 
