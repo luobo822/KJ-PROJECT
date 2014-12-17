@@ -9,6 +9,10 @@
 *
 */
 
+/* suica mod
+ * alter filter function :13823
+*/
+
 
 (function ( root, doc, factory ) {
 	if ( typeof define === "function" && define.amd ) {
@@ -13822,20 +13826,41 @@ $.widget( "mobile.table", $.mobile.table, {
 // TODO rename filterCallback/deprecate and default to the item itself as the first argument
 var defaultFilterCallback = function( index, searchValue ) {
 	// searchValue 为输入在框里的string
-	if (searchValue == "東123") {
 	//true则消失,false则不消失		
-	return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東2" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東3" ) === -1 );
+	if (searchValue == "東123") {
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東2" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東3" ) === -1 );
 	}else if (searchValue == "東456"){
-	return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東4" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東5" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東6" ) === -1 );
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東4" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東5" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "東6" ) === -1 );
 	} else if(searchValue == "西12"){
-	return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "西1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "西2" ) === -1 );
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "西1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "西2" ) === -1 );
+	}else if(searchValue == "日"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日西" ) === -1 );
+	}else if(searchValue == "月"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月西" ) === -1 );	
+	}else if(searchValue == "火"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火西" ) === -1 );		
+	}else if(searchValue == "日東123"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東2" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東3" ) === -1 );
+	}else if(searchValue == "月東123"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東2" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東3" ) === -1 );
+	}else if(searchValue == "火東123"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東2" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東3" ) === -1 );
+	}else if(searchValue == "日東456"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東4" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東5" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日東6" ) === -1 );
+	}else if(searchValue == "月東456"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東4" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東5" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月東6" ) === -1 );
+	}else if(searchValue == "火東456"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東4" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東5" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火東6" ) === -1 );
+	}else if(searchValue == "日西12"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日西1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "日西2" ) === -1 );
+	}else if(searchValue == "月西12"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月西1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "月西2" ) === -1 );
+	}else if(searchValue == "火西12"){
+		return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火西1" ) === -1 ) && ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).indexOf( "火西2" ) === -1 );
 	}else{
 	// return text.toString().indexOf(searchValue) === -1; 
 	return ( ( "" + ( $.mobile.getAttribute( this, "filtertext" ) || $( this ).text() ) ).toLowerCase().indexOf( searchValue ) === -1 );
 	};
-
-
-
 
 };
 

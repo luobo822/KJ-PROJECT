@@ -1236,8 +1236,9 @@ socketio.listen(server).on('connection', function(socket) {
 	// };
 
 	function insert_circle(csvdata, which_group, nickname, circle_id) { //csvdata 为数组
-		csvdata[27]= nickname; //push入nickname
-		csvdata[28] =circle_id;
+		csvdata[27] = '';
+		csvdata[27] = nickname; //push入nickname
+		csvdata[28] = circle_id;
 		var error = 0;
 		c.query('INSERT INTO \`' + which_group + '_circle\` SET i1 = ?, i2 = ?, i3 = ?, i4 = ?, i5 = ?, i6 = ?, i7 = ?, i8 = ?, i9 = ?, i10 = ?, i11 = ?, i12 = ?,' +
 				'i13 = ?, i14 = ?, i15 = ?, i16 = ?, i17 = ?, i18 = ?, i19 = ?, i20 = ?, i21 = ?, i22 = ?, i23 = ?, i24 = ?, i25 = ?, i26 = ?, i27 = ? ,updater = ?,circle_id = ?',
