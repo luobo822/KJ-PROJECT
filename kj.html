@@ -9,9 +9,8 @@
 
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-		<script src="jqm143.js"></script>
-		<script src="html-fileapi-master/js/read-csv.js"></script>
-
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
 
 		<link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
 		<link rel="shortcut icon" type="iamge/x-icon" href="favicon.ico">
@@ -318,33 +317,62 @@
 
 							var username_temp = new Object();
 							if (window.op_details.otherinfo[circleid][0]) { //不为空
+								// for (var x in window.op_details.otherinfo[circleid]) {
+								// 	var count_items = 0; //总件数计数器
+								// 	if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
+								// 		$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]['item_name'] + '</option>');
+								// 	};
+								// 	for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
+								// 		if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
+								// 			if (!username_temp[y]) {
+								// 				if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
+								// 					$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+								// 				};
+								// 				username_temp[y] = 1;
+								// 			};
+								// 			var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
+								// 			count_items += temp['target'];
+								// 			$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
+								// 		} else if (y == "responsibility") {
+								// 			if (window.op_details.otherinfo[circleid][x][y] == "") {
+								// 				$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
+								// 			} else {
+								// 				$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
+								// 			};
+								// 		};
+								// 	};
+								// 	$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+								// 	$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
+								// };
 								for (var x in window.op_details.otherinfo[circleid]) {
-									var count_items = 0; //总件数计数器
-									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]['item_name'] + '</option>');
-									};
-									for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-										if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
-											if (!username_temp[y]) {
-												if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
-													$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
-												};
-												username_temp[y] = 1;
-											};
-											var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
-											count_items += temp['target'];
-											$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
-										} else if (y == "responsibility") {
-											if (window.op_details.otherinfo[circleid][x][y] == "") {
-												$("#items_list").prepend('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
-											} else {
-												$("#items_list").prepend('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
-											};
-										};
-									};
-									$("#items_list").prepend('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
-									$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
-								};
+				var count_items = 0; //总件数计数器
+				if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
+					$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
+				};
+				$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+
+						if (window.op_details.otherinfo[circleid][x]['responsibility'] == "") {
+							$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
+						} else {
+							$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x]['responsibility'] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x]['responsibility'] + '</center></h1></li>');
+						};
+
+				for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
+
+					if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
+						if (!username_temp[y]) {
+							if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
+								$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+							};
+							username_temp[y] = 1;
+						};
+						var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
+						count_items += temp['target'];
+						$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
+					};
+				};
+				$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
+			};
 							} else {
 								$("#items_list").append('<li data-role=\"listview\"><center>无item</center></li>');
 							};
@@ -353,7 +381,8 @@
 							$("#items_list").listview("refresh");
 							$.mobile.changePage("#items");
 						} else {
-							alert("此circle没有任何item,请添加后查看");
+							alert("所有的circle都没有任何item!");
+							$.mobile.changePage("#items");
 						};
 					},
 					"join": function(number_in_array) { //number_in_array 类型为 number
@@ -1306,11 +1335,12 @@
 
 				$("#item_edit_responsibility").change(function() {
 					$("#item_edit_responsibility").selectmenu("refresh");
-					socket.emit("main_change_responsibility_server", $("#item_edit_responsibility").val(), window.op_details.now_itemname, localStorage.active_group);
+					socket.emit("main_change_responsibility_server", $("#item_edit_responsibility").val(), window.op_items.now_itemname, localStorage.active_group);
 				});
 
 				$("#items_edit_select_assure").click(function() {
 					if ($("#items_for_select").val() && $("#user_for_select").val()) {
+						$("#items_edit").page();
 						var pureobj_info = eval('(' + window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()][$("#user_for_select").val()] + ')');
 
 						window.op_items.now_itemname = window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['item_name']; //11.12
@@ -1334,15 +1364,12 @@
 								};
 								for (var x in window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]) {
 									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility" && window.op_details.otherinfo[window.op_items.now_circleid][$("#items_for_select").val()]['responsibility'] != x) {
-										//										console.log(x);
-										console.log("1" + x);
 										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
 									};
 								};
 							} else {
 								for (var x in window.op_details.member) {
 									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
-										//										console.log(x);
 										console.log("1" + x);
 										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
 									};
@@ -1859,7 +1886,7 @@
 		<div data-role="page" id="items_edit">
 			<div data-role="header">
 				<h1>编辑</h1>
-				<a data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu()">返回</a>
+				<a data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu();history.back()">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="items_edit_save" value="保存" data-icon="alert">
 				</div>
