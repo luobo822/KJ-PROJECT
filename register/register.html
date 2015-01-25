@@ -1,441 +1,483 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<title>KJ PROJECT C87 &rsaquo; 注册</title>
 
-	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js" ></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script type='application/javascript' src='http://test.eshicon.org/KJ-PROJECT/js/fastclick.js'></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css">
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
 
-    <script>
+		<script>
+			$(function() {
+				
+				FastClick.attach(document.body);
 
-     $(function(){
+				//激活页面上所有的tooltip
 
-//激活页面上所有的tooltip
+				$("[data-toggle='tooltip']").tooltip();
 
-      $("[data-toggle='tooltip']").tooltip();
+				//网页载入时强制focus到用户名框
 
-//网页载入时强制focus到用户名框
+				$("#user_name").focus();
 
-			$("#user_name").focus();
+				//定义标记
 
-//定义标记
+				var is_username_checked = 0; //重用户名检测的结果
+				var is_nickname_checked = 0; //重昵称检测的结果
+				var is_connected = 0; //是否与服务器成功连接
 
-      var is_username_checked = 0; //重用户名检测的结果
-      var is_nickname_checked = 0; //重昵称检测的结果
-      var is_connected = 0; //是否与服务器成功连接
+				//定义正则表达式
 
-//定义正则表达式
+				var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]"); //中片平检测
+				var blank = RegExp("\u0020"); //空白检测
 
-	  var character = RegExp("[\u4e00-\u9fa5]|[\u3040-\u309F]|[\u30A0-\u30FF]"); //中片平检测
-      var blank = RegExp("\u0020"); //空白检测
+				//定义临时变量
 
-//定义临时变量
+				var temp_name = ""; //用来存储已检查过的用户名/昵称
 
-      var temp_name = ""; //用来存储已检查过的用户名/昵称
+				//重名反馈机能与数据提交机能
 
-//重名反馈机能与数据提交机能
+				var socket = io.connect("http://157.7.138.169:2333");
 
-      var socket = io.connect("http://157.7.138.169:2333");
+				socket.on("connect", function() {
 
-      socket.on("connect", function () {
+					is_connected = 1; //已连接
 
-        is_connected = 1; //已连接
+					socket.on("reg_check_username_client", function(checked) {
+						console.log(checked);
+						is_username_checked = checked;
+						if (is_username_checked == 1) {
+							$("#user_name").attr("data-original-title", "用户名可以使用");
+							$("#user_name").tooltip("show");
+						} else if (is_username_checked == -1) {
+							$("#user_name").attr("data-original-title", "服务器异变!检测结果出现错误");
+							$("#user_name").tooltip("show");
+						} else if (is_username_checked == 0) {
+							$("#user_name").attr("data-original-title", "用户名发生重名,请修改用户名");
+							$("#user_name").tooltip("show");
+						};
+					});
 
-        socket.on("reg_check_username_client", function(checked) {
-					console.log(checked);
-          is_username_checked = checked;
-					if (is_username_checked == 1) {
-						$("#user_name").attr("data-original-title","用户名可以使用");
+					socket.on("reg_check_nickname_client", function(checked) {
+						console.log(checked);
+						is_nickname_checked = checked;
+						if (is_nickname_checked == 1) {
+							$("#user_nickname").attr("data-original-title", "昵称可以使用");
+							$("#user_nickname").tooltip("show");
+						} else if (is_nickname_checked == -1) {
+							$("#user_nickname").attr("data-original-title", "服务器异变!检测结果出现错误");
+							$("#user_nickname").tooltip("show");
+						} else if (is_nickname_checked == 0) {
+							$("#user_nickname").attr("data-original-title", "昵称发生重名,请修改昵称");
+							$("#user_nickname").tooltip("show");
+						};
+					});
+
+					socket.on("reg_submit_client", function(data) {
+						if (data.id != "0") {
+							localStorage.setItem("id", data.id);
+							localStorage.setItem("username", data.username);
+							localStorage.setItem("nickname", data.nickname);
+							alert("注册成功!" + "\n你的用户名是:" + data.username + "\n你的昵称是:" + data.nickname + "\n你的识别id是:" + data.id);
+							window.location.assign("http://test.eshicon.org/login.html");
+						} else {
+							alert("服务器异变!把这个bug告诉suica吧!");
+						};
+					});
+
+					socket.on("disconnect", function() {
+						alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
+						is_connected = 0; //未连接
+					});
+
+				}); //socket.on("connect", function () {}) ending
+
+				//定义提示框事件
+
+				$("#user_name").blur(function() {
+					if ($("#user_name").val() == "") {
+						$("#user_name").focus();
 						$("#user_name").tooltip("show");
-	 				}else if (is_username_checked == -1) {
-            $("#user_name").attr("data-original-title","服务器异变!检测结果出现错误");
+					} else if (blank.exec($("#user_name").val())) {
 						$("#user_name").tooltip("show");
-					}else if (is_username_checked == 0) {
-						$("#user_name").attr("data-original-title","用户名发生重名,请修改用户名");
+						$("#user_name").attr("data-original-title", "用户名不可以含有空格");
+						$("#user_name").focus();
+					} else if (character.exec($("#user_name").val())) {
 						$("#user_name").tooltip("show");
+						$("#user_name").attr("data-original-title", "用户名不可以含有汉字或假名或棒子文");
+						$("#user_name").focus();
+					} else if ($("#user_name").val().length < 3) {
+						$("#user_name").tooltip("show");
+						$("#user_name").attr("data-original-title", "用户名长度小于3,长度应大于等于3");
+						$("#user_name").focus();
+					} else if (!is_connected) {
+						$("#user_name").tooltip("show");
+						$("#user_name").attr("data-original-title", "未与服务器连接,无法注册");
+						$("#user_name").focus();
+					} else { //即服务器连接正常、用户名本地检测合法的情况下,才进行重名检测
+						if ($("#user_name").val() != temp_name) { //如果这个时候用户名改变了,重新检测一次
+							var temp_checkusername = new Object;
+							temp_checkusername = {
+								"username": $("#user_name").val()
+							};
+							socket.emit("reg_check_username_server", temp_checkusername); //传参:{username:value}
+							$("#user_name").tooltip("show");
+							$("#user_name").attr("data-original-title", "正在检测是否重名...");
+							temp_name = $("#user_name").val();
+							$("#user_name").focus();
+						} else if (is_username_checked == 1) { //一切正常则允许focus到下一输入框
+							$("#user_name").tooltip("destroy");
+							console.log("允许unfocus");
+							// is_username_checked = 1;
+						} else {
+							console.log("不允许unfocus");
+							$("#user_name").focus();
+						};
+					};
+				}); //$("#user_name").blur() ending
+
+
+
+				$("#user_password").focus(function() {
+					if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != "")) {
+						$("#user_password").attr("data-original-title", "密码不相同");
+						$("#user_password").tooltip("show");
 					};
 				});
 
-				socket.on("reg_check_nickname_client", function(checked) {
-					console.log(checked);
-          is_nickname_checked = checked;
-					if (is_nickname_checked == 1) {
-						$("#user_nickname").attr("data-original-title","昵称可以使用");
+				$("#user_password").blur(function() {
+					if ($("#user_password").val() == "") {
+						$("#user_password").tooltip("show");
+						$("#user_password").attr("data-original-title", "密码不能为空");
+						$("#user_password").focus();
+					} else if ($("#user_password").val().length < 4) {
+						$("#user_password").attr("data-original-title", "密码长度小于4,长度应大于等于4");
+						$("#user_password").tooltip("show");
+						$("#user_password").focus();
+					} else if ($("#user_password_confirm").val() != $("#user_password").val() && $("#user_password_confirm").val()) {
+						$("#user_password_confirm").focus();
+					} else {
+						$("#user_password").tooltip("destroy");
+					}; //if ending
+				}); //$("#user_password").blur() ending
+
+				$("#user_password_confirm").blur(function() {
+					if ($("#user_password_confirm").val() == "") {
+						$("#user_password_confirm").tooltip("show");
+						$("#user_password_confirm").focus();
+					} else if ($("#user_password_confirm").val() != $("#user_password").val()) {
+						$("#user_password").focus();
+						$("#user_password_confirm").attr("data-original-title", "密码不相同");
+					} else {
+						$("#user_password_confirm").tooltip("destroy");
+					}; //if ending
+				}); //$("#user_password_confirm").blur() ending
+
+				$("#user_nickname").blur(function() {
+					if ($("#user_nickname").val() == "") {
+						$("#user_nickname").focus();
 						$("#user_nickname").tooltip("show");
-	 				}else if (is_nickname_checked == -1) {
-            $("#user_nickname").attr("data-original-title","服务器异变!检测结果出现错误");
+					} else if (blank.exec($("#user_nickname").val())) {
 						$("#user_nickname").tooltip("show");
-					}else if (is_nickname_checked == 0) {
-						$("#user_nickname").attr("data-original-title","昵称发生重名,请修改昵称");
+						$("#user_nickname").attr("data-original-title", "昵称不可以含有空格");
+						$("#user_nickname").focus();
+					} else if ($("#user_nickname").val().length < 3) {
 						$("#user_nickname").tooltip("show");
+						$("#user_nickname").attr("data-original-title", "昵称长度小于3,长度应大于等于3");
+						$("#user_nickname").focus();
+					} else if (!is_connected) {
+						$("#user_nickname").tooltip("show");
+						$("#user_nickname").attr("data-original-title", "未与服务器连接,无法注册");
+						$("#user_nickname").focus();
+					} else { //即服务器连接正常、昵称本地检测合法的情况下,才进行重名检测
+						if ($("#user_nickname").val() != temp_name) { //如果这个时候用户名改变了,重新检测一次
+							socket.emit("reg_check_nickname_server", $("#user_nickname").val()); //传参:{username:value}
+							$("#user_nickname").tooltip("show");
+							$("#user_nickname").attr("data-original-title", "正在检测是否重昵称...");
+							temp_name = $("#user_nickname").val();
+							$("#user_nickname").focus();
+						} else if (is_nickname_checked == 1) { //一切正常则允许focus到下一输入框
+							$("#user_nickname").tooltip("destroy");
+							console.log("允许unfocus");
+							// is_nickname_checked = 0;
+						} else {
+							console.log("不允许unfocus");
+							$("#user_nickname").focus();
+						};
+					};
+				}); //$("#user_nickname").blur() ending
+
+				$("#security_question").blur(function() {
+					if ($("#security_question").val() == "") {
+						$("#security_question").tooltip("show");
+						$("#security_question").attr("data-original-title", "请输入你要回答的密保问题");
+						$("#security_question").focus();
+					} else {
+						$("#security_question").tooltip("destroy");
+					}; //if ending
+				}); //$("#security_question").blur() ending
+
+				$("#input_security_question").blur(function() {
+					if ($("#input_security_question").val() == "") {
+						$("#input_security_question").tooltip("show");
+						$("#input_security_question").attr("data-original-title", "请务必解答你自己的密保问题");
+						$("#input_security_question").focus();
+					} else {
+						$("#input_security_question").tooltip("destroy");
+						if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
+							$("#go_to_agreement").attr("data-original-title", "开始战斗吧!");
+							$("#go_to_agreement").tooltip("show");
+						};
+					}; //if ending
+				}); //$("#input_security_question").blur() ending
+
+				//显示隐私协议modal
+				$("#go_to_agreement").click(function() {
+					if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
+						$("#agreement").modal("show");
+					} else {
+						$("#go_to_agreement").attr("data-original-title", "必填项目不可以留空~");
+						$("#go_to_agreement").tooltip("show");
 					};
 				});
+				//注册
+				$("#register").click(function() {
+					var clientdata = new Object();
+					clientdata = {
+						id: $.md5($.md5($("#user_password").val()) + $("#user_name").val()),
+						username: $("#user_name").val(),
+						password: $.md5($("#user_password").val()),
+						email: $("#user_email").val(),
+						qq: $("#user_qq").val(),
+						nickname: $("#user_nickname").val(),
+						sq: $("#security_question").val(),
+						isq: $("#input_security_question").val()
+					};
+					$("#agreement").modal("hide");
+					if (localStorage.username != clientdata.username) {
+						socket.emit("reg_submit_server", clientdata); //传参:clientdata对象
+					} else {
+						alert("这是笨蛋注册不了的应用啦!相同的用户名不能注册两次!");
+					};
 
-				socket.on("reg_submit_client", function(data){
-          if (data.id != "0") {
-					   localStorage.setItem("id",data.id);
-					   localStorage.setItem("username",data.username);
-					   localStorage.setItem("nickname",data.nickname);
-					   alert("注册成功!"+"\n你的用户名是:"+data.username+"\n你的昵称是:"+data.nickname+"\n你的识别id是:"+data.id);
-					   window.location.assign("http://test.eshicon.org/login.html");
-          }else {
-          	alert("服务器异变!把这个bug告诉suica吧!");
-          };
 				});
 
-        socket.on("disconnect", function() {
-          alert("对不起,与服务器的连接异常断开.\n服务器正在维护,请稍后注册!");
-          is_connected = 0; //未连接
-        });
 
-      }); //socket.on("connect", function () {}) ending
-
-//定义提示框事件
-
-			$("#user_name").blur(function(){
-        if ($("#user_name").val() == "") {
-	        	$("#user_name").focus();
-            $("#user_name").tooltip("show");
-        }
-			  else if (blank.exec($("#user_name").val())) {
-                $("#user_name").tooltip("show");
-								$("#user_name").attr("data-original-title","用户名不可以含有空格");
-								$("#user_name").focus();
-						  }
-			  else if (character.exec($("#user_name").val())) {
-                $("#user_name").tooltip("show");
-								$("#user_name").attr("data-original-title","用户名不可以含有汉字或假名或棒子文");
-								$("#user_name").focus();
-						  }
-        else if ($("#user_name").val().length < 3) {
-								$("#user_name").tooltip("show");
-								$("#user_name").attr("data-original-title","用户名长度小于3,长度应大于等于3");
-								$("#user_name").focus();
-			        }
-				else if (!is_connected) {
-								$("#user_name").tooltip("show");
-								$("#user_name").attr("data-original-title","未与服务器连接,无法注册");
-								$("#user_name").focus();
-							}
-        else{ //即服务器连接正常、用户名本地检测合法的情况下,才进行重名检测
-		          if ($("#user_name").val() != temp_name) { //如果这个时候用户名改变了,重新检测一次
-			          		  var temp_checkusername = new Object;
-		                  temp_checkusername = {"username":$("#user_name").val()};
-						          socket.emit("reg_check_username_server",temp_checkusername); //传参:{username:value}
-											$("#user_name").tooltip("show");
-											$("#user_name").attr("data-original-title","正在检测是否重名...");
-											temp_name = $("#user_name").val();
-											$("#user_name").focus();
-	          	}else if (is_username_checked == 1) { //一切正常则允许focus到下一输入框
-						           $("#user_name").tooltip("destroy");
-						           console.log("允许unfocus");
-						           // is_username_checked = 1;
-						         }
-						         else {
-                           console.log("不允许unfocus");
-                           $("#user_name").focus();
-						         };
-				         };
-      }); //$("#user_name").blur() ending
+			}); //$(function(){} ending
+		</script>
 
 
-
-			$("#user_password").focus(function(){
-        if (($("#user_password_confirm").val() != $("#user_password").val()) && ($("#user_password_confirm").val() != ""))
-		        {
-	            $("#user_password").attr("data-original-title","密码不相同");
-	            $("#user_password").tooltip("show");
-	          };
-      });
-
-			$("#user_password").blur(function(){
-        if ($("#user_password").val() == "") {
-		            $("#user_password").tooltip("show");
-		            $("#user_password").attr("data-original-title","密码不能为空");
-		            $("#user_password").focus();
-        }
-        else if ($("#user_password").val().length < 4) {
-								$("#user_password").attr("data-original-title","密码长度小于4,长度应大于等于4");
-								$("#user_password").tooltip("show");
-								$("#user_password").focus();
-			        }
-		else if ($("#user_password_confirm").val() != $("#user_password").val() && $("#user_password_confirm").val()){
-			$("#user_password_confirm").focus();
-		}
-	      else{
-	          $("#user_password").tooltip("destroy");
-	      }; //if ending
-      }); //$("#user_password").blur() ending
-
-			$("#user_password_confirm").blur(function(){
-        if ($("#user_password_confirm").val() == "") {
-            $("#user_password_confirm").tooltip("show");
-            $("#user_password_confirm").focus();
-        }else if ($("#user_password_confirm").val() != $("#user_password").val())
-			        {
-		            $("#user_password").focus();
-		            $("#user_password_confirm").attr("data-original-title","密码不相同");
-		          }
-        else{
-	          $("#user_password_confirm").tooltip("destroy");
-        }; //if ending
-      }); //$("#user_password_confirm").blur() ending
-
-      $("#user_nickname").blur(function(){
-        if ($("#user_nickname").val() == "") {
-	        	$("#user_nickname").focus();
-            $("#user_nickname").tooltip("show");
-        }
-			  else if (blank.exec($("#user_nickname").val())) {
-                $("#user_nickname").tooltip("show");
-								$("#user_nickname").attr("data-original-title","昵称不可以含有空格");
-								$("#user_nickname").focus();
-						  }
-        else if ($("#user_nickname").val().length < 3) {
-								$("#user_nickname").tooltip("show");
-								$("#user_nickname").attr("data-original-title","昵称长度小于3,长度应大于等于3");
-								$("#user_nickname").focus();
-			        }
-				else if (!is_connected) {
-								$("#user_nickname").tooltip("show");
-								$("#user_nickname").attr("data-original-title","未与服务器连接,无法注册");
-								$("#user_nickname").focus();
-							}
-        else{ //即服务器连接正常、昵称本地检测合法的情况下,才进行重名检测
-		          if ($("#user_nickname").val() != temp_name) { //如果这个时候用户名改变了,重新检测一次
-						          socket.emit("reg_check_nickname_server",$("#user_nickname").val()); //传参:{username:value}
-											$("#user_nickname").tooltip("show");
-											$("#user_nickname").attr("data-original-title","正在检测是否重昵称...");
-											temp_name = $("#user_nickname").val();
-											$("#user_nickname").focus();
-	          	}else if (is_nickname_checked == 1) { //一切正常则允许focus到下一输入框
-						           $("#user_nickname").tooltip("destroy");
-						           console.log("允许unfocus");
-						           // is_nickname_checked = 0;
-						         }
-						         else {
-                           console.log("不允许unfocus");
-                           $("#user_nickname").focus();
-						         };
-				         };
-      }); //$("#user_nickname").blur() ending
-
-      $("#security_question").blur(function(){
-        if ($("#security_question").val() == "") {
-            $("#security_question").tooltip("show");
-            $("#security_question").attr("data-original-title","请输入你要回答的密保问题");
-            $("#security_question").focus();
-        }
-        else{
-	          $("#security_question").tooltip("destroy");
-        }; //if ending
-      }); //$("#security_question").blur() ending
-
-      $("#input_security_question").blur(function(){
-        if ($("#input_security_question").val() == "") {
-            $("#input_security_question").tooltip("show");
-            $("#input_security_question").attr("data-original-title","请务必解答你自己的密保问题");
-            $("#input_security_question").focus();
-        }
-        else{
-	          $("#input_security_question").tooltip("destroy");
-	          if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
-		           $("#go_to_agreement").attr("data-original-title","开始战斗吧!");
-							 $("#go_to_agreement").tooltip("show");
-	          };
-        }; //if ending
-      }); //$("#input_security_question").blur() ending
-
-//显示隐私协议modal
-			$("#go_to_agreement").click(function(){
-				if ($("#user_name").val() && $("#user_password").val() && $("#user_password_confirm").val() && $("#user_nickname").val() && $("#security_question").val() && $("#input_security_question").val()) {
-		        $("#agreement").modal("show");
-				}else{
-								$("#go_to_agreement").attr("data-original-title","必填项目不可以留空~");
-								$("#go_to_agreement").tooltip("show");
-				};
-			});
-//注册
-     $("#register").click(function(){
-     	var clientdata = new Object();
-	      clientdata = {
-	          id:$.md5($.md5($("#user_password").val())+$("#user_name").val()),
-				    username:$("#user_name").val(),
-	          password:$.md5($("#user_password").val()),
-	          email:$("#user_email").val(),
-	          qq:$("#user_qq").val(),
-	          nickname:$("#user_nickname").val(),
-	          sq:$("#security_question").val(),
-	          isq:$("#input_security_question").val()
-			  };
-      $("#agreement").modal("hide");
-      if (localStorage.username != clientdata.username) {
-	      socket.emit("reg_submit_server",clientdata); //传参:clientdata对象
-      }else {
-      	alert("这是笨蛋注册不了的应用啦!相同的用户名不能注册两次!");
-      };
-
-     });
+	</head>
 
 
-		}); //$(function(){} ending
+	<body class="login login-action-login wp-core-ui  locale-zh-cn">
 
-
-    </script>
-
-
-  </head>
-
-
-<body class="login login-action-login wp-core-ui  locale-zh-cn">
-
-<div id="login">
-		<h1><a href="#" title="基于萌与爱">KJ PROJECT</a></h1>
-		<p class="message register">为协同作战注册</p>
+		<div id="login">
+			<h1><a href="#" title="基于萌与爱">KJ PROJECT</a></h1>
+			<p class="message register">为协同作战注册</p>
 
 			<form name="registerform" id="registerform">
 
 				<p>
-					<label for="user_name">用户名<br>
+					<label for="user_name">用户名
+						<br>
 						<input type="text" name="user_name" id="user_name" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为3,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="user_password">密码<br>
+					<label for="user_password">密码
+						<br>
 						<input type="password" name="user_password" id="user_password" class="input" size="20" data-toggle="tooltip" data-original-title="必填,长度至少为4,允许英文字母、数字、下划线,不能包含空格、汉字、假名、棒子文" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="user_password_confirm">确认密码<br>
+					<label for="user_password_confirm">确认密码
+						<br>
 						<input type="password" name="user_password_confirm" id="user_password_confirm" class="input" size="20" data-toggle="tooltip" data-original-title="必填,请再次输入密码" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="user_email">电子邮件<br>
-					  <input type="text" name="user_email" id="user_email" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的邮箱地址" data-placement="top"/>
+					<label for="user_email">电子邮件
+						<br>
+						<input type="text" name="user_email" id="user_email" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的邮箱地址" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="user_qq">QQ号码<br>
-					  <input type="text" name="user_qq" id="user_qq" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的QQ号码" data-placement="top"/>
+					<label for="user_qq">QQ号码
+						<br>
+						<input type="text" name="user_qq" id="user_qq" class="input" size="25" data-toggle="tooltip" data-original-title="非必填,你的QQ号码" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="user_nickname">昵称<br>
-					  <input type="text" name="user_nickname" id="user_nickname" class="input" size="25" data-toggle="tooltip" data-original-title="必填,建议使用已对他人公开的昵称,便于他人认出你,不能包含空格" data-placement="top" />
+					<label for="user_nickname">昵称
+						<br>
+						<input type="text" name="user_nickname" id="user_nickname" class="input" size="25" data-toggle="tooltip" data-original-title="必填,建议使用已对他人公开的昵称,便于他人认出你,不能包含空格" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="security_question">输入密保问题<br>
-					  <input type="text" name="security_question" id="security_question" class="input" size="25" data-toggle="tooltip" data-original-title="必填,你自定义的密保问题,用来找回密码" data-placement="top" />
+					<label for="security_question">输入密保问题
+						<br>
+						<input type="text" name="security_question" id="security_question" class="input" size="25" data-toggle="tooltip" data-original-title="必填,你自定义的密保问题,用来找回密码" data-placement="top" />
 					</label>
 				</p>
 
 				<p>
-					<label for="input_security_question">回答密保问题<br>
+					<label for="input_security_question">回答密保问题
+						<br>
 						<input type="text" name="input_security_question" id="input_security_question" class="input" size="25" data-toggle="tooltip" data-original-title="必填,解答你自己的密保问题,并牢记答案" data-placement="top" />
 					</label>
 				</p>
 
-				<br><br>
+				<br>
+				<br>
 
-				<p class="submit"><input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="go_to_agreement" data-toggle="tooltip" data-original-title="输入你的信息！然后开始战斗吧！！" data-placement="top" /></p>
+				<p class="submit">
+					<input type="button" class="btn btn-block btn-lg btn-success" value="注册" id="go_to_agreement" data-toggle="tooltip" data-original-title="输入你的信息！然后开始战斗吧！！" data-placement="top" />
+				</p>
 
-				<br><br><hr>
+				<br>
+				<br>
+				<hr>
 
 				<p id="nav" align="center">
 					<a href="http://test.eshicon.org/login.html">登录</a>
-				  <br><br>
-          <a>不要妄想提交两个用户名或昵称相同的表单</a>
-          <br>
+					<br>
+					<br>
+					<a>不要妄想提交两个用户名或昵称相同的表单</a>
+					<br>
 				</p>
 			</form>
-</div>
+		</div>
 
 
-<div class="modal fade" id="agreement" tabindex="-1" role="dialog"
-   aria-labelledby="myModalLabel" aria-hidden="true">
-   <div class="modal-dialog">
-      <div class="modal-content">
-         <div class="modal-header">
-            <button type="button" class="close"
-               data-dismiss="modal" aria-hidden="true">
-                  &times;
-            </button>
-            <h4 class="modal-title" id="myModalLabel">
+		<div class="modal fade" id="agreement" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="myModalLabel">
+
                隐私协议
+
             </h4>
-         </div>
-         <div class="modal-body">
-<pre>一旦您同意本协议或使用本服务,您即同意本研究所按照以下条款来使用和披露您的个人信息.
+					</div>
+					<div class="modal-body">
+						<pre>一旦您同意本协议或使用本服务,您即同意本研究所按照以下条款来使用和披露您的个人信息.
+
+
 
 (一) 无民事行为能力人的特别注意事项
+
  在阅读本协议以注册成为KJ-PROJECT(域名：eshicon.com；运营商：Suica研究所)用户时,您若是不满10周岁的未成年人及不能辨认自己行为的精神病人,或是可怕的小学生、熊孩子,您则不能使用本服务,请您终止您的注册行为,千万不要向我们提供您的任何个人信息.
 
+
+
 (二) 用户名和密码
+
  在您注册为KJ-PROJECT用户时,我们会要求您设置用户名和密码来识别您的身份,并设置密码保护问题,以便在您丢失密码时用以确认您的身份.
+
  您仅可通过您设置的密码来使用该账户,如果您泄漏了密码,您可能会丢失您的个人识别信息,并可能导致对您不利的法律后果.该账户和密码因任何原因受到潜在或现实危险时,您应该立即和本研究所取得联系,在本研究所采取行动前,本研究所对此不负任何责任.
 
+
+
 (三) 注册信息
+
  您注册该账户时应向本公司提供您的昵称、用户名、密码,您还可以选择来填写相关附加信息(包括但不限于电子邮箱地址、QQ号码).
 
+
+
 (四) 本研究所对您的资料的披露
+
  (1)虽然本研究所采用行业标准惯例以保护您的个人资料,鉴于技术限制,本研究所不能确保您的全部私人通讯及其他个人资料不会通过本隐私规则中未列明的途径泄露出去.
+
  (2)本研究所有义务根据有关法律要求向司法机关和政府部门提供您的个人资料.
+
  (3)在您未能按照与本研究所签订的服务协议、居间协议或者与本研究所其他用户签订的借款协议的约定履行自己应尽的义务时,本研究所有权根据自己的判断或者与该笔交易有关的其他用户的请求披露您的个人资料,并作出评论.
 
+
+
 (五)个人信息公开情况
+
  (1)您的昵称会对其他应用用户公开.
+
  (2)您的电子邮箱地址会对其他应用用户公开.
+
  (3)您的QQ号码会对其他应用用户公开.
+
  (4)您的密码会经过散列函数(md5)
+
  (5)进行保存,这种加密是不可逆的,即便是本研究所的工作人员,也无法逆算出您的密码.
+
  (6)您的密保问题会被明码保存,建议不要输入过于隐私的问题.
 
+
+
 (六)您对其他用户的资料的使用
+
 在本应用提供的交易活动中,您无权要求本研究所提供其他用户的个人资料,除非符合以下条件：
+
  (1)您已向法院起诉其他用户的在本研究所活动中的违约行为；
+
  (2)与您有关的其他用户(包括交易关系、基友关系)逾期未归还借款本息；
+
  (3)本研究所被吊销营业执照、解散、清算、宣告破产或者其他有碍于您收回借款本息的情形.
+
+
 
  **在上述(2)情况下,本研究所的其他用户可以采取发布您个人信息的方式向您追索债权,但本研究所对此等用户的行为免责.
 
+
+
 (七)关于使用我们研究所的产品
+
  您不得使用我们研究所资源或信息资源向其他用户传播有违法律,有违道德、敏感、推广等与本研究所业务不相关的垃圾信息.
+
  本研究所提供的应用完全开源(github仓库:https://github.com/suica/KJ-PROJECT),免费使用.
 
-(八)规则修改
- 本研究所可能不时按照您的意见和本研究所的需要修改本隐私规则,以准确地反映本研究所对您以及其他应用用户的隐私保护惯例.
- 本规则的所有修改,不经任何通知即生效.
- 本规则的生效版本以本页面的版本为准.
-</pre>
-					<center>Suica研究所</center>
-					<center>Copyright © 2014 Suica's lab. All rights reserved. </center>
-         </div>
-         <div class="modal-footer">
-            <button type="button" class="btn btn-default"
-               data-dismiss="modal">关闭
-            </button>
-            <button id="register" type="button" class="btn btn-primary">
-               同意并注册
-            </button>
-         </div>
-      </div><!-- /.modal-content -->
-</div><!-- /.modal -->
 
-</body>
+
+(八)规则修改
+
+ 本研究所可能不时按照您的意见和本研究所的需要修改本隐私规则,以准确地反映本研究所对您以及其他应用用户的隐私保护惯例.
+
+ 本规则的所有修改,不经任何通知即生效.
+
+ 本规则的生效版本以本页面的版本为准.
+
+</pre>
+						<center>Suica研究所</center>
+						<center>Copyright © 2014-2015 Suica's lab. All rights reserved. </center>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+						</button>
+						<button id="register" type="button" class="btn btn-primary">
+							同意并注册
+						</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+		</div>
+			<!-- /.modal -->
+
+	</body>
+
 </html>

@@ -10,7 +10,7 @@
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
-		<script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
+		<script type='application/javascript' src='http://test.eshicon.org/KJ-PROJECT/js/fastclick.js'></script>
 
 		<link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
 		<link rel="shortcut icon" type="iamge/x-icon" href="favicon.ico">
@@ -27,6 +27,12 @@
 			}
 			.L {
 				font-size: 110%;
+			}
+			.sui-btn {
+				color: blue;
+			}
+			.ui-page-theme-a {
+				background-color: #efeff4;
 			}
 		</style>
 
@@ -86,6 +92,8 @@
 			$(function() {
 
 				"use strict"
+				
+				FastClick.attach(document.body);
 
 				//未登录跳转
 				if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined) {
@@ -302,7 +310,7 @@
 					"now_circleid": "", //存储item对应的circleid,与op_detail的不混用
 					"now_itemname": "", //存储item edit中对应的item name
 					"now_item_responsibility": "",
-					"to":1,//1为返回到items_edit_select,2返回到tools
+					"to": 1, //1为返回到items_edit_select,2返回到tools
 					"clear_selectmemu": function() {
 						$("#items_edit_select").page();
 						$("#items_for_select").val("").selectmenu("refresh");
@@ -345,34 +353,34 @@
 								// 	$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
 								// };
 								for (var x in window.op_details.otherinfo[circleid]) {
-				var count_items = 0; //总件数计数器
-				if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-					$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
-				};
-				$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
+									var count_items = 0; //总件数计数器
+									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
+										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
+									};
+									$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 
-						if (window.op_details.otherinfo[circleid][x]['responsibility'] == "") {
-							$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
-						} else {
-							$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x]['responsibility'] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x]['responsibility'] + '</center></h1></li>');
-						};
+									if (window.op_details.otherinfo[circleid][x]['responsibility'] == "") {
+										$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
+									} else {
+										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x]['responsibility'] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x]['responsibility'] + '</center></h1></li>');
+									};
 
-				for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
+									for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
 
-					if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
-						if (!username_temp[y]) {
-							if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
-								$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
-							};
-							username_temp[y] = 1;
-						};
-						var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
-						count_items += temp['target'];
-						$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
-					};
-				};
-				$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
-			};
+										if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
+											if (!username_temp[y]) {
+												if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
+													$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+												};
+												username_temp[y] = 1;
+											};
+											var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
+											count_items += temp['target'];
+											$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
+										};
+									};
+									$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
+								};
 							} else {
 								$("#items_list").append('<li data-role=\"listview\"><center>无item</center></li>');
 							};
@@ -963,28 +971,28 @@
 								switch (window.csvdata[pointer][0]) {
 									case "Circle":
 										// if (window.csvdata[pointer].length == 29 || window.csvdata[pointer].length == 27) {
-											//1203-1
-											if (window.csvdata[pointer][5] != "×" && window.csvdata[pointer][6] != "×" && window.csvdata[pointer][7] != "×") {
-												if (window.csvdata[pointer][21] == "0") {
-													window.csvdata[pointer][21] = "a";
-												} else if (window.csvdata[pointer][21] == "1") {
-													window.csvdata[pointer][21] = "b";
-												};
-												//i6 i7 i8 i9 i22
-												if ((Number(window.csvdata[pointer][8]) < 10) && window.csvdata[pointer][8].length == 1) {
-													window.csvdata[pointer][8] = "0" + window.csvdata[pointer][8];
-												};
-
-												if (window.csvdata[pointer][7] >= "Ａ" && window.csvdata[pointer][7] <= "Ｚ") {
-													window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
-												};
-
-												var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
-
-												socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
-											} else {
-												$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有“×”号" + window.csvdata[pointer] + "</div></li>");
+										//1203-1
+										if (window.csvdata[pointer][5] != "×" && window.csvdata[pointer][6] != "×" && window.csvdata[pointer][7] != "×") {
+											if (window.csvdata[pointer][21] == "0") {
+												window.csvdata[pointer][21] = "a";
+											} else if (window.csvdata[pointer][21] == "1") {
+												window.csvdata[pointer][21] = "b";
 											};
+											//i6 i7 i8 i9 i22
+											if ((Number(window.csvdata[pointer][8]) < 10) && window.csvdata[pointer][8].length == 1) {
+												window.csvdata[pointer][8] = "0" + window.csvdata[pointer][8];
+											};
+
+											if (window.csvdata[pointer][7] >= "Ａ" && window.csvdata[pointer][7] <= "Ｚ") {
+												window.csvdata[pointer][7] = String.fromCharCode(window.csvdata[pointer][7].charCodeAt(0) - 65248);
+											};
+
+											var circle_id = window.csvdata[pointer][5] + window.csvdata[pointer][6] + get_venues(window.csvdata[pointer][7], Number(window.csvdata[pointer][8])) + window.csvdata[pointer][7] + window.csvdata[pointer][8] + window.csvdata[pointer][21];
+
+											socket.emit("main_csv_submit_server", window.csvdata[pointer], localStorage.active_group, localStorage.nickname, circle_id);
+										} else {
+											$("#upload_result").append("<li><div class=\"scroll\">错误:请确认此行数据中是否含有“×”号" + window.csvdata[pointer] + "</div></li>");
+										};
 
 										// } else {
 										// 	console.log(window.csvdata[pointer].length);
@@ -1454,7 +1462,7 @@
 		<div data-role="page" id="mission">
 			<div data-role="header" data-position="fixed">
 				<h1 id="mission_title">任务</h1>
-				<div data-role="button" class="ui-btn-right">
+				<div data-role="button" class="ui-btn-right sui-btn">
 					<a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
 				</div>
 				<div data-role="button" class="ui-btn-left">
@@ -1536,7 +1544,7 @@
 			</div>
 
 			<div data-role="content">
-				<input type="button" id="turn_to_select_group" value="队伍管理">
+				<input type="button" id="turn_to_select_group" value="队伍管理" />
 				<input type="button" id="turn_to_add_item" value="登录新宝物">
 				<input type="button" id="turn_to_add_circle" value="登录新摊位">
 				<a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
@@ -1724,7 +1732,7 @@
 			</div>
 
 			<div data-role="content">
-			
+
 				<fieldset data-role="fieldcontain">
 					<!-- i6 -->
 					<label for="add_circle_date">参加曜日</label>
@@ -1996,5 +2004,9 @@
 		</div>
 
 	</body>
+
+	<script src="http://test.eshicon.org/KJ-PROJECT/js/read-csv.js"></script>
+
+
 
 </html>

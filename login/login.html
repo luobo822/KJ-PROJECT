@@ -11,6 +11,7 @@
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.md5.js"></script>
 		<script src="http://cdn.bootcss.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script type='application/javascript' src='http://test.eshicon.org/KJ-PROJECT/js/fastclick.js'></script>
 
 		<link rel="stylesheet" href="http://suica.eshicon.org/wp-admin/css/my-frame-css.css">
 		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -20,6 +21,8 @@
 			"use strict"
 
 			$(function() {
+				
+				FastClick.attach(document.body);
 
 				//检测是否登录/跳转
 
@@ -114,7 +117,7 @@
 
 
 				//定义login_submit按钮
-
+				
 				$("#login_submit").click(function() {
 					console.log("is_connected:" + is_connected);
 					if (is_connected == 1) {
@@ -129,6 +132,7 @@
 						$("#login_submit").tooltip("show");
 					};
 				});
+				
 
 			}); //$(function(){}) ending
 		</script>
