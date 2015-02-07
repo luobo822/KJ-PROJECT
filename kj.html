@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="i">
 
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -9,10 +9,18 @@
 
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
-		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
-		<script type='application/javascript' src='http://test.eshicon.org/KJ-PROJECT/js/fastclick.js'></script>
 
-		<link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />
+		<!--<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>-->
+		<script src="js/jquery.mobile.custom.js" type="text/javascript" charset="utf-8"></script>
+		<!--<link rel="stylesheet" href="http://test.eshicon.org/KJ-PROJECT/css/jquery.mobile-1.4.3.css" />-->
+		<!--<link rel="stylesheet" href="css/jquery.mobile-1.4.3-suicamod.css" />-->
+		<link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css" />
+
+		<script src="js/mui.min.js"></script>
+		<link href="css/mui.min.css" rel="stylesheet" />
+
+		<!--<script type='application/javascript' src='http://test.eshicon.org/KJ-PROJECT/js/fastclick.js'></script>-->
+
 		<link rel="shortcut icon" type="iamge/x-icon" href="favicon.ico">
 		<link rel="icon" type="image/x-icon" href="favicon.ico">
 		<link rel="apple-touch-icon" href="favicon.ico">
@@ -28,16 +36,16 @@
 			.L {
 				font-size: 110%;
 			}
-			.sui-btn {
-				color: blue;
-			}
-			.ui-page-theme-a {
+			html,
+			body {
 				background-color: #efeff4;
 			}
 		</style>
 
 		<script>
 			"use strict"
+
+			mui.init();
 
 			function get_venues(block_name, space_number) { //blockname 为string ,space number为number
 				if (block_name == "A") {
@@ -91,9 +99,7 @@
 
 			$(function() {
 
-				"use strict"
-				
-				FastClick.attach(document.body);
+				//				FastClick.attach(document.body);
 
 				//未登录跳转
 				if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined) {
@@ -134,111 +140,6 @@
 						$("#mission_title").text("未选队伍");
 					};
 				});
-
-				//读取pervious页面的#hash
-
-				//				function get_anchor() { //后退的场合
-				//
-				//					switch (location.hash) {
-				//						case "#tools":
-				//							return "#mission";
-				//							break;
-				//
-				//						case "#message":
-				//							return "#message";
-				//							break;
-				//
-				//						case "#input_csv":
-				//							return "#input_csv"; //不翻页
-				//							break;
-				//
-				//						case "#calc_setting":
-				//							return "#tools";
-				//							break;
-				//
-				//						case "#about":
-				//							return "#tools";
-				//							break;
-				//
-				//						case "":
-				//							return "#mission";
-				//							break;
-				//
-				//						default: //未在此定义的页面都不翻页
-				//							return location.hash;
-				//							break;
-				//					}; //switch ending
-				//
-				//				};
-
-				//手势前进 && 后退
-
-				//				document.addEventListener("touchstart", handleTouchEvent, false);
-				//				document.addEventListener("touchend", handleTouchEvent, false);
-				//				document.addEventListener("touchmove", handleTouchEvent, false);
-				//
-				//				var pre = new Array();
-				//				var end = new Array();
-				//				var delta = new Array(); //对于这三个数组,[0]->x,[1]->y
-				//				window.is_turning = 0;
-				//
-				//
-				//				$("#shift_to_message").on("swipeleft", function() { //特别为#mission的导航栏添加滑动翻页功能
-				//					$.mobile.changePage("#message", {
-				//						transition: "slide",
-				//						reverse: false,
-				//						changeHash: true
-				//					});
-				//				});
-				//
-				//				$("#shift_to_mission").on("swiperight", function() { //特别为#mission的导航栏添加滑动翻页功能
-				//					$.mobile.changePage("#mission", {
-				//						transition: "slide",
-				//						reverse: true,
-				//						changeHash: true
-				//					});
-				//				});
-
-				//				function turnpage() {
-				//
-				//					if (delta[0] > 10 && Math.abs(delta[1] < 10)) {
-				//						is_turning = 1;
-				//
-				//						$.mobile.changePage(get_anchor(), {
-				//							transition: "slide",
-				//							reverse: true,
-				//							changeHash: true
-				//						});
-				//					};
-				//
-				//				}; //function turnpage() ending
-
-				//				function handleTouchEvent(event) {
-				//
-				//					if (event.touches.length == 1) {
-				//
-				//						switch (event.type) {
-				//							case "touchstart":
-				//								is_turning = 0;
-				//								pre[0] = event.touches[0].clientX;
-				//								pre[1] = event.touches[0].clientY;
-				//								break;
-				//							case "touchend":
-				//								break;
-				//							case "touchmove":
-				//								// event.preventDefault(); //阻止滚动
-				//								end[0] = event.changedTouches[0].clientX;
-				//								end[1] = event.changedTouches[0].clientY;
-				//								if (is_turning == 0) { //若页面非正在跳转,则计算delta,翻页
-				//									delta[0] = -(pre[0] - end[0]);
-				//									delta[1] = pre[1] - end[1];
-				//									turnpage();
-				//								}; //if ending
-				//								break;
-				//						}; //switch ening
-				//					}; //if ending
-				//				}; //handleTouchEvent() ending
-
 
 				//结算时的数据存储,绑定为全局对象
 				window.calc_data = new Object();
@@ -325,33 +226,7 @@
 
 							var username_temp = new Object();
 							if (window.op_details.otherinfo[circleid][0]) { //不为空
-								// for (var x in window.op_details.otherinfo[circleid]) {
-								// 	var count_items = 0; //总件数计数器
-								// 	if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-								// 		$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]['item_name'] + '</option>');
-								// 	};
-								// 	for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-								// 		if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
-								// 			if (!username_temp[y]) {
-								// 				if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
-								// 					$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
-								// 				};
-								// 				username_temp[y] = 1;
-								// 			};
-								// 			var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
-								// 			count_items += temp['target'];
-								// 			$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
-								// 		} else if (y == "responsibility") {
-								// 			if (window.op_details.otherinfo[circleid][x][y] == "") {
-								// 				$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
-								// 			} else {
-								// 				$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
-								// 			};
-								// 		};
-								// 	};
-								// 	$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
-								// 	$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
-								// };
+
 								for (var x in window.op_details.otherinfo[circleid]) {
 									var count_items = 0; //总件数计数器
 									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
@@ -1457,58 +1332,100 @@
 
 	<body>
 
-
-
 		<div data-role="page" id="mission">
-			<div data-role="header" data-position="fixed">
-				<h1 id="mission_title">任务</h1>
-				<div data-role="button" class="ui-btn-right sui-btn">
-					<a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
-				</div>
-				<div data-role="button" class="ui-btn-left">
-					<input type="button" id="refresh_data" data-icon="refresh" value="刷新">
-				</div>
-			</div>
+			<header class="mui-bar mui-bar-nav">
+				<h1 id="misson_title" class="mui-title">任务</h1>
+				<a id="refresh_data"><span class="mui-icon mui-icon-reload"></span></a>
+				<a href="#tools" data-transition="slide"><span class="mui-icon mui-icon-more mui-pull-right"></span></a>
+			</header>
 
-			<div data-role="content">
+			<nav class="mui-bar mui-bar-tab">
+				<a class="mui-tab-item mui-active" href="#mission">
+					<span class="mui-icon mui-icon-home"></span>
+					<span class="mui-tab-label">任务</span>
+				</a>
+				<a class="mui-tab-item" href="#message" data-transition="fade">
+					<span class="mui-icon mui-icon-compose"></span>
+					<span class="mui-tab-label">消息</span>
+				</a>
+			</nav>
 
-				<div data-role="collapsible" data-collapsed="false">
+			<div class="mui-content">
+
+				<div data-role="collapsible" data-collapsed="false" data-theme="i">
 					<h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>
-					<ul id="unfinished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在未完成的任务中搜索..."></ul>
+
+					<ul class="mui-table-view mui-table-view-chevron">
+						<ul id="unfinished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在未完成的任务中搜索..." data-theme="i">
+							<li class="mui-table-view-cell mui-media" data-role="none">
+								<a class="mui-navigate-right" data-role="none">
+									<!--<img class="mui-media-object mui-pull-left" src="../images/cbd.jpg">-->
+									<div class="mui-media-body">
+										CBD
+										<p class='mui-ellipsis'>烤炉模式的城，到黄昏，如同打翻的调色盘一般.</p>
+									</div>
+								</a>
+							</li>
+							<li class="mui-table-view-cell mui-media">
+								<a class='mui-navigate-right' href="javascript:;">
+									<!--<img class="mui-media-object mui-pull-left" src="../images/yuantiao.jpg">-->
+									<div class="mui-media-body">
+										远眺
+										<p class='mui-ellipsis'>静静的看这个世界，最后终于疯了</p>
+									</div>
+								</a>
+							</li>
+							<li class="mui-table-view-cell mui-media">
+								<a class="mui-navigate-right">
+									<!--<img class="mui-media-object mui-pull-left" src="../images/shuijiao.jpg">-->
+									<div class="mui-media-body">
+										幸福
+										<p class='mui-ellipsis'>能和心爱的人一起睡觉，是件幸福的事情；可是，打呼噜怎么办？</p>
+									</div>
+								</a>
+							</li>
+						</ul>
+
+					</ul>
 				</div>
 
-				<div data-role="collapsible">
+
+
+				<div data-role="collapsible" data-theme="i">
 					<h4>已完成的任务<span id="finished_count" class="ui-li-count">0</span></h4>
 					<ul id="finished" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在已完成的任务中搜索..."></ul>
 				</div>
 
-				<div data-role="collapsible">
+				<div data-role="collapsible" data-theme="i">
 					<h4>无关的circle<span id="all_count" class="ui-li-count">0</span></h4>
 					<ul id="all_mission" data-role="listview" data-inset="true" data-filter="true" data-filter-placeholder="在全部任务中搜索..."></ul>
 				</div>
 
 			</div>
 
-			<div data-role="footer" data-position="fixed">
-				<div data-role="navbar" id="shift_to_message">
-					<ul>
-						<li><a href="#" data-icon="info" class="ui-state-persist">任务</a>
-						</li>
-						<li><a id="turn_to_message" href="#message" data-icon="star" data-transition="fade">消息</a>
-					</ul>
-				</div>
-			</div>
 		</div>
 
 		<div data-role="page" id="message">
-			<div data-role="header">
-				<h1 id="connect_flag">消息</h1>
-				<div data-role="button" class="ui-btn-left">
-					<input type="button" id="button_message_clear" value="清空" data-role="button" data-icon="alert">
-				</div>
-			</div>
 
-			<div data-role="content">
+			<header class="mui-bar mui-bar-nav">
+				<h1 class="mui-title" id="connect_flag">消息</h1>
+				<a id="button_message_clear" class="mui-icon mui-icon-trash mui-icon-right-nav mui-pull-right"></a>
+			</header>
+
+			<nav class="mui-bar mui-bar-tab">
+				<a class="mui-tab-item" href="#mission">
+					<span class="mui-icon mui-icon-home"></span>
+					<span class="mui-tab-label">任务</span>
+				</a>
+				<a class="mui-tab-item mui-active" href="#message" data-transition="fade">
+					<span class="mui-icon mui-icon-compose"></span>
+					<span class="mui-tab-label">消息</span>
+				</a>
+			</nav>
+
+
+			<div class="mui-content">
+
 				<ul id="recived_message" data-role="listview" data-inset="false" data-filter-placeholder="搜索消息记录...">
 					<li>
 						<center>
@@ -1517,44 +1434,41 @@
 					</li>
 				</ul>
 				<br>
-				<input type="text" id="sent_message">
-				<input type="button" id="button_message_send" value="发送消息">
-				<br>
-
-
-			</div>
-
-			<div data-role="footer" data-position="fixed">
-				<div data-role="navbar" id="shift_to_mission">
-					<ul>
-						<li><a href="#mission" data-icon="info" data-transition="fade">任务</a>
-						</li>
-						<li><a href="#" data-icon="star" class="ui-state-persist">消息</a>
-						</li>
-					</ul>
+				<div class="mui-input-row">
+					<h5>输入消息，按下发送</h5>
+					<input type="text" id="sent_message" class="mui-input" data-role="none">
 				</div>
+
+				<div class="mui-button-row">
+					<button id="button_message_send" class="mui-btn mui-btn-primary" data-role="none">发送消息</button>
+				</div>
+
+
 			</div>
+
 		</div>
 
 		<div data-role="page" id="tools">
-			<div data-role="header">
-				<h1>工具</h1>
-				<a href="#mission" data-role="button" data-icon="back" data-transition="slide" data-direction="reverse">返回</a>
 
-			</div>
+			<header class="mui-bar mui-bar-nav">
+				<a href="#mission" data-transition="slide" data-direction="reverse"><span class="mui-icon mui-icon-back mui-pull-left"></span></a>
+				<h1 class="mui-title">工具</h1>
+			</header>
 
-			<div data-role="content">
-				<input type="button" id="turn_to_select_group" value="队伍管理" />
-				<input type="button" id="turn_to_add_item" value="登录新宝物">
-				<input type="button" id="turn_to_add_circle" value="登录新摊位">
-				<a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
+			<div class="mui-content">
+				<br>
+				<button class="mui-btn mui-btn-block" id="turn_to_select_group" data-role="none">队伍管理</button>
+				<button class="mui-btn mui-btn-block" id="turn_to_add_item" data-role="none">登录新宝物</button>
+				<button class="mui-btn mui-btn-block" id="turn_to_add_circle" data-role="none">登录新摊位</button>
+				<a href="#input_csv" class="mui-btn mui-btn-block" data-transition="slide" data-role="none">导入CSV文件</a>
 				<br>
 				<hr>
 				<br>
-				<a href="#calc_setting" data-role="button">结算</a>
-				<a href="#about" data-role="button" data-transition="slide">关于</a>
-				<a id="logout" data-role="button" data-theme="b">退出当前帐号</a>
+				<a href="#calc_setting" class="mui-btn mui-btn-block" data-transition="slide" data-role="none">结算</a>
+				<a href="#about" class="mui-btn mui-btn-block" data-transition="slide" data-role="none">关于</a>
+				<a id="logout" class="mui-btn mui-btn-block mui-btn-red mui-btn-outlined" data-role="none">退出当前帐号</a>
 			</div>
+
 		</div>
 
 		<div data-role="page" id="select_group">
