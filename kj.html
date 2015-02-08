@@ -31,9 +31,6 @@
 			.sui-btn {
 				color: blue;
 			}
-			.ui-page-theme-a {
-				background-color: #efeff4;
-			}
 		</style>
 
 		<script>
@@ -92,14 +89,14 @@
 			$(function() {
 
 				"use strict"
-				
+
 				FastClick.attach(document.body);
 
 				//未登录跳转
 				if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined) {
-					console.log("已登录");
+					console.log("logined");
 				} else {
-					console.log("跳转到登录界面");
+					console.log("unlogined,jump!");
 					//					 window.location.assign("http://test.eshicon.org/login.html");
 				};
 
@@ -107,6 +104,7 @@
 				//定义标记
 				var is_connected = 0; //是否连接消息服务器
 				var identification = ""; //用户识别码
+				
 				var same = 0;
 				var error = 0;
 				window.csvdata;
@@ -118,7 +116,11 @@
 
 				socket.on("main_check_group_client", function(flag, power, is_lock) { //data:string
 					console.log(power);
-					console.log(is_lock);
+					if (is_lock) { //true:锁定
+						console.log("locked");
+					} else { //branch:未锁定
+						console.log("unlocked");
+					};
 					if (flag == 1) {
 						localStorage.active_group_power = power;
 						localStorage.active_group_item_lock = is_lock;
@@ -134,111 +136,6 @@
 						$("#mission_title").text("未选队伍");
 					};
 				});
-
-				//读取pervious页面的#hash
-
-				//				function get_anchor() { //后退的场合
-				//
-				//					switch (location.hash) {
-				//						case "#tools":
-				//							return "#mission";
-				//							break;
-				//
-				//						case "#message":
-				//							return "#message";
-				//							break;
-				//
-				//						case "#input_csv":
-				//							return "#input_csv"; //不翻页
-				//							break;
-				//
-				//						case "#calc_setting":
-				//							return "#tools";
-				//							break;
-				//
-				//						case "#about":
-				//							return "#tools";
-				//							break;
-				//
-				//						case "":
-				//							return "#mission";
-				//							break;
-				//
-				//						default: //未在此定义的页面都不翻页
-				//							return location.hash;
-				//							break;
-				//					}; //switch ending
-				//
-				//				};
-
-				//手势前进 && 后退
-
-				//				document.addEventListener("touchstart", handleTouchEvent, false);
-				//				document.addEventListener("touchend", handleTouchEvent, false);
-				//				document.addEventListener("touchmove", handleTouchEvent, false);
-				//
-				//				var pre = new Array();
-				//				var end = new Array();
-				//				var delta = new Array(); //对于这三个数组,[0]->x,[1]->y
-				//				window.is_turning = 0;
-				//
-				//
-				//				$("#shift_to_message").on("swipeleft", function() { //特别为#mission的导航栏添加滑动翻页功能
-				//					$.mobile.changePage("#message", {
-				//						transition: "slide",
-				//						reverse: false,
-				//						changeHash: true
-				//					});
-				//				});
-				//
-				//				$("#shift_to_mission").on("swiperight", function() { //特别为#mission的导航栏添加滑动翻页功能
-				//					$.mobile.changePage("#mission", {
-				//						transition: "slide",
-				//						reverse: true,
-				//						changeHash: true
-				//					});
-				//				});
-
-				//				function turnpage() {
-				//
-				//					if (delta[0] > 10 && Math.abs(delta[1] < 10)) {
-				//						is_turning = 1;
-				//
-				//						$.mobile.changePage(get_anchor(), {
-				//							transition: "slide",
-				//							reverse: true,
-				//							changeHash: true
-				//						});
-				//					};
-				//
-				//				}; //function turnpage() ending
-
-				//				function handleTouchEvent(event) {
-				//
-				//					if (event.touches.length == 1) {
-				//
-				//						switch (event.type) {
-				//							case "touchstart":
-				//								is_turning = 0;
-				//								pre[0] = event.touches[0].clientX;
-				//								pre[1] = event.touches[0].clientY;
-				//								break;
-				//							case "touchend":
-				//								break;
-				//							case "touchmove":
-				//								// event.preventDefault(); //阻止滚动
-				//								end[0] = event.changedTouches[0].clientX;
-				//								end[1] = event.changedTouches[0].clientY;
-				//								if (is_turning == 0) { //若页面非正在跳转,则计算delta,翻页
-				//									delta[0] = -(pre[0] - end[0]);
-				//									delta[1] = pre[1] - end[1];
-				//									turnpage();
-				//								}; //if ending
-				//								break;
-				//						}; //switch ening
-				//					}; //if ending
-				//				}; //handleTouchEvent() ending
-
 
 				//结算时的数据存储,绑定为全局对象
 				window.calc_data = new Object();
@@ -325,33 +222,6 @@
 
 							var username_temp = new Object();
 							if (window.op_details.otherinfo[circleid][0]) { //不为空
-								// for (var x in window.op_details.otherinfo[circleid]) {
-								// 	var count_items = 0; //总件数计数器
-								// 	if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-								// 		$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]['item_name'] + '</option>');
-								// 	};
-								// 	for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-								// 		if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
-								// 			if (!username_temp[y]) {
-								// 				if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
-								// 					$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
-								// 				};
-								// 				username_temp[y] = 1;
-								// 			};
-								// 			var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
-								// 			count_items += temp['target'];
-								// 			$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
-								// 		} else if (y == "responsibility") {
-								// 			if (window.op_details.otherinfo[circleid][x][y] == "") {
-								// 				$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
-								// 			} else {
-								// 				$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x][y] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x][y] + '</center></h1></li>');
-								// 			};
-								// 		};
-								// 	};
-								// 	$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
-								// 	$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
-								// };
 								for (var x in window.op_details.otherinfo[circleid]) {
 									var count_items = 0; //总件数计数器
 									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
@@ -502,7 +372,6 @@
 										$("#button_join_group").button("disable");
 										$("#button_exit_group").button("disable");
 										$("#button_delete_group").button("enable");
-
 										break;
 
 									case "member":
@@ -659,7 +528,6 @@
 				//修改点4结束
 				//输出结算结果
 
-				//1119开始
 				socket.on("main_calc_client", function(otherinfo, is_could_ouput) { //circleinfo 是不必要的
 					for (var x in otherinfo) {
 						if (x != "responsibility" && x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid") { //member		
@@ -742,48 +610,51 @@
 						$("#calc_result_frame").listview("refresh");
 					};
 				});
-				//1119结束
 
 				//队伍推送
 				socket.on("main_select_group_client", function(result) {
+
 					window.op_group.raw_all_group.push(result);
 					window.op_group.all_group.push({
 						"group_name": result['group_name'],
 						"group_introduction": result['group_introduction'],
 						"my_power": result[localStorage.nickname]
 					});
+
 					if (result[localStorage.nickname]) {
 
 						window.op_group["my_group"].push({
-							"group_name": result["group_name"],
 
+							"group_name": result["group_name"],
 							"group_introduction": result["group_introduction"],
 							"my_power": result[localStorage.nickname]
+
 						});
 
 						$("#recived_group").append("<li><a onclick=\"window.op_group.details(\'" + result["group_name"] + "\')\">" + result["group_name"] + "(" + result[localStorage.nickname] + ")" + "<p>" + result["group_introduction"] + "</p>" + "</a></li>");
+
 					} else {
+
 						window.op_group["other_group"].push({
 							"group_name": result["group_name"],
 							"my_power": ""
 						});
+
 						$("#recived_group").append("<li><a onclick=\"window.op_group.details(\'" + result["group_name"] + "\')\">" + result["group_name"] + "(未加入此队伍)" + "<p>" + result["group_introduction"] + "</p>" + "</a></li>");
+
 					};
 
 					$("#select_group").page();
 					$("#recived_group").listview("refresh");
 
-					//						if (!is_turning) {
-					//							$.mobile.changePage("#select_group");
-					//							is_turning = 1;
-					//							// console.log(is_turning);
-					//						};
-
 				}); //socket.on("main_select_group_client") ending
 
 				socket.on("alert_client", function(text_number, type_number) {
+
 					if (type_number == 1) {
+
 						switch (text_number) {
+
 							case 1:
 								alert("加入此队伍成功!");
 								$("#select_group_refresh").trigger("click"); //队伍刷新
@@ -848,10 +719,12 @@
 								$("#turn_to_select_group").trigger("click");
 								break;
 
-
 						}
+
 					} else if (type_number == 0) {
+
 						switch (text_number) {
+
 							case 1:
 								alert("加入此队伍失败.请确认密码!");
 								break;
@@ -911,44 +784,64 @@
 								break;
 
 						};
+
 					};
+
 				});
 
 				socket.on("main_list_member_client", function(memberinfo) { //memberinfo 即为groups中的一行;obj类型
+
 					for (var x in memberinfo) {
+
 						if (x != "group_name" && x != "group_introduction" && x != "group_password" && x != "group_item_lock") {
+
 							if (memberinfo[x]) { //x在队伍里
+
 								$("#add_item_responsibility").append('<option value=\"' + x + '\">' + x + '</option>').selectmenu("refresh");
+
 							};
+
 						};
+
 					};
+
 				});
 
 				//掉线
 				socket.on("disconnect", function() {
-					$("#recived_message").append("<br><li><center>连接异常关闭</center></li>");
+
+					$("#recived_message").append("<br /><li><center>连接异常关闭</center></li>");
+
 					console.log("与服务器的连接已关闭.刷新页面以重新连接.");
+
 					$("#connect_flag").empty().append("消息(连接已断开)");
 					$("#message").page();
 					$("#recived_message").listview("refresh");
+
 				}); //socket.on("disconnect", function() ending
 
 				//消息发送机能
 				$("#sent_message").keypress(function(event) {
+
 					if (event.which == 13) {
+
 						event.preventDefault();
 						socket.emit("main_message_server", localStorage.nickname + ":" + $("#sent_message").val());
 						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
 						$("#recived_message").listview("refresh");
 						$("#sent_message").val("");
+
 					}; //if ending
+
 				}); //$("#sent_message").keypress(function(event) ending
 
 				$("#button_message_send").click(function() {
+
 					socket.emit("main_message_server", localStorage.nickname + ":" + $("#sent_message").val());
 					$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
 					$("#recived_message").listview("refresh");
 					$("#sent_message").val("");
+
 				}); //$("#button_message_send").click(function() ending
 				//清除消息
 				$("#button_message_clear").click(function() {
@@ -1019,10 +912,16 @@
 							alert("请选择文件");
 						};
 					};
-				}); //刷新与数据获取
+				});
+
+				//刷新与数据获取
+
 				$("#refresh_data").click(function() {
+
 					window.op_details.otherinfo = new Object();
+
 					if (localStorage.active_group) {
+
 						$("#unfinished").empty();
 						$("#finished").empty();
 						$("#all_mission").empty(); //载入新数据之前清空旧数据
@@ -1030,10 +929,15 @@
 						$("#finished_count").text(0);
 						$("#all_count").text(0);
 						socket.emit("main_mission_list_server", localStorage.nickname, localStorage.active_group);
+
 					} else {
+
 						alert("尚未选择活跃队伍~");
+
 					};
+
 				});
+
 				//上传edit后的数据
 				$("#items_edit_save").click(function() {
 					if ($("#items_edit_target").val() && $("#items_edit_bought").val() && $("#items_edit_price").val()) {
@@ -1065,14 +969,6 @@
 
 							window.calc_data.income_count = 0;
 							window.calc_data.outcome_count = 0; // 初始化三个count变量
-
-							// $("#calc_result_income_count").text("应收小计:0円");
-							// $("#calc_result_spend_count").text("消费小计:0円");
-							// $("#calc_result_outcome_count").text("应付小计:0円");
-
-							// $("#calc_result_in_self").empty().append("<li><div class=\"scroll\">" + "简明收款指南" + "</div></li>");
-							// $("#calc_result_out_self").empty().append("<li><div class=\"scroll\">" + "简明付款指南" + "</div></li>");
-
 							window.calc_data._date = $("#calc_when").val(); //把结算的时间扔进去
 
 							socket.emit("main_calc_server", localStorage.nickname, localStorage.active_group, $("#calc_when").val());
@@ -1082,14 +978,6 @@
 					} else {
 						alert("请选择活跃队伍！");
 					};
-				});
-				//代购详情跳转
-				$("#turn_to_calc_result_details").click(function() {
-					$("#calc_result_details").page();
-
-					$("#calc_result_income").listview("refresh");
-					$("#calc_result_outcome").listview("refresh");
-					$("#calc_result_spend").listview("refresh");
 				});
 
 				///////////////第二期新增代码/////////////////
@@ -1268,7 +1156,6 @@
 				$("#turn_to_add_circle").click(function() {
 					if (localStorage.active_group) {
 						$("#add_circle").page();
-						//						$("#add_circle_cut_index").val("");
 						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
@@ -1284,9 +1171,11 @@
 				});
 
 				$("#add_circle_reset").click(function() {
+
 					var r = confirm("确认重置这个表单?");
+
 					if (r) {
-						//						$("#add_circle_cut_index").val("");
+
 						$("#add_circle_date").val("日").selectmenu("refresh");
 						$("#add_circle_area").val("東").selectmenu("refresh");
 						$("#add_circle_block_name").val("");
@@ -1302,26 +1191,34 @@
 				$("#add_circle_upload").click(function() {
 					var r = confirm("确认为队伍\"" + localStorage.active_group + "\"添加circle?");
 					if (r) {
+
 						if ($("#add_circle_date").val() && $("#add_circle_area").val() && $("#add_circle_block_name").val() && $("#add_circle_space_number").val() && $("#add_circle_name").val() && $("#add_circle_author").val() && $("#add_circle_space_set").val()) {
 
 							if (Number($("#add_circle_space_number").val()) < 10 && $("#add_circle_space_number").val().length == 1) { //补齐0
+
 								$("#add_circle_space_number").val("0" + $("#add_circle_space_number").val());
+
 							};
 
 
 							if ($("#add_circle_block_name").val() >= "Ａ" && $("#add_circle_block_name").val() <= "Ｚ") {
+
 								$("#add_circle_block_name").val(String.fromCharCode($("#add_circle_block_name").val().charCodeAt(0) - 65248));
 								//把全角字符的unicode编码转换为对应半角字符的unicode码
 							};
 
 							var circle_id = $("#add_circle_date").val() + $("#add_circle_area").val() + get_venues($("#add_circle_block_name").val(), Number($("#add_circle_space_number").val())) + $("#add_circle_block_name").val() + $("#add_circle_space_number").val() + $("#add_circle_space_set").val();
-							//1203-4
+
 							socket.emit("main_add_circle_server", $("#add_circle_date").val(), $("#add_circle_area").val(), $("#add_circle_block_name").val(), $("#add_circle_space_number").val(), $("#add_circle_name").val(), $("#add_circle_author").val(), $("#add_circle_space_set").val(), localStorage.active_group, localStorage.nickname, circle_id); //1116
 
 						} else {
+
 							alert("请填写所有的信息!");
+
 						};
+
 					};
+
 				});
 
 				$("#circle_details_set_finished").click(function() {
@@ -1516,10 +1413,10 @@
 						</center>
 					</li>
 				</ul>
-				<br>
+				<br />
 				<input type="text" id="sent_message">
 				<input type="button" id="button_message_send" value="发送消息">
-				<br>
+				<br />
 
 
 			</div>
@@ -1548,9 +1445,9 @@
 				<input type="button" id="turn_to_add_item" value="登录新宝物">
 				<input type="button" id="turn_to_add_circle" value="登录新摊位">
 				<a href="#input_csv" data-role="button" data-transition="slide">导入CSV文件</a>
-				<br>
+				<br />
 				<hr>
-				<br>
+				<br />
 				<a href="#calc_setting" data-role="button">结算</a>
 				<a href="#about" data-role="button" data-transition="slide">关于</a>
 				<a id="logout" data-role="button" data-theme="b">退出当前帐号</a>
@@ -1636,7 +1533,7 @@
 
 
 				<input type="button" id="button_active_group" value="设为活跃" disabled>
-				<input type="button" id="button_group_item_lock" value="锁定item" / disabled>
+				<input type="button" id="button_group_item_lock" value="锁定item" disabled>
 				<input type="button" id="button_join_group" value="加入此队伍" disabled>
 				<input type="button" id="button_exit_group" value="退出此队伍" disabled>
 				<input type="button" id="button_delete_group" value="解散此队伍" data-theme="b" disabled>
@@ -1713,9 +1610,6 @@
 						<option value="">选择负责人</option>
 					</select>
 				</div>
-
-
-
 				<input type="button" id="add_item_upload" value="上传信息" />
 
 			</div>
@@ -1815,7 +1709,7 @@
 				<center>上传格式以本页面要求为准</center>
 				<center>～建议使用chrome for windows～</center>
 
-				<br>
+				<br />
 				<ul id="upload_result" data-role="listview" data-inset="true"></ul>
 			</div>
 
@@ -1943,7 +1837,7 @@
 
 				<div data-role="fieldcontain">
 					<center>结算哪天的?</center>
-					<br>
+					<br />
 					<select name="calc_when" id="calc_when" data-native-menu="false">
 						<!--mikoto-->
 						<!--在正式使用的时候，把上边这个value里的“金”这个换成“日”-->
@@ -1987,19 +1881,23 @@
 			</div>
 
 			<div data-role="content">
-				<center>ver 3.1</center>
-				<!--<center>「升级版」</center>-->
-				<br>
-				<hr> 已知bug:若队伍中没有circle，则拉取任务后显示错乱。可以通过用户来添加一个circle解决。
-				<br>
-				<br>
-				<br>
-				<center>code by suica</center>
-				<br>
-				<center>感谢:</center>
+				<br />
+				<center>工事中~</center>
+				<br />
+				<center>ver dev 1.0</center>
+				<br />
+				<center>这个版本主要的工作就是代码重构与优化。</center>
+				<br />
+				<hr />
+				<br />
+				<center> <a href="http://test.eshicon.org/request.html" target="_blank">BUG汇报请点这里~自动新窗口打开哟~</a>
+				</center>
+				<br />
+				<!--<center>code by suica</center>-->
+				<!--<center>感谢:</center>
 				<center>Katsuragi Mikoto 的帮助</center>
 				<center>Testarossa 的意见</center>
-				<center>和其他所有给我帮助的各位!</center>
+				<center>和其他所有给我帮助的各位!</center>-->
 			</div>
 		</div>
 
