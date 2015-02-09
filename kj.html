@@ -5,7 +5,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<script src="http://cdn.bootcss.com/polymer/0.5.3-rc/polymer.js"></script>
+		<script src="http://test.eshicon.org/KJ-PROJECT/js/polymer.min.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
@@ -85,12 +85,13 @@
 				};
 			};
 
+			var socket = io.connect("http://157.7.138.169:2333");
+
+
 
 			$(function() {
 
 				"use strict"
-
-
 				//				FastClick.attach(document.body);
 
 				//未登录跳转
@@ -106,43 +107,34 @@
 
 				window.csvdata = new Array(); //存储csv数据的一个全局变量。从read-csv.js里入栈。
 
-				var is_connected = 0; //1:已连接服务器;0:未连接服务器
-
-
-
-				var socket = io.connect("http://157.7.138.169:2333");
 
 				socket.emit("main_check_group_server", localStorage.nickname, localStorage.active_group);
+				console.time(233);
 
 				socket.on("main_check_group_client", function(flag, power, is_locked) { //flag:number,1代表加入队伍，0代表没加入队伍;power:string,队伍里的职务；is_lock:number,1为锁定，0为未锁定;
-					console.log(power);
-
-					if (is_locked) { //true:锁定
-						console.log("locked");
-					} else { //branch:未锁定
-						console.log("unlocked");
-					};
-
 					if (flag == 1) { //true：在服务器里检索到数据，加入了队伍。
+						if (is_locked) { //true:给标题加个锁字，输出
+							$("title-tag").attr("value", localStorage.active_group + "(锁)");
+						} else { //branch:正常输出标题
+							$("title-tag").attr("value", localStorage.active_group);
+						};
 						localStorage.active_group_power = power;
 						localStorage.active_group_item_lock = is_locked;
-						if (is_locked) { //true:给标题加个锁字，输出
-							//							$("#mission_title").text(localStorage.active_group + "(锁)");
-							document.getElementById("link_flag").situation = localStorage.active_group + "(锁)";
-						} else { //branch:正常输出标题
-							//							$("#mission_title").text(localStorage.active_group);
-							document.getElementById("link_flag").situation = localStorage.active_group;
+						console.log(power);
+						if (is_locked) { //true:锁定
+							console.log("locked");
+						} else { //branch:未锁定
+							console.log("unlocked");
 						};
 					} else { //branch:清空无用数据
-						//						$("#mission_title").text("未选队伍");
-						document.getElementById("link_flag").situation = "未选队伍";
-
+						$("title-tag").attr("value", "(未选队伍)");
 						localStorage.removeItem("active_group");
 						localStorage.removeItem("active_group_power");
 						localStorage.removeItem("active_group_item_lock");
 					};
 				});
 
+				console.timeEnd(233);
 				//结算时用数据存储,绑定为全局对象
 				window.calc_data = new Object();
 				window.calc_data = {
@@ -443,14 +435,12 @@
 
 				socket.on("connect", function() {
 
-					is_connected = 1;
-
-					$("#recived_message").append("<li><center>连接成功<center></li>");
+					//					is_connected = 1;
 
 					$("#message").page(); //review的时候查一下这个page()是啥用的
 					$("#recived_message").listview("refresh");
 
-					$("#connect_flag").empty().append("消息(已连接)");
+					//					$("#connect_flag").empty().append("消息(已连接)");
 				}); //socket.on("connect") ending
 
 				socket.on("main_message_client", function(message) {
@@ -849,9 +839,6 @@
 				$("#button_message_clear").click(function() {
 					$("#recived_message").empty();
 					$("#recived_message").append("<li><center><h1>对话消息</h1></center></li>");
-					if (is_connected) {
-						$("#recived_message").append("<li><center>连接成功<center></li>");
-					};
 					$("#recived_message").listview("refresh");
 
 				}); //$("#button_message_clear").click() ending
@@ -1356,15 +1343,15 @@
 
 	<body>
 
-		<polymer-element name="title-tag">
+		<polymer-element name="title-tag" attributes="value">
 			<template>
-				{{situation}}
+				{{value}}
 			</template>
 			<script>
 				Polymer('title-tag', {
 					// initialize the element's model
 					ready: function() {
-						this.situation = "～数据库连接中～";
+						this.value = "正在连接！";
 					}
 				});
 			</script>
@@ -1375,7 +1362,7 @@
 		<div data-role="page" id="mission">
 			<div data-role="header" data-position="fixed">
 
-				<h1><title-tag id="link_flag"></title-tag></h1>
+				<h1><title-tag></title-tag></h1>
 
 				<div data-role="button" class="ui-btn-right sui-btn">
 					<a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
@@ -1386,9 +1373,6 @@
 			</div>
 
 			<div data-role="content">
-
-
-
 
 				<div data-role="collapsible" data-collapsed="false">
 					<h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>
@@ -1420,7 +1404,8 @@
 
 		<div data-role="page" id="message">
 			<div data-role="header">
-				<h1 id="connect_flag">消息</h1>
+				<!--<h1 id="connect_flag">消息</h1>-->
+				<h1><title-tag></title-tag></h1>
 				<div data-role="button" class="ui-btn-left">
 					<input type="button" id="button_message_clear" value="清空" data-role="button" data-icon="alert">
 				</div>

@@ -226,22 +226,20 @@ socketio.listen(server).on('connection', function(socket) {
 
 	socket.on('main_check_group_server', function(nickname, which_group) {
 		var error = 0;
-		c.query('SELECT \`' + nickname + '\`,\`group_item_lock\` FROM groups WHERE group_name =?', [which_group])
+		c.query('SELECT \`' + nickname + '\`,group_item_lock FROM groups WHERE group_name =?', [which_group])
 			.on('result', function(res) {
 				res.on('row', function(row) {
+						socket.emit('main_check_group_client', 1, row[nickname], row['group_item_lock']);
 						error = 2;
-						//		       console.log('成功');
-						socket.emit('main_check_group_client', 1, row[nickname],row['group_item_lock']);
 					})
 					.on('error', function(err) {
-						console.log('发生异常错误:' + inspect(err));
 						socket.emit('main_check_group_client', 0);
+						console.log('发生异常错误:' + inspect(err));
 					})
 					.on('end', function(info) {
 						if (error == 0) {
 							socket.emit('main_check_group_client', -1);
 						};
-						//		        console.log('完毕');
 					})
 			})
 			.on('end', function() {
@@ -299,11 +297,11 @@ socketio.listen(server).on('connection', function(socket) {
 												.on('result', function(res) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
-															if (row[temp] == '1') {//这里有个写法上的问题。不对称。
-																if (is_pushed == 0) {//未推送过circle数据,推送完整的circle数据和完整的relation数据
+															if (row[temp] == '1') { //这里有个写法上的问题。不对称。
+																if (is_pushed == 0) { //未推送过circle数据,推送完整的circle数据和完整的relation数据
 																	socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 																	is_pushed = 1;
-																}else{//已推送过circle数据,只推送circleid和完整的relation
+																} else { //已推送过circle数据,只推送circleid和完整的relation
 																	socket.emit('main_mission_list_client', relation_data_temp, circle_data['circle_id'], 0);
 																};
 															} else {
