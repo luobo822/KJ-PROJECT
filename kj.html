@@ -87,8 +87,6 @@
 
 			var socket = io.connect("http://157.7.138.169:2333");
 
-
-
 			$(function() {
 
 				"use strict"
@@ -102,14 +100,11 @@
 					//					 window.location.assign("http://test.eshicon.org/login.html");
 				};
 
-
-				//定义标记
-
 				window.csvdata = new Array(); //存储csv数据的一个全局变量。从read-csv.js里入栈。
 
+				console.time("验证队伍与用户");
 
 				socket.emit("main_check_group_server", localStorage.nickname, localStorage.active_group);
-				console.time(233);
 
 				socket.on("main_check_group_client", function(flag, power, is_locked) { //flag:number,1代表加入队伍，0代表没加入队伍;power:string,队伍里的职务；is_lock:number,1为锁定，0为未锁定;
 					if (flag == 1) { //true：在服务器里检索到数据，加入了队伍。
@@ -118,6 +113,9 @@
 						} else { //branch:正常输出标题
 							$("title-tag").attr("value", localStorage.active_group);
 						};
+
+						console.timeEnd("验证队伍与用户");
+
 						localStorage.active_group_power = power;
 						localStorage.active_group_item_lock = is_locked;
 						console.log(power);
@@ -134,7 +132,19 @@
 					};
 				});
 
-				console.timeEnd(233);
+				window.states = new Object();
+				window.states = {
+					"circle": {
+						"id": "",
+						"items": ""
+					},
+					"group": {
+						"member":""
+					}
+				};
+				/////////////////////////////////////////存档点
+
+
 				//结算时用数据存储,绑定为全局对象
 				window.calc_data = new Object();
 				window.calc_data = {
@@ -434,19 +444,17 @@
 
 
 				socket.on("connect", function() {
-
-					//					is_connected = 1;
-
-					$("#message").page(); //review的时候查一下这个page()是啥用的
+					$("#message").page();
+					$("#recived_message").append("<li><center><div class=\"scroll\">已连接</div></center></li>");
 					$("#recived_message").listview("refresh");
-
-					//					$("#connect_flag").empty().append("消息(已连接)");
 				}); //socket.on("connect") ending
 
 				socket.on("main_message_client", function(message) {
+					$("#message").page();
 					$("#recived_message").append("<li><div class=\"scroll\">" + message + "</div></li>");
-					$("#unread_message_count").text(Number($("#unread_message_count").text()) + 1);
-				}); //socket.on("main_message", function(message) ending
+					//					$("#unread_message_count").text(Number($("#unread_message_count").text()) + 1);
+					$("#recived_message").listview("refresh");
+				}); //socket.on("main_message_client", function(message) ending
 
 				socket.on("main_csv_submit_client", function(result) {
 					if (result == -1) {
@@ -801,12 +809,9 @@
 
 				//掉线
 				socket.on("disconnect", function() {
-
 					$("#recived_message").append("<br /><li><center>连接异常关闭</center></li>");
-
 					console.log("与服务器的连接已关闭.刷新页面以重新连接.");
-
-					$("#connect_flag").empty().append("消息(连接已断开)");
+					//					$("#connect_flag").empty().append("消息(连接已断开)");
 					$("#message").page();
 					$("#recived_message").listview("refresh");
 
@@ -814,23 +819,17 @@
 
 				//消息发送机能
 				$("#sent_message").keypress(function(event) {
-
 					if (event.which == 13) {
-
 						event.preventDefault();
 						socket.emit("main_message_server", localStorage.nickname + ":" + $("#sent_message").val());
-						$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
-						$("#recived_message").listview("refresh");
 						$("#sent_message").val("");
-
 					}; //if ending
-
 				}); //$("#sent_message").keypress(function(event) ending
 
 				$("#button_message_send").click(function() {
 
 					socket.emit("main_message_server", localStorage.nickname + ":" + $("#sent_message").val());
-					$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
+					//					$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
 					$("#recived_message").listview("refresh");
 					$("#sent_message").val("");
 
@@ -838,9 +837,7 @@
 				//清除消息
 				$("#button_message_clear").click(function() {
 					$("#recived_message").empty();
-					$("#recived_message").append("<li><center><h1>对话消息</h1></center></li>");
 					$("#recived_message").listview("refresh");
-
 				}); //$("#button_message_clear").click() ending
 				//CSV上传
 				$("#upload_csv").click(function() {
@@ -1007,15 +1004,15 @@
 						//锁定
 						socket.emit("main_op_group_lock_server", window.op_group.now_group, 0);
 						if (localStorage.active_group == window.op_group.now_group) {
+							$("title-tag").attr("value", localStorage.active_group + "(锁)");
 							localStorage.active_group_item_lock = "locked";
-							$("#mission_title").text(localStorage.active_group + "(锁)");
 						};
 						$("#button_group_item_lock").val("解锁item").button("refresh");
 					} else {
 						//解锁
 						if (localStorage.active_group == window.op_group.now_group) {
+							$("title-tag").attr("value", localStorage.active_group);
 							localStorage.active_group_item_lock = "";
-							$("#mission_title").text(localStorage.active_group);
 						};
 						socket.emit("main_op_group_lock_server", window.op_group.now_group, 1);
 						$("#button_group_item_lock").val("锁定item").button("refresh");
@@ -1035,10 +1032,10 @@
 					var r = confirm("你确定要退出此队伍?");
 					if (r) {
 						if (localStorage.active_group == window.op_group.now_group) {
+							$("title-tag").attr("value", "(未选队伍)");
 							localStorage.active_group = "";
 							localStorage.active_group_power = "";
 							localStorage.active_group_item_lock = "";
-							$("#mission_title").text("未选择活跃队伍");
 						};
 						socket.emit("main_op_group_server", localStorage.nickname, 2, window.op_group.now_group, "", "", "");
 					};
@@ -1051,10 +1048,10 @@
 						if (r2) {
 							socket.emit("main_op_group_server", localStorage.nickname, 3, window.op_group.now_group, "", "", "");
 							if (localStorage.active_group == window.op_group.now_group) {
+								$("title-tag").attr("value", "(未选队伍)");
 								localStorage.active_group = "";
 								localStorage.active_group_power = "";
 								localStorage.active_group_item_lock = "";
-								$("#mission_title").text("未选择活跃队伍");
 							};
 						};
 					};
@@ -1079,13 +1076,11 @@
 					localStorage.active_group = window.op_group.now_group;
 					localStorage.active_group_power = window.op_group.now_group_power;
 					localStorage.active_group_item_lock = window.op_group.now_group_item_lock;
-
 					if (localStorage.active_group_item_lock) {
-						$("#mission_title").text(localStorage.active_group + "(锁)");
+						$("title-tag").attr("value", localStorage.active_group + "(锁)");
 					} else {
-						$("#mission_title").text(localStorage.active_group);
+						$("title-tag").attr("value", localStorage.active_group);
 					};
-
 					alert("成功设置\"" + localStorage.active_group + "\"为活跃队伍");
 					$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
 				});
@@ -1412,12 +1407,7 @@
 			</div>
 
 			<div data-role="content">
-				<ul id="recived_message" data-role="listview" data-inset="false" data-filter-placeholder="搜索消息记录...">
-					<li>
-						<center>
-							<h1>对话消息</h1>
-						</center>
-					</li>
+				<ul id="recived_message" data-role="listview" data-inset="false">
 				</ul>
 				<br />
 				<input type="text" id="sent_message">

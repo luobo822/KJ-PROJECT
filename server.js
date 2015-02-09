@@ -248,12 +248,21 @@ socketio.listen(server).on('connection', function(socket) {
 	});
 
 	socket.on('main_message_server', function(msgdata) {
-		//		console.log('main_message_server:收到消息:', msgdata);
-		socket.broadcast.emit('message', msgdata);
+		var date = new Date();
+
+		function checktime(i) {
+			if (i < 10) {
+				i = "0" + i;
+			}
+			return i;
+		};
+		console.log('main_message_server:收到消息:', msgdata);
+		socket.emit('main_message_client', checktime(date.getHours()) + ':' + checktime(date.getMinutes()) + '    ' + msgdata);
+		socket.broadcast.emit('main_message_client', checktime(date.getHours()) + ':' + checktime(date.getMinutes()) + '    ' + msgdata);
 	});
 
 	socket.on('main_csv_submit_server', function(csvdata, which_group, nickname, circle_id) { //csvdata是一个数组
-		//console.log(circle_id);
+
 		c.query('SELECT COUNT(circle_id)=0 FROM \`' + which_group + '_circle\` WHERE circle_id = ?', [circle_id])
 			.on('result', function(res) {
 				res.on('row', function(row) {
@@ -279,6 +288,7 @@ socketio.listen(server).on('connection', function(socket) {
 	});
 
 	socket.on('main_mission_list_server', function(nickname, which_group) {
+
 		c.query('SELECT * FROM \`' + which_group + '_circle\` ')
 			.on('result', function(res) {
 				res.on('row', function(row) {
@@ -292,12 +302,12 @@ socketio.listen(server).on('connection', function(socket) {
 								res.on('row', function(row) {
 										relation_data = row;
 										if (relation_data[nickname] == null) { //true:这个item和self没关系，则push到“其他任务”里,完整的circle和relation数据
-											var relation_data_temp = relation_data; //q是一个临时容器；它防止在查询的时候，relation_data的值被外部代码，异步改掉而出错；
+											var relation_data_temp = relation_data; //relation_data_temp是一个备忘；它防止在查询的时候，relation_data的值被外部代码异步改掉而出错；
 											c.query('SELECT COUNT(' + nickname + ')=0 FROM \`' + which_group + '_data\` WHERE circle_id = ?', [relation_data['circle_id']])
 												.on('result', function(res) {
 													res.on('row', function(row) {
 															var temp = "COUNT(" + nickname + ")=0";
-															if (row[temp] == '1') { //这里有个写法上的问题。不对称。
+															if (row[temp] == '1') {
 																if (is_pushed == 0) { //未推送过circle数据,推送完整的circle数据和完整的relation数据
 																	socket.emit('main_mission_list_client', relation_data_temp, circle_data, 1);
 																	is_pushed = 1;
