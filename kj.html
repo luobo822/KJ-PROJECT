@@ -5,9 +5,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<!--<title></title>-->
-
-		<script src="http://cdn.bootcss.com/angular.js/1.1.0/angular.min.js"></script>
+		<script src="http://cdn.bootcss.com/polymer/0.5.3-rc/polymer.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/socket.io-1.0.6.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery-2.1.0.js"></script>
 		<script src="http://test.eshicon.org/KJ-PROJECT/js/jquery.mobile-1.4.3.js"></script>
@@ -129,25 +127,15 @@
 						localStorage.active_group_power = power;
 						localStorage.active_group_item_lock = is_locked;
 						if (is_locked) { //true:给标题加个锁字，输出
-							just();
-
-
-
 							//							$("#mission_title").text(localStorage.active_group + "(锁)");
+							document.getElementById("link_flag").situation = localStorage.active_group + "(锁)";
 						} else { //branch:正常输出标题
-
-
-							//							app.controller("check_group", function($scope) {
-							//								$scope.group = localStorage.active_group;
-							//								console.log("aaaa");
-							//							});
 							//							$("#mission_title").text(localStorage.active_group);
+							document.getElementById("link_flag").situation = localStorage.active_group;
 						};
 					} else { //branch:清空无用数据
-						$("#mission_title").text("未选队伍");
-						//						app.controller("check_group", function($scope) {
-						//							$scope.group_name = "未选队伍";
-						//						});
+						//						$("#mission_title").text("未选队伍");
+						document.getElementById("link_flag").situation = "未选队伍";
 
 						localStorage.removeItem("active_group");
 						localStorage.removeItem("active_group_power");
@@ -1362,19 +1350,33 @@
 				});
 
 			}); //$(function) ending
-
 		</script>
 
 	</head>
 
 	<body>
 
+		<polymer-element name="title-tag">
+			<template>
+				{{situation}}
+			</template>
+			<script>
+				Polymer('title-tag', {
+					// initialize the element's model
+					ready: function() {
+						this.situation = "～数据库连接中～";
+					}
+				});
+			</script>
+		</polymer-element>
 
+		<!--模块化分割线！-->
 
 		<div data-role="page" id="mission">
 			<div data-role="header" data-position="fixed">
-				<!--</div>-->
-				<h1>任务</h1>
+
+				<h1><title-tag id="link_flag"></title-tag></h1>
+
 				<div data-role="button" class="ui-btn-right sui-btn">
 					<a href="#tools" data-role="button" data-icon="grid" data-transition="slide">工具</a>
 				</div>
@@ -1385,11 +1387,8 @@
 
 			<div data-role="content">
 
-				<div ng-controller="a">
-					<input type="text" ng-model="test" ng-init="test=b.firstName">
-					<hr>
-					<p ng-bind="test"></p>
-				</div>
+
+
 
 				<div data-role="collapsible" data-collapsed="false">
 					<h4>未完成的任务<span id="unfinished_count" class="ui-li-count">0</span></h4>

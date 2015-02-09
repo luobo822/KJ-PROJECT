@@ -1,0 +1,14 @@
+
+<polymer-element name="title-tag">
+	<template>
+		{{situation}}
+	</template>
+	<script>
+		Polymer('title-tag', {
+			// initialize the element's model
+			ready: function() {
+				this.situation = "正在连接！";
+			}
+		});
+	</script>
+</polymer-element>
