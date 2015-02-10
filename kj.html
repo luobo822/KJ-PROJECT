@@ -90,7 +90,7 @@
 			$(function() {
 
 				"use strict"
-				//				FastClick.attach(document.body);
+				//								FastClick.attach(document.body);
 
 				//未登录跳转
 				if (localStorage.id != undefined && localStorage.nickname != undefined && localStorage.username != undefined) {
@@ -136,13 +136,14 @@
 				window.states = {
 					"circle": {
 						"id": "",
+						"data":"",
 						"items": ""
 					},
 					"group": {
-						"member":""
+						"member": ""
 					}
 				};
-				/////////////////////////////////////////存档点
+
 
 
 				//结算时用数据存储,绑定为全局对象
@@ -158,51 +159,41 @@
 				window.op_details = {
 
 					"otherinfo": new Object(), //存储基于circleid的relation;调用方式:window.op_details.otherinfo[circleid],为0则不存在item,不为0则存在item
-					"now_circleid": "",
-					"now_circledata": "",
-					"member": "",
 					"update_note": function(texts) { //texts,string,一段Note文字
 						var n = prompt("请输入附注：", texts);
 						if (n) {
-							socket.emit("main_update_note_server", window.op_details.now_circleid, n, localStorage.active_group);
+							socket.emit("main_update_note_server", window.states.circle.id, n, localStorage.active_group);
 							$("#note_in_details").text("附注:" + n);
 						};
 					},
 					"read": function(circleid) {
 						$("#circle_details_circledata").empty(); //清空原有的内容
-						window.op_details.now_circleid = circleid;
-						window.op_details.now_circledata = window.op_details[circleid];
+						window.states.circle.id = circleid;
+						window.states.circle.data = window.op_details[circleid];//window.op_details[circleid] 为circle里的一行,obj类型
 
-						//window.op_details[circleid] 为circle里的一行,obj类型
-
-						$("#circle_details_circledata").append("<li><div class=\"XL\">" + window.op_details.now_circledata['i11'] + "</div></li>").append("<li><div class=\"L\">" + window.op_details.now_circledata['circle_id'] + "</div></li>");
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位名称：" + window.op_details.now_circledata['i11'] + "</div></li>");
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位读法：" + window.op_details.now_circledata['i12'] + "</div></li>");
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位作者：" + window.op_details.now_circledata['i13'] + "</div></li>");
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">颁布物名：" + window.op_details.now_circledata['i14'] + "</div></li>");
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">补足说明：" + window.op_details.now_circledata['i17'] + "</div></li>");
-						$("#circle_details_circledata").append('<li><a target="_blank" href=\"' + window.op_details.now_circledata['i15'] + '\">主页链接：' + window.op_details.now_circledata['i15'] + "</a></li>");
-						$("#circle_details_circledata").append('<li><div id=\"note_in_details\" onclick=\"window.op_details.update_note(\'' + window.op_details.now_circledata['i18'] + '\')\" class=\"scroll\">附注：' + window.op_details.now_circledata['i18'] + '</div></li>');
-						$("#circle_details_circledata").append("<li><div class=\"scroll\">上传用户：" + window.op_details.now_circledata['updater'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"XL\">" + window.states.circle.data['i11'] + "</div></li>").append("<li><div class=\"L\">" + window.states.circle.data['circle_id'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位名称：" + window.states.circle.data['i11'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位读法：" + window.states.circle.data['i12'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">摊位作者：" + window.states.circle.data['i13'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">颁布物名：" + window.states.circle.data['i14'] + "</div></li>");
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">补足说明：" + window.states.circle.data['i17'] + "</div></li>");
+						$("#circle_details_circledata").append('<li><a target="_blank" href=\"' + window.states.circle.data['i15'] + '\">主页链接：' + window.states.circle.data['i15'] + "</a></li>");
+						$("#circle_details_circledata").append('<li><div id=\"note_in_details\" onclick=\"window.op_details.update_note(\'' + window.states.circle.data['i18'] + '\')\" class=\"scroll\">附注：' + window.states.circle.data['i18'] + '</div></li>');
+						$("#circle_details_circledata").append("<li><div class=\"scroll\">上传用户：" + window.states.circle.data['updater'] + "</div></li>");
 
 						$("#circle_details").page();
-
 						$("#circle_details_circledata").listview("refresh");
-
 						$("#circle_details_set_finished").button("enable");
-
 						if (window.op_details[circleid]['updater'] == localStorage.nickname || localStorage.active_group_power == "leader") {
 							$("#circle_delete").button("enable");
 						} else {
 							$("#circle_delete").button("disable");
 						};
-
-						if (window.op_details.now_circledata['i27'] != "finished") {
+						if (window.states.circle.data['i27'] != "finished") {
 							$("#circle_details_set_finished").val("设为已完成").button("refresh");
 						} else {
 							$("#circle_details_set_finished").val("设为未完成").button("refresh");
 						};
-
 						$.mobile.changePage("#circle_details");
 					}
 				};
@@ -271,8 +262,8 @@
 					},
 					"join": function(number_in_array) { //number_in_array 类型为 number
 							//取得数据，扔进编辑里。
-							window.op_details.now_circleid = window.op_details.now_circleid;
-							window.op_items.now_itemname = window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['item_name']; //11.12
+//							window.states.circle.id = window.states.circle.id;
+							window.op_items.now_itemname = window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['item_name'];
 							window.op_items.now_item_responsibility = window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]['responsibility'];
 
 							//							console.log(window.op_details.otherinfo[window.op_items.now_circleid][number_in_array]); //iteminfo对象
@@ -304,7 +295,7 @@
 										};
 									};
 								} else {
-									for (var x in window.op_details.member) {
+									for (var x in window.states.group.member) {
 										if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
 											//										console.log(x);
 											$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
@@ -439,9 +430,8 @@
 						};
 					}
 				};
+
 				//通讯机能
-
-
 
 				socket.on("connect", function() {
 					$("#message").page();
@@ -451,8 +441,7 @@
 
 				socket.on("main_message_client", function(message) {
 					$("#message").page();
-					$("#recived_message").append("<li><div class=\"scroll\">" + message + "</div></li>");
-					//					$("#unread_message_count").text(Number($("#unread_message_count").text()) + 1);
+					$("#recived_message").append("<li><div class=\"scroll\"><b>" + message + "</b></div></li>");
 					$("#recived_message").listview("refresh");
 				}); //socket.on("main_message_client", function(message) ending
 
@@ -471,12 +460,8 @@
 				socket.on("main_mission_list_client", function(otherinfo, circleinfo, is_othermission) { //otherinfo是relation数据，circleinfo是circle数据
 					//circleinfo有string和object两种类型。string说明已推送过此item的circle信息；object说明没有推送过
 
-					if (!window.op_details.member && otherinfo) {
-						window.op_details.member = otherinfo;
-					};
 
 					if (is_othermission == 1) { //进其他任务
-
 						$("#all_mission").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
 						$("#all_mission").listview("refresh");
 						$("#all_count").text(Number($("#all_count").text()) + 1);
@@ -485,43 +470,36 @@
 							window.op_details.otherinfo[circleinfo['circle_id']] = new Array();
 						};
 						window.op_details.otherinfo[circleinfo['circle_id']].push(otherinfo);
-
 					} else { //进完成或未完成的任务
-
 						if (typeof(circleinfo) == "string") { //true:代表已经推送过了；circleinfo里是string形式的circleid
-							//																			window.op_details.otherinfo[circleinfo['i2']] = new Array();
 							//已经推送过就说明：window.op_details.otherinfo[circleinfo['i2']]已经是个数组了；不需要再初始化:winndow.op_details.otherinfo[circleinfo] = new Array();
 							window.op_details.otherinfo[circleinfo].push(otherinfo);
-
 						} else { //branch:代表没有推送过;circleinfo里是完整的object形式
-
 							if (circleinfo['i27'] == "finished") {
-
 								if (!$.isArray(window.op_details.otherinfo[circleinfo['circle_id']])) { //若不是数组,则初始化为数组
 									window.op_details.otherinfo[circleinfo['circle_id']] = new Array();
 								};
 								window.op_details.otherinfo[circleinfo['circle_id']].push(otherinfo);
-
 								$("#finished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + '</p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p></a><a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a></li>');
-
 								$("#finished").listview("refresh");
 								$("#finished_count").text(Number($("#finished_count").text()) + 1);
 								window.op_details[circleinfo['circle_id']] = circleinfo;
-
 							} else {
 								if (!$.isArray(window.op_details.otherinfo[circleinfo['circle_id']])) { //若不是数组,则初始化为数组
 									window.op_details.otherinfo[circleinfo['circle_id']] = new Array();
 								};
 								window.op_details.otherinfo[circleinfo['circle_id']].push(otherinfo);
-
 								$("#unfinished").append('<li><a herf="#circle_details" onclick="window.op_details.read(\'' + circleinfo['circle_id'] + '\')" id=\"' + circleinfo['circle_id'] + '\">' + circleinfo['i11'] + '<p>' + circleinfo['i14'] + ' </p><p>' + circleinfo['circle_id'] + '</p>' + '<p>作者:' + circleinfo['i13'] + '</p><p>备注:' + circleinfo['i17'] + '</p>' + '<a onclick=\"window.op_items.read(\'' + circleinfo['circle_id'] + '\')\">' + '</a>' + '</li>');
-
 								$("#unfinished").listview("refresh");
 								$("#unfinished_count").text(Number($("#unfinished_count").text()) + 1);
 								window.op_details[circleinfo['circle_id']] = circleinfo;
 							};
 						};
 
+					};
+
+					if (!window.states.group.member && otherinfo) {
+						window.states.group.member = otherinfo;
 					};
 
 				});
@@ -790,31 +768,21 @@
 				});
 
 				socket.on("main_list_member_client", function(memberinfo) { //memberinfo 即为groups中的一行;obj类型
-
 					for (var x in memberinfo) {
-
 						if (x != "group_name" && x != "group_introduction" && x != "group_password" && x != "group_item_lock") {
-
 							if (memberinfo[x]) { //x在队伍里
-
 								$("#add_item_responsibility").append('<option value=\"' + x + '\">' + x + '</option>').selectmenu("refresh");
-
 							};
-
 						};
-
 					};
-
 				});
 
 				//掉线
 				socket.on("disconnect", function() {
 					$("#recived_message").append("<br /><li><center>连接异常关闭</center></li>");
-					console.log("与服务器的连接已关闭.刷新页面以重新连接.");
-					//					$("#connect_flag").empty().append("消息(连接已断开)");
 					$("#message").page();
 					$("#recived_message").listview("refresh");
-
+					console.log("与服务器的连接已关闭.刷新页面以重新连接.");
 				}); //socket.on("disconnect", function() ending
 
 				//消息发送机能
@@ -827,12 +795,8 @@
 				}); //$("#sent_message").keypress(function(event) ending
 
 				$("#button_message_send").click(function() {
-
 					socket.emit("main_message_server", localStorage.nickname + ":" + $("#sent_message").val());
-					//					$("#recived_message").append("<li><div class=\"scroll\">" + localStorage.nickname + ":" + $("#sent_message").val() + "</div></li>");
-					$("#recived_message").listview("refresh");
 					$("#sent_message").val("");
-
 				}); //$("#button_message_send").click(function() ending
 				//清除消息
 				$("#button_message_clear").click(function() {
@@ -1097,7 +1061,7 @@
 								$("#add_item_responsibility").selectmenu("disable").selectmenu("refresh");
 							};
 
-							$("#add_item_circle_id").val(window.op_details.now_circleid);
+							$("#add_item_circle_id").val(window.states.circle.id);
 							$("#add_item_name").val("");
 							$("#add_item_price").val("");
 							$("#add_item_number").val("");
@@ -1207,16 +1171,16 @@
 
 				$("#circle_details_set_finished").click(function() {
 					if ($("#circle_details_set_finished").val() == "设为已完成") {
-						var r = confirm("确认将circle" + window.op_details.now_circleid + "设为已完成?");
+						var r = confirm("确认将circle" + window.states.circle.id + "设为已完成?");
 						if (r) {
-							socket.emit("main_circle_finish_server", 1, window.op_details.now_circleid, localStorage.active_group);
+							socket.emit("main_circle_finish_server", 1, window.states.circle.id, localStorage.active_group);
 							$("#circle_details_set_finished").val("设为未完成").button("refresh");
 							//这里偷工减料了……为了赶时间，直接在emit之后改变按钮的value
 						};
 					} else {
-						var r = confirm("确认将circle" + window.op_details.now_circleid + "设为未完成?");
+						var r = confirm("确认将circle" + window.states.circle.id + "设为未完成?");
 						if (r) {
-							socket.emit("main_circle_finish_server", 0, window.op_details.now_circleid, localStorage.active_group);
+							socket.emit("main_circle_finish_server", 0, window.states.circle.id, localStorage.active_group);
 							$("#circle_details_set_finished").val("设为已完成").button("refresh");
 						};
 					};
@@ -1257,7 +1221,7 @@
 									};
 								};
 							} else {
-								for (var x in window.op_details.member) {
+								for (var x in window.states.group.member) {
 									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
 										console.log("1" + x);
 										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
@@ -1296,11 +1260,11 @@
 				});
 
 				$("#circle_delete").click(function() {
-					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.op_details.now_circledata['updater']) {
-						var r = confirm("你确定删除id为" + window.op_details.now_circleid + "的circle吗?\n这会删除这个circle所包含的一切item");
+					if (localStorage.active_group_power == "leader" || localStorage.nickname == window.states.circle.data['updater']) {
+						var r = confirm("你确定删除id为" + window.states.circle.id + "的circle吗?\n这会删除这个circle所包含的一切item");
 						var q = confirm("真的确定吗？");
 						if (r && q) {
-							socket.emit("main_circle_delete_server", window.op_details.now_circleid, localStorage.active_group);
+							socket.emit("main_circle_delete_server", window.states.circle.id, localStorage.active_group);
 						};
 					} else {
 						alert("请确认你有权限删除此circle");
@@ -1327,7 +1291,7 @@
 				});
 
 				$("#add_new_item_in_itemlist").click(function() {
-					window.op_details.now_circleid = window.op_items.now_circleid;
+					window.states.circle.id = window.op_items.now_circleid;
 					$("#add_new_item_in_detail").trigger("click");
 				});
 
