@@ -354,24 +354,20 @@
 								window.op_group.now_group_power = window.op_group.raw_all_group[i][localStorage.nickname];
 								window.op_group.now_group_item_lock = window.op_group.raw_all_group[i]['group_item_lock'];
 
-								//								if (window.op_group.now_group_item_lock == "locked") {
-								//									$("#button_group_item_lock").val("解锁item").button("refresh");
-								//								} else {
-								//									$("#button_group_item_lock").val("锁定item").button("refresh");
-								//								};
-								
-//								alert(void
-//									function() {
-//										if (window.op_group.now_group_item_lock == "locked") {
-//											return "解锁";
-//										} else {
-//											return "锁定";
-//										}
-//									}());
+								var lock;
+								void
 
-								$("#button_group_item_lock").val("item").button("refresh");
-								
-								//////存档
+								function() {
+									if (window.op_group.now_group_item_lock == "locked") {
+										lock = "解锁";
+									} else {
+										lock = "锁定";
+									}
+								}();
+
+								$("#button_group_item_lock").val(lock + "item").button("refresh");
+
+								//////锁定无法显示
 
 
 
