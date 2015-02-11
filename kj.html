@@ -134,6 +134,7 @@
 
 				window.states = new Object();
 				window.states = {
+					//					"说明":"这个变量存的是用户的状态。也就是说，以下的几个变量都是用户现在啥页面啊之类的信息",
 					"circle": {
 						"id": "",
 						"data": "",
@@ -208,50 +209,51 @@
 					"now_itemname": "", //存储item edit中对应的item name
 					"now_item_responsibility": "",
 					"to": 1, //1为返回到items_edit_select,2返回到tools
-					"clear_selectmemu": function() {
-						$("#items_edit_select").page();
-						$("#items_for_select").val("").selectmenu("refresh");
-						$("#user_for_select").val("").selectmenu("refresh");
-					},
+					//					"clear_selectmemu": function() {
+					//						$("#items_edit").page();
+					//						$("#items_for_select").val("").selectmenu("refresh");
+					//						$("#user_for_select").val("").selectmenu("refresh");
+					//					},
 					"read": function(circleid) {
 						if (window.op_details.otherinfo) {
 							window.states.circle.id = circleid;
 							$("#items_list").empty();
-							$("#items_for_select").empty().append('<option value=\"\">item名</option>');
-							$("#user_for_select").empty().append('<option value=\"\">user名</option>');
-
-							var username_temp = new Object();
-							if (window.op_details.otherinfo[circleid][0]) { //不为空
-								for (var x in window.op_details.otherinfo[circleid]) {
+							var username_obj_temp = new Object();
+							if (window.op_details.otherinfo[circleid][0]) { //true:这个circle的item数据不为空
+								for (var x in window.op_details.otherinfo[circleid]) { //循环读取这个circle的item数据中的各个item数据，x为数组索引，012345……
 									var count_items = 0; //总件数计数器
-									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
-										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
-									};
+									//									if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || window.op_details.otherinfo[circleid][x][localStorage.nickname]) {
+									//										$("#items_for_select").append('<option value=\"' + x + '\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '</option>');
+									//符合权限的情形
+									//									};
+
 									$("#items_list").append('<li data-role=\"list-divider\">' + window.op_details.otherinfo[circleid][x]["item_name"] + '(' + window.op_details.otherinfo[circleid][x]["item_price"] + '円)</li>');
 
-									if (window.op_details.otherinfo[circleid][x]['responsibility'] == "") {
+									if (window.op_details.otherinfo[circleid][x]['responsibility'] == "") { //true:无负责人
 										$("#items_list").append('<li data-role=\"listview\"><h1><center>无负责人</center></h1></li>');
-									} else {
+									} else { //branch:有负责人
 										$("#items_list").append('<li data-role=\"listview\" onclick=\'alert(\"负责人：' + window.op_details.otherinfo[circleid][x]['responsibility'] + '\")\'><h1><center>' + window.op_details.otherinfo[circleid][x]['responsibility'] + '</center></h1></li>');
 									};
 
-									for (var y in window.op_details.otherinfo[circleid][x]) { //循环读取这个item中的对象
-
-										if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) {
-											if (!username_temp[y]) {
+									for (var y in window.op_details.otherinfo[circleid][x]) { //y为一个item数据中的各个属性……item_name之类的
+										if (y != "circle_id" && y != "item_name" && y != "item_price" && y != "responsibility" && y != "rowid" && window.op_details.otherinfo[circleid][x][y]) { //true:y这时是一个用户名
+											if (!username_obj_temp[y]) { //true:以前没有检查过这个用户
 												if (localStorage.active_group_power == "leader" || window.op_details.otherinfo[circleid][x]['responsibility'] == localStorage.nickname || y == localStorage.nickname) {
-													$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+													//													$("#user_for_select").append('<option value=\"' + y + '\">' + y + '</option>');
+													//符合权限的情形
+													$("#items_list").append('<li data-role=\"listview\" onclick="window.op_items.fill(\'' + circleid + "\',\'" + x + "\',\'" + y + '\')"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
 												};
-												username_temp[y] = 1;
+												username_obj_temp[y] = 1;
+											}else{
+												$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '无权限修改'+'</div></li>');
 											};
 											var temp = eval('(' + window.op_details.otherinfo[circleid][x][y] + ')');
 											count_items += temp['target'];
-											$("#items_list").append('<li data-role=\"listview\"><div class=\"scroll\">' + y + window.op_details.otherinfo[circleid][x][y] + '</div></li>');
 										};
 									};
 									$("#items_list").append('<li data-role=\"listview\" onclick=\"window.op_items.join(' + x + ')\"><div class=\"scroll\">共' + count_items + '份</div></li>');
 								};
-							} else {
+							} else { //branch:这个circle的item数据不为空
 								$("#items_list").append('<li data-role=\"listview\"><center>无item</center></li>');
 							};
 
@@ -355,9 +357,7 @@
 								window.op_group.now_group_item_lock = window.op_group.raw_all_group[i]['group_item_lock'];
 
 								var lock;
-								void
-
-								function() {
+								~ function() {
 									if (window.op_group.now_group_item_lock == "locked") {
 										lock = "解锁";
 									} else {
@@ -366,10 +366,6 @@
 								}();
 
 								$("#button_group_item_lock").val(lock + "item").button("refresh");
-
-								//////锁定无法显示
-
-
 
 								switch (window.op_group.raw_all_group[i][localStorage.nickname]) {
 
@@ -409,8 +405,6 @@
 							};
 						};
 						$("#group_members").prepend("<li><center><h1>队长</h1></center></li>");
-
-
 
 						if (window.op_group.now_group == localStorage.active_group) {
 							$("#button_active_group").button("disable").val("已设为活跃").button("refresh");
@@ -1191,57 +1185,53 @@
 				});
 
 				$("#items_edit_select_assure").click(function() {
-					if ($("#items_for_select").val() && $("#user_for_select").val()) {
-						$("#items_edit").page();
-						var pureobj_info = eval('(' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()][$("#user_for_select").val()] + ')');
+					$("#items_edit").page();
+					var pureobj_info = eval('(' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()][$("#user_for_select").val()] + ')');
 
-						window.states.item.name = window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_name']; //11.12
-						window.states.item.responsibility = window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'];
+					window.states.item.name = window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_name']; //11.12
+					window.states.item.responsibility = window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'];
 
 
-						$("#items_edit_name").val("").val(window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_name'])
-						$("#items_edit_username").val($("#user_for_select").val());
-						$("#items_edit_price").val("").val(window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_price']);
+					$("#items_edit_name").val("").val(window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_name'])
+					$("#items_edit_username").val($("#user_for_select").val());
+					$("#items_edit_price").val("").val(window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['item_price']);
 
-						$("#items_edit_target").val("");
-						$("#items_edit_bought").val("");
+					$("#items_edit_target").val("");
+					$("#items_edit_bought").val("");
 
-						$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
+					$("#item_edit_responsibility").empty().append('<option value=\"\">请选择负责人</option>');
 
-						if (localStorage.active_group_power == "leader") { //if i am leader, i can control every item and relation
+					if (localStorage.active_group_power == "leader") { //if i am leader, i can control every item and relation
 
-							if (window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]) {
-								if (window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility']) { //如果有负责人，输出；没有就不输出
-									$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] + '</option>')
-								};
-								for (var x in window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]) {
-									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility" && window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] != x) {
-										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-									};
-								};
-							} else {
-								for (var x in window.states.group.member) {
-									if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
-										console.log("1" + x);
-										$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
-									};
+						if (window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]) {
+							if (window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility']) { //如果有负责人，输出；没有就不输出
+								$("#item_edit_responsibility").append('<option value=\"' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] + '\" selected>' + window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] + '</option>')
+							};
+							for (var x in window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]) {
+								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility" && window.op_details.otherinfo[window.states.circle.id][$("#items_for_select").val()]['responsibility'] != x) {
+									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
 								};
 							};
-							$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
-							$("#item_delete").button("enable");
-						} else { //not leader
-							$("#item_edit_responsibility").selectmenu("disable").selectmenu("refresh");
-							$("#item_delete").button("disable");
+						} else {
+							for (var x in window.states.group.member) {
+								if (x != "item_name" && x != "item_price" && x != "circle_id" && x != "rowid" && x != "responsibility") {
+									console.log("1" + x);
+									$("#item_edit_responsibility").append('<option value=\"' + x + '\">' + x + '</option>');
+								};
+							};
 						};
-
-						if (pureobj_info != null) {
-							$("#items_edit_target").val(pureobj_info['target']);
-							$("#items_edit_bought").val(pureobj_info['bought']);
-						};
-						$.mobile.changePage("#items_edit");
-					} else {
-						alert("请选择item和user!");
+						$("#item_edit_responsibility").selectmenu("enable").selectmenu("refresh");
+						$("#item_delete").button("enable");
+					} else { //not leader
+						$("#item_edit_responsibility").selectmenu("disable").selectmenu("refresh");
+						$("#item_delete").button("disable");
 					};
+
+					if (pureobj_info != null) {
+						$("#items_edit_target").val(pureobj_info['target']);
+						$("#items_edit_bought").val(pureobj_info['bought']);
+					};
+					$.mobile.changePage("#items_edit");
 				});
 
 				$("#logout").click(function() {
@@ -1700,16 +1690,16 @@
 				</ul>
 				<input type="button" value="新增此circle的item" id="add_new_item_in_itemlist" />
 			</div>
+			<a href="#items_edit" data-icon="info" class="ui-btn">编辑</a>
 
-			<div data-role="footer" data-position="fixed">
+			<!--<div data-role="footer" data-position="fixed">
 				<div data-role="navbar">
 					<ul>
 						<li>
-							<a href="#items_edit_select" data-rel="dialog" data-icon="info" class="ui-btn" onclick="window.op_items.clear_selectmemu()">编辑</a>
 						</li>
 					</ul>
 				</div>
-			</div>
+			</div>-->
 		</div>
 
 		<div data-role="page" id="items_edit_select">
@@ -1717,11 +1707,7 @@
 				<br />
 				<br />
 				<br />
-				<select id="items_for_select" data-native-menu="false">
-				</select>
 				<br />
-				<select id="user_for_select" data-native-menu="false">
-				</select>
 				<br />
 				<br />
 				<br />
@@ -1745,7 +1731,7 @@
 		<div data-role="page" id="items_edit">
 			<div data-role="header">
 				<h1>编辑</h1>
-				<a data-rel="dialog" data-role="button" data-icon="back" onclick="window.op_items.clear_selectmemu();history.back()">返回</a>
+				<a data-rel="dialog" data-role="button" data-icon="back" onclick="history.back()">返回</a>
 				<div data-role="button" class="ui-btn-right">
 					<input type="button" id="items_edit_save" value="保存" data-icon="alert">
 				</div>
@@ -1755,10 +1741,14 @@
 
 				<div data-role="fieldcontain">
 					<label for="items_edit_name">item名</label>
+					<select id="items_for_select" data-native-menu="false">
+					</select>
 					<input type="text" id="items_edit_name" value="" readonly="">
 				</div>
 				<div data-role="fieldcontain">
 					<label for="items_edit_username">user名</label>
+					<select id="user_for_select" data-native-menu="false">
+					</select>
 					<input type="text" id="items_edit_username" value="" readonly="">
 				</div>
 				<div data-role="fieldcontain">
