@@ -26,8 +26,15 @@ So you will need to arrange your parterners to buy items for each other,by which
 
 So this app will help a lot in saving time.Just leave it to app and enjoy your time!
 
+### Techinical Details
 
-(Well,you must have found that my English is poor engough...Don not mind the details orz)
+This app use:
+
+`Node.js` && `Socket.io` && `MariaDB` in the back-end;
+
+`Polymer`(Future) && `Socket.io` && `JQuery` && `JQuery Mobile`(I will use Polymer instead) in the front-end;
+
+(Well,you must have found that my English can not be poor engough...Don not mind the details orz OTL)
 
 Maybe I can use Chinese to write this page?
 
