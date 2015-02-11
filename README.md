@@ -1,4 +1,4 @@
-### KJ-PROJECT V3 developing
+# KJ-PROJECT V3 developing
 
 This is a web app helps you to arrange, communicate, calculate price...during the Comic Mariket.
 
@@ -6,11 +6,11 @@ Up to now, I have not finished it.
 
 There will be many useful fucntions.
 
-# 1.group managing
+## 1.group managing
 
 It allow you creating your own group with a independent database.
 
-# 2.mission managing
+## 2.mission managing
 
 That means you can upload circle information,item infomation...
 
@@ -18,7 +18,7 @@ It supports two ways:read csv file created by CATALOG(场刊),upload your mannua
 
 When you finish your mission, just tick it and turn to the next one.
 
-#3.calculater of your items
+## 3.calculator of your items
 
 Teamwork is the key to success of one battle.
 
